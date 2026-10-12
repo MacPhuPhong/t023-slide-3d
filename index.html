@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>T023 · Cuboid 3D từ khung 2D</title>
+
+  <!-- Preload font Be Vietnam Pro tiếng Việt -->
+  <link rel="preload" href="vendor/fonts/be-vietnam-pro-vietnamese-400-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="vendor/fonts/be-vietnam-pro-vietnamese-800-normal.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="vendor/fonts/be-vietnam-pro-vietnamese-900-normal.woff2" as="font" type="font/woff2" crossorigin>
+
+  <link rel="stylesheet" href="vendor/katex/katex.min.css">
+  <script src="vendor/katex/katex.min.js"></script>
+  <link rel="stylesheet" href="css/trang.css">
+
+  <!-- Bắt lỗi trước khi bất kỳ module nào chạy -->
+  <script>
+    window.addEventListener('error', function(e) {
+      var el = document.getElementById('loi');
+      if (el) {
+        el.style.display = 'block';
+        el.textContent = 'LỖI: ' + (e.message || e) + '\n@ ' + (e.filename || '') + ':' + (e.lineno || '');
+      }
+    }, true);
+    window.addEventListener('unhandledrejection', function(e) {
+      var el = document.getElementById('loi');
+      if (el) {
+        el.style.display = 'block';
+        el.textContent = 'LỖI PROMISE: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason));
+      }
+    });
+  </script>
+</head>
+<body>
+  <div id="san_khau">
+    <!-- Vùng render 3D Three.js -->
+    <div id="canh_3d"></div>
+
+    <!-- Lớp giao diện 2D -->
+    <div id="giao_dien">
+      <!-- Thanh trên -->
+      <header id="thanh_tren">
+        <div class="logo_nhom">T023</div>
+        <nav class="lien_ket_nhom tuong_tac">
+          <a data-nhom="bai_toan" id="nav_bai_toan">Bài toán</a>
+          <a data-nhom="toan" id="nav_toan">Toán từng bước</a>
+          <a data-nhom="danh_gia" id="nav_danh_gia">Đánh giá</a>
+          <a data-nhom="lo_trinh" id="nav_lo_trinh">Lộ trình</a>
+        </nav>
+        <button class="nut_vien_thuoc tuong_tac" id="btn_n101b">N1-01B</button>
+      </header>
+
+      <!-- Nội dung chính (Cột trái) -->
+      <main id="noi_dung_chinh">
+        <div id="cot_trai">
+          <!-- Nội dung động do deck.js chèn vào -->
+          <div class="dong_muc" id="slide_muc"></div>
+          <h1 class="tieu_de_slide" id="slide_tieu_de"></h1>
+          <p class="doan_y" id="slide_y"></p>
+          <div class="the_cong_thuc tuong_tac" id="slide_cong_thuc" style="display:none;"></div>
+          <div class="hang_chip tuong_tac" id="slide_chips"></div>
+          <div class="o_ml" id="slide_ml" style="display:none;"></div>
+          <div class="hang_goc_nhin tuong_tac" id="slide_goc_nhin"></div>
+        </div>
+      </main>
+
+      <!-- Thanh dưới -->
+      <footer id="thanh_duoi">
+        <div class="bo_mau_diem tuong_tac" id="bo_mau_diem">
+          <span>Màu điểm:</span>
+          <div class="cham_mau do_cao active" data-che-do="do_cao" title="Theo độ cao Z"></div>
+          <div class="cham_mau frustum" data-che-do="frustum" title="Điểm trong Frustum"></div>
+          <div class="cham_mau cum" data-che-do="cum" title="Điểm theo Cụm"></div>
+          <div class="cham_mau xam" data-che-do="xam" title="Màu đơn"></div>
+        </div>
+
+        <div class="tien_trinh_vien_thuoc tuong_tac" id="tien_trinh_vien_thuoc">
+          <!-- Các chấm tiến trình động -->
+        </div>
+
+        <div class="chi_so_slide" id="chi_so_slide">1 / 25</div>
+      </footer>
+    </div>
+
+    <!-- Màn hình phủ lỗi -->
+    <div id="loi"></div>
+  </div>
+
+  <script src="data/xe_ego_mau.js"></script>
+  <script type="module" src="js/main.js"></script>
+</body>
+</html>
