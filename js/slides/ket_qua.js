@@ -106,7 +106,7 @@ function dungCanhKeyframe(ctx, nhom, bo, vong, nguon) {
       pos[i * 3 + 2] = v.z;
 
       const t = (z - minZ) / Math.max(maxZ - minZ, 1e-6);
-      c.setHSL(0.55 - 0.45 * t, 0.85, 0.50);
+      c.setHSL(0.55 - 0.45 * t, 0.90, 0.38);
       col[i * 3] = c.r;
       col[i * 3 + 1] = c.g;
       col[i * 3 + 2] = c.b;
@@ -114,11 +114,11 @@ function dungCanhKeyframe(ctx, nhom, bo, vong, nguon) {
 
     geo.setAttribute('position', new T.BufferAttribute(pos, 3));
     geo.setAttribute('color', new T.BufferAttribute(col, 3));
-    const mat = new T.PointsMaterial({ size: 0.15, vertexColors: true, sizeAttenuation: true });
+    const mat = new T.PointsMaterial({ size: 0.28, vertexColors: true, sizeAttenuation: true });
     nhom.add(new T.Points(geo, mat));
   }
 
-  // 2. Hộp GT đạt (gt) và GT trượt (gt_truot), cùng hộp pipeline (pipeline)
+  // 2. Hộp GT đạt (gt) và GT trượt (gt_truot), cùng hộp pipeline (pipeline) (T65, T69: netDay >= 3px)
   let minX = 1e9, maxX = -1e9, minY = 1e9, maxY = -1e9;
 
   for (const v of kf.vat) {
@@ -131,14 +131,14 @@ function dungCanhKeyframe(ctx, nhom, bo, vong, nguon) {
     if (v.gt.cy < minY) minY = v.gt.cy;
     if (v.gt.cy > maxY) maxY = v.gt.cy;
 
-    // Hộp GT nét dày có vai (T65: hop_khong_vai = 0)
+    // Hộp GT nét dày có vai (T65, T69: netDay >= 3px, hop_khong_vai = 0)
     const vaiGt = dat ? 'gt' : 'gt_truot';
-    const hopGtObj = taoHop(ctx, v.gt, vaiGt, { fill: true });
+    const hopGtObj = taoHop(ctx, v.gt, vaiGt, { fill: true, netDay: true });
     nhom.add(hopGtObj);
 
-    // Hộp pipeline nét đứt hổ phách
+    // Hộp pipeline nét đứt hổ phách dày (T69)
     if (vRes && vRes.hop) {
-      const hopPrObj = taoHop(ctx, vRes.hop, 'pipeline', { fill: false, color: 0xc98200, netDut: true });
+      const hopPrObj = taoHop(ctx, vRes.hop, 'pipeline', { fill: false, color: 0xc98200, netDut: true, netDay: true });
       nhom.add(hopPrObj);
     }
   }
@@ -341,15 +341,19 @@ export const slideKetQuaCanh = {
 
       capNhatGiaoDien();
 
-      // Nổi bật hộp GT và hộp pipeline của vật này (T65)
+      // Cuộn bảng để dòng được chọn hiện ra (T69)
+      const trChon = document.querySelector(`.kq_dong[data-idx="${idx}"]`);
+      if (trChon) trChon.scrollIntoView({ block: 'nearest', behavior: TINH ? 'instant' : 'smooth' });
+
+      // Nổi bật hộp GT và hộp pipeline của vật này (T65, T69: netDay >= 3px)
       const vRes = v.vong && v.vong[String(vong)] ? v.vong[String(vong)][nguon] : null;
       const dat = vRes ? vRes.dat : false;
 
-      const hopGtChon = taoHop(ctx, v.gt, dat ? 'gt' : 'gt_truot', { fill: true });
+      const hopGtChon = taoHop(ctx, v.gt, dat ? 'gt' : 'gt_truot', { fill: true, netDay: true, fillOpacity: 0.35 });
       nhomChon.add(hopGtChon);
 
       if (vRes && vRes.hop) {
-        const hopPrChon = taoHop(ctx, vRes.hop, 'pipeline', { fill: false, color: 0xc98200, netDut: true });
+        const hopPrChon = taoHop(ctx, vRes.hop, 'pipeline', { fill: false, color: 0xc98200, netDut: true, netDay: true });
         nhomChon.add(hopPrChon);
       }
 
@@ -502,7 +506,7 @@ export const slideKetQuaVat = {
 
       // 5. Camera bao trọn GT và các hộp đang hiện, tính offset sang vùng 3D bên phải (x ∈ [940, 1900])
       const coMax = Math.max(...cacHopHien.map(h => Math.max(h.l, h.w, h.h)));
-      const xa = Math.max(9.0, 2.4 * coMax + 3.0);
+      const xa = Math.max(10.0, 2.7 * coMax + 4.5);
 
       const tam = ctx.S([gt.cx, gt.cy, gt.cz]);
       const dir = new T.Vector3(0.7, 0.5, 0.7).normalize();
@@ -635,19 +639,24 @@ export const slideKetQuaVat = {
         }
       }
 
-      // Bảng so sánh IoU 2D/3D dưới ảnh
-      let bangSoSanhDong = '';
+      // Bảng so sánh IoU 2D/3D dưới ảnh (T68: mỗi dòng <= 34px, tích >= 3 vòng thì 2 cột)
+      const soVongTich = vChon.size;
+      const lopKhungSoSanh = soVongTich >= 3 ? 'kq_so_sanh_grid' : 'kq_so_sanh_don';
+      let danhSachSoSanhHtml = '';
       for (const k of [1, 2, 3, 4, 5]) {
         if (!vChon.has(k)) continue;
         const vRes = v.vong && v.vong[String(k)] ? v.vong[String(k)][nguon] : null;
         const mauK = MAU_VONG[k];
 
         if (!vRes || !vRes.hop) {
-          bangSoSanhDong += `
-            <tr>
-              <td><b style="color:${mauK};">V${k}</b></td>
-              <td colspan="2" style="color:#94a3b8;">không ra hộp</td>
-            </tr>
+          danhSachSoSanhHtml += `
+            <div class="kq_so_sanh_item">
+              <span style="display:flex; align-items:center; gap:6px;">
+                <b style="color:${mauK};">V${k}</b>
+                <span style="color:#94a3b8;">không ra hộp</span>
+              </span>
+              <span class="kq_o_iou kq_o_truot" style="padding:1px 6px;">—</span>
+            </div>
           `;
         } else {
           const iou2dStr = so(vRes.iou2d, 2);
@@ -655,14 +664,16 @@ export const slideKetQuaVat = {
           const dat = vRes.dat;
           const datKyHieu = dat ? '✓ đạt' : '✗ trượt';
           const lopMau3d = dat ? 'kq_o_dat' : 'kq_o_truot';
-          const chuGoc = (vRes.goc2d === null) ? ' <small style="color:#e5484d;">(hộp sau camera)</small>' : '';
+          const chuGoc = (vRes.goc2d === null) ? ' <small style="color:#e5484d;">(sau cam)</small>' : '';
 
-          bangSoSanhDong += `
-            <tr>
-              <td><b style="color:${mauK};">V${k}</b></td>
-              <td>IoU 2D: ${iou2dStr}${chuGoc}</td>
-              <td><span class="kq_o_iou ${lopMau3d}">IoU 3D: ${iou3dStr} ${datKyHieu}</span></td>
-            </tr>
+          danhSachSoSanhHtml += `
+            <div class="kq_so_sanh_item">
+              <span style="display:flex; align-items:center; gap:6px;">
+                <b style="color:${mauK};">V${k}</b>
+                <span style="color:#475569;">2D: ${iou2dStr}${chuGoc}</span>
+              </span>
+              <span class="kq_o_iou ${lopMau3d}" style="padding:1px 6px;">3D: ${iou3dStr} ${datKyHieu}</span>
+            </div>
           `;
         }
       }
@@ -680,11 +691,11 @@ export const slideKetQuaVat = {
       }).join('');
 
       chenPanel('kq_vat_panel', `
-        <div class="the_trang kq_vat_hop_dk">
+        <div class="the_trang kq_vat_hop_dk" style="padding:4px 8px; margin-bottom:2px;">
           <div class="kq_vat_ten_ca">
             Bộ ${bo} · ${kf.scene} · ${v.camera} · <b>${v.lop}</b> · ${so(v.kc, 1)} m · ngưỡng <b>${so(v.nguong, 1)}</b>
           </div>
-          <div class="kq_tich_hang">
+          <div class="kq_tich_hang" style="margin-top:2px;">
             <span class="chu-the" style="font-weight:700;">Vòng so với GT:</span>
             ${oTichHtml}
           </div>
@@ -705,20 +716,11 @@ export const slideKetQuaVat = {
           Ảnh/LiDAR: nuScenes v1.0-mini (Motional), CC BY-NC-SA 4.0
         </div>
 
-        <div class="the_trang" style="padding:6px 12px; margin-top:4px;">
-          <table class="kq_so_sanh_bang">
-            <thead>
-              <tr>
-                <th style="width:18%;">Vòng</th>
-                <th style="width:40%;">IoU 2D (tham khảo)</th>
-                <th>IoU 3D đo trên đám điểm</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${bangSoSanhDong}
-            </tbody>
-          </table>
-          <div class="cv_ghi_nho" style="margin-top:6px;">
+        <div class="the_trang" style="padding:4px 8px; margin-top:2px;">
+          <div class="${lopKhungSoSanh}">
+            ${danhSachSoSanhHtml}
+          </div>
+          <div class="cv_ghi_nho" style="margin-top:4px;">
             ✓ đạt khi IoU 3D ≥ 0,5 (xe) · ≥ 0,3 (người đi bộ, 2 bánh)
           </div>
         </div>
@@ -786,7 +788,7 @@ export const slideKetQuaPhanBo = {
   y: '',
   ml: 'Đọc tại ngưỡng đạt từng lớp: phần trăm vật đạt của từng vòng cải tiến trên 289 vật nuScenes thật.',
   goc_nhin: [
-    { ten: 'Toàn cảnh keyframe Bộ 1 ở V5', cam: [0.1, 0, 78], nhin: [0, 0, 0] },
+    { ten: 'Từ trên nhìn xuống (bao các hộp GT)', cam: [8.5, 0, 52], nhin: [8.5, 0, 0] },
     { ten: 'Nghiêng góc nhìn toàn cảnh', cam: [-28, -22, 30], nhin: [12, 0, 0] }
   ],
   vao(ctx) {
@@ -804,11 +806,21 @@ export const slideKetQuaPhanBo = {
     let tab = q.get('tab') === 'kc' ? 'kc' : 'lop';
     let tabNhomVat = 'xe'; // 'xe' (ngưỡng 0.5) hoặc 'nguoi' (ngưỡng 0.3)
 
-    // Cảnh 3D: toàn cảnh keyframe Bộ 1 ở V5 nhìn từ trên xuống (T65)
+    // Cảnh 3D: toàn cảnh keyframe Bộ 1 ở V5 nhìn từ trên xuống (T65, T69: bao các hộp GT lề 10%)
     function capNhatCanh3D(datCam = true) {
       xoaNhom(nhom);
-      const gocCam = dungCanhKeyframe(ctx, nhom, 1, 5, nguon);
-      if (datCam) ctx.tweenCamera(gocCam.cam, gocCam.nhin, TINH ? 0 : 0.6);
+      dungCanhKeyframe(ctx, nhom, 1, 5, nguon);
+      if (datCam) {
+        const kf1 = KET_QUA.khung[0];
+        if (kf1 && kf1.vat.length > 0) {
+          const xs = kf1.vat.map(v => v.gt.cx), ys = kf1.vat.map(v => v.gt.cy);
+          const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+          const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+          const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys)) * 1.10;
+          const camZ = Math.max(48, span * 1.25);
+          ctx.tweenCamera([cx, cy, camZ], [cx, cy, 0], TINH ? 0 : 0.6);
+        }
+      }
       veLai(ctx);
     }
 

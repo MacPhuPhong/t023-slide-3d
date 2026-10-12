@@ -11,7 +11,7 @@ export const VAI_HOP = {
     ky_hieu: '▭',
     mau: 0x1f9d55,
     mauCss: '#1f9d55',
-    fillOpacity: 0.16,
+    fillOpacity: 0.28,
     netDut: false
   },
   gt_truot: {
@@ -19,7 +19,7 @@ export const VAI_HOP = {
     ky_hieu: '▭',
     mau: 0xe5484d,
     mauCss: '#e5484d',
-    fillOpacity: 0.16,
+    fillOpacity: 0.28,
     netDut: false
   },
   de_xuat: {
@@ -27,7 +27,7 @@ export const VAI_HOP = {
     ky_hieu: '┅',
     mau: 0xe5484d,
     mauCss: '#e5484d',
-    fillOpacity: 0.10,
+    fillOpacity: 0.25,
     netDut: true
   },
   pipeline: {
@@ -35,7 +35,7 @@ export const VAI_HOP = {
     ky_hieu: '┅',
     mau: 0xc98200,
     mauCss: '#c98200',
-    fillOpacity: 0.10,
+    fillOpacity: 0.25,
     netDut: true
   },
   quan_sat: {
@@ -43,7 +43,7 @@ export const VAI_HOP = {
     ky_hieu: '▭',
     mau: 0xc98200,
     mauCss: '#c98200',
-    fillOpacity: 0.10,
+    fillOpacity: 0.25,
     netDut: false
   }
 };
@@ -53,20 +53,34 @@ export const VAI_HOP = {
  * @param {object} ctx - Ngữ cảnh sân khấu (có S, THREE)
  * @param {object} box - {cx, cy, cz, l, w, h, yaw} trong hệ ego
  * @param {string} vai - 'gt' | 'de_xuat' | 'quan_sat'
- * @param {object} [options] - {fill = true}
+ * @param {object} [options] - {fill = true, color = null, netDut = null, netDay = false, fillOpacity = null}
  * @returns {THREE.Group}
  */
-export function taoHop(ctx, box, vai, { fill = true, color = null, netDut = null } = {}) {
+export function taoHop(ctx, box, vai, { fill = true, color = null, netDut = null, netDay = false, fillOpacity = null } = {}) {
   const three = (ctx && ctx.THREE) || THREE;
   const cfg = VAI_HOP[vai] || VAI_HOP.gt;
   const mau = color !== null ? color : cfg.mau;
   const laNetDut = netDut !== null ? netDut : cfg.netDut;
+  const opac = fillOpacity !== null ? fillOpacity : cfg.fillOpacity;
 
   const geo = new three.BoxGeometry(box.l, box.h, box.w);
   const edges = new three.EdgesGeometry(geo);
 
   let wire;
-  if (laNetDut) {
+  const Lines = (typeof window !== 'undefined' && window.THREE_LINES) ? window.THREE_LINES : null;
+  if (netDay && Lines && Lines.LineSegments2 && Lines.LineSegmentsGeometry && Lines.LineMaterial) {
+    const lineGeo = new Lines.LineSegmentsGeometry().fromEdgesGeometry(edges);
+    const lineMat = new Lines.LineMaterial({
+      color: mau,
+      linewidth: 3.5, // pixels trên màn hình
+      dashed: laNetDut,
+      dashSize: laNetDut ? 0.35 : 1,
+      gapSize: laNetDut ? 0.20 : 0,
+      resolution: new three.Vector2(1920, 1080)
+    });
+    wire = new Lines.LineSegments2(lineGeo, lineMat);
+    if (laNetDut) wire.computeLineDistances();
+  } else if (laNetDut) {
     const lineMat = new three.LineDashedMaterial({
       color: mau,
       linewidth: 2,
@@ -90,7 +104,7 @@ export function taoHop(ctx, box, vai, { fill = true, color = null, netDut = null
     const fillMat = new three.MeshStandardMaterial({
       color: mau,
       transparent: true,
-      opacity: cfg.fillOpacity,
+      opacity: opac,
       roughness: 0.35,
       depthWrite: false
     });

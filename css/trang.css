@@ -1079,14 +1079,13 @@ html, body {
 .kq_vat_khung_2d {
   position: relative;
   width: 100%;
-  max-width: 480px;
-  max-height: 265px;
+  max-width: 860px;
   aspect-ratio: 16 / 9;
   border-radius: 8px;
   overflow: hidden;
   border: 1px solid var(--mau-vien);
   background: #0f172a;
-  margin: 0 auto;
+  margin: 0 0 4px 0;
 }
 .kq_vat_svg {
   width: 100%;
@@ -1117,6 +1116,32 @@ html, body {
   background: var(--mau-xanh);
   border-color: var(--mau-xanh);
 }
+.kq_so_sanh_grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 4px 8px;
+  width: 100%;
+  margin-top: 4px;
+}
+.kq_so_sanh_don {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  width: 100%;
+  margin-top: 4px;
+}
+.kq_so_sanh_item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 2px 8px;
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: var(--c-nho);
+  height: 32px;
+  box-sizing: border-box;
+}
 .kq_so_sanh_bang {
   width: 100%;
   border-collapse: collapse;
@@ -1125,20 +1150,21 @@ html, body {
 }
 .kq_so_sanh_bang th {
   background: #f8fafc;
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-bottom: 2px solid #e2e8f0;
   font-weight: 700;
   text-align: left;
 }
 .kq_so_sanh_bang td {
-  padding: 4px 8px;
+  padding: 3px 6px;
   border-bottom: 1px solid #f1f5f9;
+  height: 30px;
 }
 .kq_ghi_cong {
   font-size: var(--c-nho);
   color: var(--mau-chu-phu);
-  margin-top: 4px;
-  line-height: 1.4;
+  margin-top: 2px;
+  line-height: 1.3;
 }
 .kq_nut_xem_2d3d {
   display: inline-flex;
@@ -1159,4 +1185,38 @@ html, body {
 .kq_nut_xem_2d3d:hover {
   background: var(--mau-xanh);
   color: #fff;
+}
+
+/* Tối ưu bố cục riêng cho slide ket-qua-vat (T68: day_cot <= 990, tran = 0) */
+body[data-slide="ket-qua-vat"] #cot_trai {
+  gap: 4px;
+}
+body[data-slide="ket-qua-vat"] .tieu_de_slide {
+  font-size: 28px;
+  line-height: 1.15;
+  margin-bottom: 2px;
+}
+body[data-slide="ket-qua-vat"] .dong_muc {
+  font-size: var(--c-nho);
+  margin-bottom: 2px;
+}
+body[data-slide="ket-qua-vat"] .the_trang {
+  padding: 4px 8px;
+  border-radius: 8px;
+}
+body[data-slide="ket-qua-vat"] .o_ml {
+  padding: 4px 10px;
+  font-size: var(--c-nho);
+  line-height: 1.3;
+  margin-top: 2px;
+}
+body[data-slide="ket-qua-vat"] .nut_goc_nhin {
+  padding: 3px 8px;
+  font-size: var(--c-nho);
+}
+body[data-slide="ket-qua-vat"] .kq_vat_khung_2d {
+  max-height: 450px;
+}
+body[data-slide="ket-qua-vat"] #slide_goc_nhin {
+  margin-top: 2px;
 }

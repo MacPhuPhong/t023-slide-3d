@@ -6,8 +6,10 @@ import { taoBoMaySlide } from './deck.js';
 import { Line2 } from '../vendor/three/addons/lines/Line2.js';
 import { LineGeometry } from '../vendor/three/addons/lines/LineGeometry.js';
 import { LineMaterial } from '../vendor/three/addons/lines/LineMaterial.js';
+import { LineSegments2 } from '../vendor/three/addons/lines/LineSegments2.js';
+import { LineSegmentsGeometry } from '../vendor/three/addons/lines/LineSegmentsGeometry.js';
 
-window.THREE_LINES = { Line2, LineGeometry, LineMaterial };
+window.THREE_LINES = { Line2, LineGeometry, LineMaterial, LineSegments2, LineSegmentsGeometry };
 
 // Nạp dữ liệu khung thực và mô hình xe Ego vào window
 await import('../data/khung_thuc.js');
