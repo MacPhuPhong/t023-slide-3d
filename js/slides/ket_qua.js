@@ -347,14 +347,21 @@ export const slideKetQuaCanh = {
       }
 
       // Tween camera tới vị trí vật
-      const camP = ctx.S([v.gt.cx - 7, v.gt.cy - 7, v.gt.cz + 6]);
-      const nhinP = ctx.S([v.gt.cx, v.gt.cy, v.gt.cz]);
-      ctx.tweenCamera(veEgo(camP), veEgo(nhinP), TINH ? 0 : 0.8);
+      // lùi theo cỡ vật (như S22): xe tải 6 m không lấp màn hình, người đi bộ không bé tí; nhìn từ phía cảm biến ra vật
+      const g = v.gt;
+      const xa = Math.max(9, 2.4 * Math.max(g.l, g.w, g.h) + 3);
+      const r = Math.hypot(g.cx, g.cy) || 1;
+      const huong = [g.cx / r * 0.55, g.cy / r * 0.55, 0.62];
+      const n = Math.hypot(...huong);
+      ctx.tweenCamera([g.cx - huong[0] / n * xa, g.cy - huong[1] / n * xa, g.cz + huong[2] / n * xa], [g.cx, g.cy, g.cz], TINH ? 0 : 0.8);
       veLai(ctx);
     }
 
     capNhatCanh();
     capNhatGiaoDien();
+    // &chon=n: mở sẵn vật thứ n của keyframe (liên kết thẳng, và để chup.py kiểm camera khi bấm dòng)
+    const chon = +q.get('chon');
+    if (chon >= 1 && KET_QUA.khung[bo - 1] && chon <= KET_QUA.khung[bo - 1].vat.length) chonVat(chon - 1);
   },
   ra(ctx) {
     anTheGioi(ctx, false);
