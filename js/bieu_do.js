@@ -265,8 +265,8 @@ export const MAU_VONG = {
 /**
  * Biểu đồ tỷ lệ vật đạt theo ngưỡng IoU x: P(IoU >= x) (Task T56)
  */
-export function svgTiLeDat(phanBo, { vong = [1, 2, 3, 4, 5], w = 820, h = 260 } = {}) {
-  const padL = 55, padR = 125, padT = 28, padB = 36;
+export function svgTiLeDat(phanBo, { vong = [1, 2, 3, 4, 5], nguong = 0.5, w = 820, h = 260 } = {}) {
+  const padL = 55, padR = 135, padT = 28, padB = 36;
   const pw = w - padL - padR, ph = h - padT - padB;
 
   const mapX = x => padL + Math.max(0, Math.min(1, x)) * pw;
@@ -284,11 +284,12 @@ export function svgTiLeDat(phanBo, { vong = [1, 2, 3, 4, 5], w = 820, h = 260 } 
     <text x="${mapX(xVal)}" y="${padT + ph + 24}" font-size="18" fill="#64748b" text-anchor="middle">${xVal === 0 ? '0' : xVal.toFixed(2).replace('.', ',')}</text>
   `).join('');
 
-  // Vạch đứt dọc ngưỡng đạt 0.5
-  const x05 = mapX(0.5);
-  const vach05 = `
-    <line x1="${x05}" y1="${padT}" x2="${x05}" y2="${padT + ph}" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/>
-    <text x="${x05}" y="${padT - 8}" font-size="18" font-weight="700" fill="#475569" text-anchor="middle">Ngưỡng đạt 0,5</text>
+  // Vạch đứt dọc ngưỡng đạt
+  const xNguong = mapX(nguong);
+  const chuNguong = nguong.toFixed(1).replace('.', ',');
+  const vachNguong = `
+    <line x1="${xNguong}" y1="${padT}" x2="${xNguong}" y2="${padT + ph}" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <text x="${xNguong}" y="${padT - 8}" font-size="18" font-weight="700" fill="#475569" text-anchor="middle">Ngưỡng đạt ${chuNguong}</text>
   `;
 
   // Các đường cho từng vòng
@@ -296,7 +297,8 @@ export function svgTiLeDat(phanBo, { vong = [1, 2, 3, 4, 5], w = 820, h = 260 } 
   const cacNhan = [];
 
   for (const k of vong) {
-    const arr = phanBo && (phanBo[String(k)] || phanBo[k]) ? (phanBo[String(k)] || phanBo[k]) : [];
+    const raw = phanBo && (phanBo[String(k)] || phanBo[k]);
+    const arr = Array.isArray(raw) ? raw : (raw && raw.xe ? raw.xe : []);
     const n = arr.length;
     if (n === 0) continue;
 
@@ -312,46 +314,40 @@ export function svgTiLeDat(phanBo, { vong = [1, 2, 3, 4, 5], w = 820, h = 260 } 
       pts.push(`${mapX(curX).toFixed(1)},${mapY(pct).toFixed(1)}`);
     }
 
-    // Giá trị tại x = 0.5
-    let count05 = 0;
+    // Giá trị tại x = nguong
+    let countNguong = 0;
     for (let i = 0; i < n; i++) {
-      if (arr[i] >= 0.5 - 1e-6) count05++;
+      if (arr[i] >= nguong - 1e-6) countNguong++;
     }
-    const pct05 = (count05 / n) * 100.0;
-    const y05 = mapY(pct05);
+    const pctNguong = (countNguong / n) * 100.0;
+    const yNguong = mapY(pctNguong);
 
     linesSvg += `
       <polyline fill="none" stroke="${MAU_VONG[k]}" stroke-width="2.6" points="${pts.join(' ')}"/>
-      <circle cx="${x05}" cy="${y05}" r="4.5" fill="${MAU_VONG[k]}"/>
+      <circle cx="${xNguong}" cy="${yNguong}" r="4.5" fill="${MAU_VONG[k]}"/>
     `;
 
     cacNhan.push({
       vong: k,
-      pct: pct05,
-      y: y05,
+      pct: pctNguong,
       mau: MAU_VONG[k]
     });
   }
 
-  // Tinh chỉnh nhãn bên phải để tránh chồng lấn
+  // Nhãn "V k: xx,x %" xếp thành cột bên phải, cách nhau 26 px (>= 24 px), không đè trục
   cacNhan.sort((a, b) => b.pct - a.pct);
   let nhanSvg = '';
-  let lastY = -999;
-  for (const item of cacNhan) {
-    let curY = item.y + 6;
-    if (curY - lastY < 20) {
-      curY = lastY + 20;
-    }
-    lastY = curY;
+  cacNhan.forEach((item, idx) => {
+    const curY = padT + 16 + idx * 26;
     nhanSvg += `
-      <text x="${w - padR + 8}" y="${curY}" font-size="18" font-weight="700" fill="${item.mau}">V${item.vong}: ${item.pct.toFixed(1).replace('.', ',')} %</text>
+      <text x="${padL + pw + 16}" y="${curY}" font-size="18" font-weight="700" fill="${item.mau}">V${item.vong}: ${item.pct.toFixed(1).replace('.', ',')} %</text>
     `;
-  }
+  });
 
   return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="background:#fff; border-radius:12px; border:1px solid rgba(20,23,28,0.08); font-family:'Be Vietnam Pro',sans-serif;">
       ${luoiY}
       ${luoiX}
-      ${vach05}
+      ${vachNguong}
       ${linesSvg}
       ${nhanSvg}
     </svg>`;

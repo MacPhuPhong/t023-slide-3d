@@ -442,7 +442,7 @@ function dungSlideVong(ctx, lop, k) {
         ${muc('#64748b', '┅', `V${k - 1}: ${chuIoU(hT.iou3d, hT.tam_m)}`, hienTruoc())}
         ${muc('#e5484d', '┅', `V${k}: ${chuIoU(hS.iou3d, hS.tam_m)}`, hienSau())}
       </div>
-      <div class="cv_ghi_nho">✓ đạt khi IoU 3D với GT ≥ 0,5</div>`;
+      <div class="cv_ghi_nho">✓ đạt khi IoU 3D ≥ 0,5 (xe) · ≥ 0,3 (người đi bộ, 2 bánh)</div>`;
   }
 
   // camera: giữ hướng của góc nhìn đang chọn, lùi theo kích thước vật (xe buýt 11 m cần xa hơn xe con)

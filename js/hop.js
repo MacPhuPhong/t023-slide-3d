@@ -14,11 +14,27 @@ export const VAI_HOP = {
     fillOpacity: 0.16,
     netDut: false
   },
+  gt_truot: {
+    ten: 'GT trượt',
+    ky_hieu: '▭',
+    mau: 0xe5484d,
+    mauCss: '#e5484d',
+    fillOpacity: 0.16,
+    netDut: false
+  },
   de_xuat: {
     ten: 'Hộp đề xuất',
     ky_hieu: '┅',
     mau: 0xe5484d,
     mauCss: '#e5484d',
+    fillOpacity: 0.10,
+    netDut: true
+  },
+  pipeline: {
+    ten: 'Hộp pipeline',
+    ky_hieu: '┅',
+    mau: 0xc98200,
+    mauCss: '#c98200',
     fillOpacity: 0.10,
     netDut: true
   },
@@ -40,17 +56,19 @@ export const VAI_HOP = {
  * @param {object} [options] - {fill = true}
  * @returns {THREE.Group}
  */
-export function taoHop(ctx, box, vai, { fill = true } = {}) {
+export function taoHop(ctx, box, vai, { fill = true, color = null, netDut = null } = {}) {
   const three = (ctx && ctx.THREE) || THREE;
   const cfg = VAI_HOP[vai] || VAI_HOP.gt;
+  const mau = color !== null ? color : cfg.mau;
+  const laNetDut = netDut !== null ? netDut : cfg.netDut;
 
   const geo = new three.BoxGeometry(box.l, box.h, box.w);
   const edges = new three.EdgesGeometry(geo);
 
   let wire;
-  if (cfg.netDut) {
+  if (laNetDut) {
     const lineMat = new three.LineDashedMaterial({
-      color: cfg.mau,
+      color: mau,
       linewidth: 2,
       dashSize: 0.15,
       gapSize: 0.08
@@ -59,7 +77,7 @@ export function taoHop(ctx, box, vai, { fill = true } = {}) {
     wire.computeLineDistances();
   } else {
     const lineMat = new three.LineBasicMaterial({
-      color: cfg.mau,
+      color: mau,
       linewidth: 2
     });
     wire = new three.LineSegments(edges, lineMat);
@@ -70,7 +88,7 @@ export function taoHop(ctx, box, vai, { fill = true } = {}) {
 
   if (fill) {
     const fillMat = new three.MeshStandardMaterial({
-      color: cfg.mau,
+      color: mau,
       transparent: true,
       opacity: cfg.fillOpacity,
       roughness: 0.35,

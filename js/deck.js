@@ -492,6 +492,7 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
       // Đo kiểm tra vai hộp và độ lệch hộp GT bao trọn xe ví dụ (T38)
       let hopKhongVai = 0;
       let hopGtLechCm = 0;
+      let hopNgoai = 0;
       const lopSlide = canh.lopHienTai;
       if (lopSlide) {
         const cacHop = [];
@@ -541,13 +542,41 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
             }
           }
         }
+
+        // Đo hop_ngoai (T64): số góc hộp GT chiếu ra ngoài vùng [940, 1900] x [90, 1000] ở 1920x1080
+        if (slide.id === 'ket-qua-vat' && cacHopGt.length > 0 && ctx && ctx.canh && ctx.canh.camera) {
+          const cam = ctx.canh.camera;
+          cam.updateMatrixWorld(true);
+          for (const hop of cacHopGt) {
+            const box = hop.userData.box;
+            if (!box) continue;
+            const dx = box.l / 2, dy = box.w / 2, dz = box.h / 2;
+            const c = Math.cos(box.yaw || 0), s = Math.sin(box.yaw || 0);
+            const day = [[dx, dy, -dz], [-dx, dy, -dz], [-dx, -dy, -dz], [dx, -dy, -dz]];
+            const noc = [[dx, dy, dz], [-dx, dy, dz], [-dx, -dy, dz], [dx, -dy, dz]];
+            const corners = [...day, ...noc].map(([x, y, z]) => {
+              const wx = box.cx + x * c - y * s;
+              const wy = box.cy + x * s + y * c;
+              const wz = box.cz + z;
+              return ctx.S([wx, wy, wz]);
+            });
+            for (const p of corners) {
+              const v = new ctx.THREE.Vector3().copy(p).project(cam);
+              const sx = (v.x + 1) * 0.5 * 1920;
+              const sy = (1 - v.y) * 0.5 * 1080;
+              if (sx < 940 || sx > 1900 || sy < 90 || sy > 1000 || v.z < -1 || v.z > 1) {
+                hopNgoai++;
+              }
+            }
+          }
+        }
       }
 
       try {
         const sh = cotTrai ? cotTrai.scrollHeight : 0;
         const ch = cotTrai ? cotTrai.clientHeight : 0;
         const tn = tranNgang ? 1 : 0;
-        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&el=${encodeURIComponent(minElInfo)}`).catch(() => {});
+        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&hop_ngoai=${hopNgoai}&el=${encodeURIComponent(minElInfo)}`).catch(() => {});
       } catch (e) {}
 
       document.body.dataset.xong = '1';
