@@ -2,6 +2,16 @@ import * as THREE from '../vendor/three/three.module.js';
 import { SO, so } from '../data/so_lieu.js';
 import { CHI_SO } from '../data/chi_so.js';
 
+export function nhomMenu(muc) {
+  if (!muc || typeof muc !== 'string') return null;
+  const phan = muc.split(' · ')[0].trim();
+  if (phan === 'Bài toán') return 'bai_toan';
+  if (phan === 'Toán từng bước') return 'toan';
+  if (phan === 'Các vòng cải tiến' || phan === 'Kết quả đánh giá' || phan === 'Đánh giá') return 'danh_gia';
+  if (phan === 'Lộ trình') return 'lo_trinh';
+  return null;
+}
+
 export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = false }) {
   let chiSoHienTai = -1;
   let danhSachLop = [];
@@ -49,10 +59,9 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
 
   function capNhatThanhDieuHuong(idx) {
     Object.values(navLinks).forEach(a => a && a.classList.remove('active'));
-    if (idx >= 0 && idx <= 2) navLinks.bai_toan && navLinks.bai_toan.classList.add('active');
-    else if (idx >= 3 && idx <= 13) navLinks.toan && navLinks.toan.classList.add('active');
-    else if (idx >= 14 && idx <= 18) navLinks.danh_gia && navLinks.danh_gia.classList.add('active');
-    else if (idx >= 19) navLinks.lo_trinh && navLinks.lo_trinh.classList.add('active');
+    const slide = slides[idx];
+    const nhom = slide ? nhomMenu(slide.muc) : null;
+    if (nhom && navLinks[nhom]) navLinks[nhom].classList.add('active');
 
     if (elTienTrinh) {
       const chams = elTienTrinh.querySelectorAll('.cham_tien_trinh');
@@ -422,7 +431,7 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         const nguongPhu = (slide.id === 'de-bai') ? 0.005 : 0.03;
         thay = (vatVisible && trongVung3D && phu >= nguongPhu) ? 1 : 0;
       } else {
-        thay = (slide.vat_chinh === 'none') ? 1 : 0;
+        thay = (vatChinh === 'none') ? 1 : 0;
         phu = 0.0;
       }
 

@@ -253,3 +253,172 @@ export function svgDoThi({ rongPx = 820, caoPx = 150, theta, giaTri, mau, thetaC
     ${conTro !== undefined ? `<line x1="${x(conTro)}" y1="${pt}" x2="${x(conTro)}" y2="${pt + h}" stroke="#14171c" stroke-width="2"/><circle cx="${x(conTro)}" cy="${pt + h}" r="7" fill="${mau}"/>` : ''}
   </svg>`;
 }
+
+export const MAU_VONG = {
+  1: '#94a3b8',
+  2: '#60a5fa',
+  3: '#a78bfa',
+  4: '#c98200',
+  5: '#e5484d'
+};
+
+/**
+ * Biểu đồ tỷ lệ vật đạt theo ngưỡng IoU x: P(IoU >= x) (Task T56)
+ */
+export function svgTiLeDat(phanBo, { vong = [1, 2, 3, 4, 5], w = 820, h = 260 } = {}) {
+  const padL = 55, padR = 125, padT = 28, padB = 36;
+  const pw = w - padL - padR, ph = h - padT - padB;
+
+  const mapX = x => padL + Math.max(0, Math.min(1, x)) * pw;
+  const mapY = pct => padT + ph - (Math.max(0, Math.min(100, pct)) / 100.0) * ph;
+
+  // Lưới trục tung: 0%, 50%, 100%
+  const luoiY = [0, 50, 100].map(pct => `
+    <line x1="${padL}" y1="${mapY(pct)}" x2="${padL + pw}" y2="${mapY(pct)}" stroke="${pct === 0 ? '#cbd5e1' : '#f1f5f9'}" stroke-width="${pct === 0 ? '1.5' : '1'}" stroke-dasharray="${pct === 50 ? '3,3' : 'none'}"/>
+    <text x="${padL - 8}" y="${mapY(pct) + 6}" font-size="18" fill="#64748b" text-anchor="end">${pct}%</text>
+  `).join('');
+
+  // Lưới trục hoành: 0, 0.25, 0.5, 0.75, 1.0
+  const luoiX = [0, 0.25, 0.5, 0.75, 1.0].map(xVal => `
+    <line x1="${mapX(xVal)}" y1="${padT + ph}" x2="${mapX(xVal)}" y2="${padT + ph + 6}" stroke="#cbd5e1" stroke-width="1"/>
+    <text x="${mapX(xVal)}" y="${padT + ph + 24}" font-size="18" fill="#64748b" text-anchor="middle">${xVal === 0 ? '0' : xVal.toFixed(2).replace('.', ',')}</text>
+  `).join('');
+
+  // Vạch đứt dọc ngưỡng đạt 0.5
+  const x05 = mapX(0.5);
+  const vach05 = `
+    <line x1="${x05}" y1="${padT}" x2="${x05}" y2="${padT + ph}" stroke="#64748b" stroke-width="1.5" stroke-dasharray="4,4"/>
+    <text x="${x05}" y="${padT - 8}" font-size="18" font-weight="700" fill="#475569" text-anchor="middle">Ngưỡng đạt 0,5</text>
+  `;
+
+  // Các đường cho từng vòng
+  let linesSvg = '';
+  const cacNhan = [];
+
+  for (const k of vong) {
+    const arr = phanBo && (phanBo[String(k)] || phanBo[k]) ? (phanBo[String(k)] || phanBo[k]) : [];
+    const n = arr.length;
+    if (n === 0) continue;
+
+    // Tính điểm polyline từ x = 0 đến 1 (101 điểm bước 0.01)
+    const pts = [];
+    for (let step = 0; step <= 100; step++) {
+      const curX = step / 100.0;
+      let count = 0;
+      for (let i = 0; i < n; i++) {
+        if (arr[i] >= curX - 1e-6) count++;
+      }
+      const pct = (count / n) * 100.0;
+      pts.push(`${mapX(curX).toFixed(1)},${mapY(pct).toFixed(1)}`);
+    }
+
+    // Giá trị tại x = 0.5
+    let count05 = 0;
+    for (let i = 0; i < n; i++) {
+      if (arr[i] >= 0.5 - 1e-6) count05++;
+    }
+    const pct05 = (count05 / n) * 100.0;
+    const y05 = mapY(pct05);
+
+    linesSvg += `
+      <polyline fill="none" stroke="${MAU_VONG[k]}" stroke-width="2.6" points="${pts.join(' ')}"/>
+      <circle cx="${x05}" cy="${y05}" r="4.5" fill="${MAU_VONG[k]}"/>
+    `;
+
+    cacNhan.push({
+      vong: k,
+      pct: pct05,
+      y: y05,
+      mau: MAU_VONG[k]
+    });
+  }
+
+  // Tinh chỉnh nhãn bên phải để tránh chồng lấn
+  cacNhan.sort((a, b) => b.pct - a.pct);
+  let nhanSvg = '';
+  let lastY = -999;
+  for (const item of cacNhan) {
+    let curY = item.y + 6;
+    if (curY - lastY < 20) {
+      curY = lastY + 20;
+    }
+    lastY = curY;
+    nhanSvg += `
+      <text x="${w - padR + 8}" y="${curY}" font-size="18" font-weight="700" fill="${item.mau}">V${item.vong}: ${item.pct.toFixed(1).replace('.', ',')} %</text>
+    `;
+  }
+
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="background:#fff; border-radius:12px; border:1px solid rgba(20,23,28,0.08); font-family:'Be Vietnam Pro',sans-serif;">
+      ${luoiY}
+      ${luoiX}
+      ${vach05}
+      ${linesSvg}
+      ${nhanSvg}
+    </svg>`;
+}
+
+/**
+ * Biểu đồ cột nhóm tỷ lệ đạt qua 5 vòng theo nhóm (Lớp hoặc Khoảng cách) (Task T56)
+ */
+export function svgCotNhom(nhom, { nhan = '', nguon = 'gt', w = 820, h = 220 } = {}) {
+  if (!Array.isArray(nhom) || nhom.length === 0) return '';
+  const padL = 50, padR = 20, padT = 32, padB = 40;
+  const pw = w - padL - padR, ph = h - padT - padB;
+
+  const mapY = pct => padT + ph - (Math.max(0, Math.min(100, pct)) / 100.0) * ph;
+
+  // Lưới ngang: 0%, 50%, 100%
+  const luoiY = [0, 50, 100].map(pct => `
+    <line x1="${padL}" y1="${mapY(pct)}" x2="${padL + pw}" y2="${mapY(pct)}" stroke="${pct === 0 ? '#cbd5e1' : '#f1f5f9'}" stroke-width="${pct === 0 ? '1.5' : '1'}" stroke-dasharray="${pct === 50 ? '3,3' : 'none'}"/>
+    <text x="${padL - 8}" y="${mapY(pct) + 6}" font-size="18" fill="#64748b" text-anchor="end">${pct}%</text>
+  `).join('');
+
+  const nNhom = nhom.length;
+  const groupWidth = pw / nNhom;
+  const barWidth = Math.min(22, (groupWidth - 20) / 5);
+
+  let barsSvg = '';
+  for (let i = 0; i < nNhom; i++) {
+    const item = nhom[i];
+    const cx = padL + i * groupWidth + groupWidth / 2;
+    const ten = item.ten || item.lop || item.dai || '';
+    const nStr = item.n !== undefined ? ` (n=${item.n})` : '';
+
+    // Lấy nguồn dữ liệu cho từng vòng 1..5
+    const duLieu = item.dat ? (item.dat[nguon] || item.dat) : (item.gia_tri ? (item.gia_tri[nguon] || item.gia_tri) : null);
+
+    // Vẽ 5 cột cho 5 vòng
+    for (let k = 1; k <= 5; k++) {
+      let val = 0;
+      if (duLieu) val = duLieu[String(k)] ?? duLieu[k] ?? 0;
+
+      const xBar = cx - 2.5 * barWidth + (k - 1) * barWidth;
+      const yBar = mapY(val);
+      const hBar = Math.max(0, padT + ph - yBar);
+
+      barsSvg += `
+        <rect x="${xBar}" y="${yBar}" width="${barWidth - 2}" height="${hBar}" fill="${MAU_VONG[k]}" rx="2"/>
+      `;
+    }
+
+    // Nhãn nhóm dưới trục
+    barsSvg += `
+      <text x="${cx}" y="${padT + ph + 26}" font-size="18" font-weight="600" fill="#1e293b" text-anchor="middle">${ten}${nStr}</text>
+    `;
+  }
+
+  // Chú giải 5 vòng ở thanh trên
+  const chuGiai = [1, 2, 3, 4, 5].map((k, idx) => `
+    <g transform="translate(${padL + idx * 80}, 16)">
+      <rect x="0" y="-12" width="12" height="12" fill="${MAU_VONG[k]}" rx="2"/>
+      <text x="16" y="-1" font-size="18" font-weight="700" fill="${MAU_VONG[k]}">V${k}</text>
+    </g>
+  `).join('');
+
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="background:#fff; border-radius:12px; border:1px solid rgba(20,23,28,0.08); font-family:'Be Vietnam Pro',sans-serif;">
+      ${luoiY}
+      ${barsSvg}
+      ${chuGiai}
+    </svg>`;
+}
+

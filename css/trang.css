@@ -918,3 +918,122 @@ html, body {
 .cv_chay_goi { color: var(--mau-chu-phu); }
 .cv_nhan_hang { font-size: var(--c-nut); font-weight: 700; color: var(--mau-chu-phu); align-self: center; }
 .cv_mui { color: var(--mau-chu-phu); font-weight: 700; }
+
+/* ---------- Chương "Kết quả đánh giá" (đợt 11) ---------- */
+.kq_panel {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 4px;
+}
+.kq_tom_tat {
+  font-size: var(--c-the);
+  line-height: 1.4;
+}
+.kq_bang_cuon {
+  max-height: 330px;
+  overflow-y: auto;
+  border: 1px solid var(--mau-vien);
+  border-radius: 8px;
+  background: #fff;
+}
+.kq_bang {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: var(--c-nho);
+  text-align: center;
+}
+.kq_bang th {
+  position: sticky;
+  top: 0;
+  background: #f8fafc;
+  color: var(--mau-chu);
+  font-weight: 700;
+  padding: 6px 4px;
+  border-bottom: 2px solid #e2e8f0;
+  z-index: 2;
+}
+.kq_dong {
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.kq_dong:hover {
+  background: #f1f5f9;
+}
+.kq_dong.chon {
+  background: #e0f2fe;
+}
+.kq_dong td {
+  padding: 5px 4px;
+  border-bottom: 1px solid #f1f5f9;
+}
+.kq_o_iou {
+  display: inline-block;
+  min-width: 44px;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-weight: 600;
+}
+.kq_o_dat {
+  background: #dcfce7;
+  color: #15803d;
+}
+.kq_o_truot {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+.kq_o_khong {
+  color: #94a3b8;
+}
+.kq_o_chon_vong {
+  box-shadow: 0 0 0 2px #0f172a;
+  font-weight: 700;
+}
+.kq_dai_vong {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  margin: 6px 0;
+}
+.kq_o_vong {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 6px 4px;
+  text-align: center;
+  background: #f8fafc;
+}
+.kq_nhan_xet {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 8px 12px;
+  line-height: 1.4;
+  font-size: var(--c-the);
+}
+.kq_tabs {
+  display: flex;
+  gap: 8px;
+  margin-top: 6px;
+}
+.kq_tab_nut {
+  font-family: inherit;
+  font-size: var(--c-nut);
+  font-weight: 600;
+  padding: 4px 12px;
+  border-radius: 8px;
+  border: 1px solid #cbd5e1;
+  background: #f8fafc;
+  color: var(--mau-chu);
+  cursor: pointer;
+}
+.kq_tab_nut.active {
+  background: var(--mau-xanh);
+  border-color: var(--mau-xanh);
+  color: #fff;
+}
+.kq_chu_thich {
+  font-size: var(--c-nho);
+  color: var(--mau-chu-phu);
+  margin-top: 4px;
+  line-height: 1.4;
+}
