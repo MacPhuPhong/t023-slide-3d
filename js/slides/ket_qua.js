@@ -143,14 +143,19 @@ function dungCanhKeyframe(ctx, nhom, bo, vong, nguon) {
     }
   }
 
-  // Camera nhìn từ trên xuống bao trọn mọi hộp GT với lề 10% (T65)
-  const cx = (minX + maxX) / 2;
-  const cy = (minY + maxY) / 2;
-  const span = Math.max(maxX - minX, maxY - minY, 30) * 1.15;
-  const camZ = Math.max(50, span * 1.25);
-
+  // Camera nghiêng bao cụm vật gần ego (≤ 30 m nếu có ≥ 3 vật, không thì mọi vật): nhìn từ trên cao toàn keyframe
+  // (rộng tới ~90 m) làm vật nhỏ li ti, người xem tưởng slide không có cảnh 3D
+  const gan = kf.vat.filter(v => Math.hypot(v.gt.cx, v.gt.cy) <= 30);
+  const cum = gan.length >= 3 ? gan : kf.vat;
+  const xs = cum.map(v => v.gt.cx), ys = cum.map(v => v.gt.cy);
+  const cx = (Math.min(...xs) + Math.max(...xs)) / 2;
+  const cy = (Math.min(...ys) + Math.max(...ys)) / 2;
+  const span = Math.max(Math.max(...xs) - Math.min(...xs), Math.max(...ys) - Math.min(...ys), 12);
+  const d = Math.min(60, Math.max(18, span * 1.15));
+  const huong = [-0.62, -0.42, 0.66];
+  const n = Math.hypot(...huong);
   return {
-    cam: [cx + 0.1, cy, camZ],
+    cam: huong.map((h, i) => [cx, cy, 0][i] + h / n * d),
     nhin: [cx, cy, 0]
   };
 }
@@ -169,8 +174,8 @@ export const slideKetQuaCanh = {
   y: '',
   ml: 'Chấm trên mọi vật của keyframe, không chọn ca đẹp: mỗi vật một IoU 3D, đạt khi ≥ 0,5 (xe) hoặc ≥ 0,3 (người, 2 bánh).',
   goc_nhin: [
-    { ten: 'Từ trên xuống', cam: [0.1, 0, 78], nhin: [0, 0, 0] },
-    { ten: 'Nghiêng sau xe ego', cam: [-28, -22, 30], nhin: [12, 0, 0] }
+    { ten: 'Từ trên xuống', cam: [8.1, 0, 46], nhin: [8, 0, 0] },
+    { ten: 'Nghiêng sau xe ego', cam: [-14, -12, 16], nhin: [10, 2, 0] }
   ],
   vao(ctx) {
     anTheGioi(ctx, true);
@@ -193,14 +198,16 @@ export const slideKetQuaCanh = {
     let nguon = q.get('nguon') === 'yolo' ? 'yolo' : 'gt';
     let vatChonIdx = -1;
 
-    function capNhatCanh() {
+    // datCam = false: chỉ vẽ lại hộp, giữ góc người xem đã xoay (đổi vòng / nguồn); chỉ đổi bộ mới đặt lại góc
+    function capNhatCanh(datCam = true) {
       xoaNhom(nhom);
       xoaNhom(nhomChon);
+      const giuChon = datCam ? -1 : vatChonIdx;
       vatChonIdx = -1;
 
       const gocCam = dungCanhKeyframe(ctx, nhom, bo, vong, nguon);
-      // Đặt camera bao quát keyframe từ trên xuống (T65)
-      ctx.tweenCamera(gocCam.cam, gocCam.nhin, TINH ? 0 : 0.6);
+      if (datCam) ctx.tweenCamera(gocCam.cam, gocCam.nhin, TINH ? 0 : 0.6);
+      else if (giuChon >= 0) chonVat(giuChon, false);
       veLai(ctx);
     }
 
@@ -247,12 +254,12 @@ export const slideKetQuaCanh = {
         }));
         dkEl.querySelectorAll('[data-vong]').forEach(btn => btn.addEventListener('click', () => {
           vong = +btn.dataset.vong;
-          capNhatCanh();
+          capNhatCanh(false);
           capNhatGiaoDien();
         }));
         dkEl.querySelectorAll('[data-nguon]').forEach(btn => btn.addEventListener('click', () => {
           nguon = btn.dataset.nguon;
-          capNhatCanh();
+          capNhatCanh(false);
           capNhatGiaoDien();
         }));
       }
@@ -324,7 +331,7 @@ export const slideKetQuaCanh = {
       }
     }
 
-    function chonVat(idx) {
+    function chonVat(idx, datCam = true) {
       vatChonIdx = idx;
       xoaNhom(nhomChon);
 
@@ -346,6 +353,7 @@ export const slideKetQuaCanh = {
         nhomChon.add(hopPrChon);
       }
 
+      if (!datCam) { veLai(ctx); return; }
       // Tween camera tới vị trí vật
       // lùi theo cỡ vật (như S22): xe tải 6 m không lấp màn hình, người đi bộ không bé tí; nhìn từ phía cảm biến ra vật
       const g = v.gt;
@@ -407,7 +415,8 @@ export const slideKetQuaVat = {
       if (vArr.length > 0) vChon = new Set(vArr);
     }
 
-    function capNhatCanh3D() {
+    // datCam = false: tích/bỏ tích vòng, đổi nguồn → giữ góc người xem đang xoay; đổi vật / bộ mới lấy nét lại
+    function capNhatCanh3D(datCam = true) {
       xoaNhom(nhom);
 
       const kf = KET_QUA.khung[bo - 1];
@@ -511,7 +520,7 @@ export const slideKetQuaVat = {
       const finalNhin = new T.Vector3().copy(tam).addScaledVector(right, -shift);
 
       // canh.js đã lệch khung nhìn sang vùng 3D bên phải (như cac_vong.js), không dịch thêm
-      ctx.tweenCamera(veEgo(camPos), veEgo(tam), TINH ? 0 : 0.8);
+      if (datCam) ctx.tweenCamera(veEgo(camPos), veEgo(tam), TINH ? 0 : 0.8);
       veLai(ctx);
     }
 
@@ -736,7 +745,7 @@ export const slideKetQuaVat = {
         });
         dkEl.querySelectorAll('[data-nguon]').forEach(btn => btn.addEventListener('click', () => {
           nguon = btn.dataset.nguon;
-          capNhatCanh3D();
+          capNhatCanh3D(false);
           capNhatGiaoDien();
         }));
       }
@@ -751,7 +760,7 @@ export const slideKetQuaVat = {
           const vNum = +chk.dataset.tichV;
           if (chk.checked) vChon.add(vNum);
           else vChon.delete(vNum);
-          capNhatCanh3D();
+          capNhatCanh3D(false);
           capNhatGiaoDien();
         }));
       }
@@ -796,10 +805,10 @@ export const slideKetQuaPhanBo = {
     let tabNhomVat = 'xe'; // 'xe' (ngưỡng 0.5) hoặc 'nguoi' (ngưỡng 0.3)
 
     // Cảnh 3D: toàn cảnh keyframe Bộ 1 ở V5 nhìn từ trên xuống (T65)
-    function capNhatCanh3D() {
+    function capNhatCanh3D(datCam = true) {
       xoaNhom(nhom);
       const gocCam = dungCanhKeyframe(ctx, nhom, 1, 5, nguon);
-      ctx.tweenCamera(gocCam.cam, gocCam.nhin, TINH ? 0 : 0.6);
+      if (datCam) ctx.tweenCamera(gocCam.cam, gocCam.nhin, TINH ? 0 : 0.6);
       veLai(ctx);
     }
 
@@ -866,7 +875,7 @@ export const slideKetQuaPhanBo = {
       if (pnlEl) {
         pnlEl.querySelectorAll('[data-nguon]').forEach(btn => btn.addEventListener('click', () => {
           nguon = btn.dataset.nguon;
-          capNhatCanh3D();
+          capNhatCanh3D(false);
           capNhatGiaoDien();
         }));
         pnlEl.querySelectorAll('[data-nhom-vat]').forEach(btn => btn.addEventListener('click', () => {
