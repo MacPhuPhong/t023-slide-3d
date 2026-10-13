@@ -1,8 +1,10 @@
-// Chương "Kết quả đánh giá" (đợt 12, Task T63–T65): IoU 3D các vòng trên dữ liệu thật nuScenes
-// Dữ liệu từ data/ket_qua.js, sinh bởi script demo/tools/xuat_ket_qua.py
+// Chương "Kết quả đánh giá" (đợt 12, Task T63–T65; đợt 14, Task T71–T73): IoU 3D các vòng trên dữ liệu thật nuScenes
+// Dữ liệu từ data/ket_qua.js và data/lidar_kq.js, sinh bởi script demo/tools/xuat_ket_qua.py và demo/tools/xuat_lidar.py
 import { KET_QUA } from '../../data/ket_qua.js';
+import { LIDAR_KQ } from '../../data/lidar_kq.js';
 import { MAU_VONG, svgTiLeDat, svgCotNhom } from '../bieu_do.js';
 import { taoHop, anChuGiaiHop } from '../hop.js';
+import { taoDiemLidar } from '../diem_lidar.js';
 
 const so = (v, n = 1) => Number(v).toFixed(n).replace('.', ',');
 const thamSo = () => new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
@@ -75,47 +77,71 @@ function xoaNhom(nhom) {
 }
 
 /**
- * Dựng toàn cảnh keyframe (dùng chung cho S20 và S22 theo T65)
+ * Cấu hình 4 nút "Màu điểm" ở góc trái dưới cho các slide kết quả (T72)
  */
-function dungCanhKeyframe(ctx, nhom, bo, vong, nguon) {
-  const T = ctx.THREE;
+function caiDatNutMauSlide(loaiSlide, cheDoMacDinh) {
+  if (typeof document === 'undefined') return () => {};
+  const nutMau = document.querySelectorAll('.cham_mau');
+  if (nutMau.length < 4) return () => {};
+
+  const goc = [
+    { cheDo: nutMau[0].dataset.cheDo, title: nutMau[0].title },
+    { cheDo: nutMau[1].dataset.cheDo, title: nutMau[1].title },
+    { cheDo: nutMau[2].dataset.cheDo, title: nutMau[2].title },
+    { cheDo: nutMau[3].dataset.cheDo, title: nutMau[3].title }
+  ];
+
+  nutMau[0].dataset.cheDo = 'do_cao';
+  nutMau[0].title = 'Theo độ cao Z';
+
+  nutMau[1].dataset.cheDo = 'cuong_do';
+  nutMau[1].title = 'Theo cường độ phản xạ (nén log)';
+
+  if (loaiSlide === 'vat') {
+    nutMau[2].dataset.cheDo = 'frustum';
+    nutMau[2].title = 'Điểm trong hộp GT (xanh lá) & trong Frustum (hổ phách)';
+  } else {
+    nutMau[2].dataset.cheDo = 'trong_hop';
+    nutMau[2].title = 'Điểm trong hộp GT (xanh lá)';
+  }
+
+  nutMau[3].dataset.cheDo = 'xam';
+  nutMau[3].title = 'Màu đơn';
+
+  nutMau.forEach(b => {
+    if (b.dataset.cheDo === cheDoMacDinh) b.classList.add('active');
+    else b.classList.remove('active');
+  });
+
+  return function khoiPhuc() {
+    nutMau.forEach((b, i) => {
+      b.dataset.cheDo = goc[i].cheDo;
+      b.title = goc[i].title;
+    });
+  };
+}
+
+/**
+ * Dựng toàn cảnh keyframe (dùng chung cho S20 và S22 theo T65, T73)
+ */
+function dungCanhKeyframe(ctx, nhom, bo, vong, nguon, coSweep = false) {
   const kf = KET_QUA.khung[bo - 1];
-  if (!kf) return { cam: [0.1, 0, 78], nhin: [0, 0, 0] };
+  if (!kf) return { cam: [0.1, 0, 78], nhin: [0, 0, 0], diem: null };
 
-  // 1. Điểm LiDAR thật (size >= 0.14 theo T65, tô màu độ cao đậm nét)
-  const ptsArr = kf.diem;
-  const nPts = Math.floor(ptsArr.length / 3);
-  if (nPts > 0) {
-    let minZ = 1e9, maxZ = -1e9;
-    for (let i = 2; i < ptsArr.length; i += 3) {
-      const z = ptsArr[i];
-      if (z < minZ) minZ = z;
-      if (z > maxZ) maxZ = z;
-    }
-
-    const geo = new T.BufferGeometry();
-    const pos = new Float32Array(nPts * 3);
-    const col = new Float32Array(nPts * 3);
-    const c = new T.Color();
-
-    for (let i = 0; i < nPts; i++) {
-      const x = ptsArr[i * 3], y = ptsArr[i * 3 + 1], z = ptsArr[i * 3 + 2];
-      const v = ctx.S([x, y, z]);
-      pos[i * 3] = v.x;
-      pos[i * 3 + 1] = v.y;
-      pos[i * 3 + 2] = v.z;
-
-      const t = (z - minZ) / Math.max(maxZ - minZ, 1e-6);
-      c.setHSL(0.55 - 0.45 * t, 0.90, 0.38);
-      col[i * 3] = c.r;
-      col[i * 3 + 1] = c.g;
-      col[i * 3 + 2] = c.b;
-    }
-
-    geo.setAttribute('position', new T.BufferAttribute(pos, 3));
-    geo.setAttribute('color', new T.BufferAttribute(col, 3));
-    const mat = new T.PointsMaterial({ size: 0.28, vertexColors: true, sizeAttenuation: true });
-    nhom.add(new T.Points(geo, mat));
+  // 1. Điểm LiDAR thật từ LIDAR_KQ (đĩa tròn taoDiscSprite, sizeAttenuation, size 0.08 / 0.06)
+  const lk = LIDAR_KQ ? LIDAR_KQ[kf.bo] : null;
+  let diemObj = null;
+  if (lk) {
+    diemObj = taoDiemLidar(ctx, {
+      xyz: lk.kf.xyz,
+      cuongDo: lk.kf.cuong_do,
+      swXyz: lk.sw.xyz,
+      swK: lk.sw.k
+    }, {
+      coSweep,
+      danhSachGt: kf.vat.map(v => v.gt)
+    });
+    nhom.add(diemObj);
   }
 
   // 2. Hộp GT đạt (gt) và GT trượt (gt_truot), cùng hộp pipeline (pipeline) (T65, T69: netDay >= 3px)
@@ -125,26 +151,22 @@ function dungCanhKeyframe(ctx, nhom, bo, vong, nguon) {
     const vRes = v.vong && v.vong[String(vong)] ? v.vong[String(vong)][nguon] : null;
     const dat = vRes ? vRes.dat : false;
 
-    // Cập nhật bounding box
     if (v.gt.cx < minX) minX = v.gt.cx;
     if (v.gt.cx > maxX) maxX = v.gt.cx;
     if (v.gt.cy < minY) minY = v.gt.cy;
     if (v.gt.cy > maxY) maxY = v.gt.cy;
 
-    // Hộp GT nét dày có vai (T65, T69: netDay >= 3px, hop_khong_vai = 0)
     const vaiGt = dat ? 'gt' : 'gt_truot';
     const hopGtObj = taoHop(ctx, v.gt, vaiGt, { fill: true, netDay: true });
     nhom.add(hopGtObj);
 
-    // Hộp pipeline nét đứt hổ phách dày (T69)
     if (vRes && vRes.hop) {
       const hopPrObj = taoHop(ctx, vRes.hop, 'pipeline', { fill: false, color: 0xc98200, netDut: true, netDay: true });
       nhom.add(hopPrObj);
     }
   }
 
-  // Camera nghiêng bao cụm vật gần ego (≤ 30 m nếu có ≥ 3 vật, không thì mọi vật): nhìn từ trên cao toàn keyframe
-  // (rộng tới ~90 m) làm vật nhỏ li ti, người xem tưởng slide không có cảnh 3D
+  // Camera nghiêng bao cụm vật gần ego
   const gan = kf.vat.filter(v => Math.hypot(v.gt.cx, v.gt.cy) <= 30);
   const cum = gan.length >= 3 ? gan : kf.vat;
   const xs = cum.map(v => v.gt.cx), ys = cum.map(v => v.gt.cy);
@@ -156,7 +178,8 @@ function dungCanhKeyframe(ctx, nhom, bo, vong, nguon) {
   const n = Math.hypot(...huong);
   return {
     cam: huong.map((h, i) => [cx, cy, 0][i] + h / n * d),
-    nhin: [cx, cy, 0]
+    nhin: [cx, cy, 0],
+    diem: diemObj
   };
 }
 
@@ -196,17 +219,29 @@ export const slideKetQuaCanh = {
     let bo = Math.max(1, Math.min(5, +q.get('bo') || 1));
     let vong = Math.max(1, Math.min(5, +q.get('vong') || 5));
     let nguon = q.get('nguon') === 'yolo' ? 'yolo' : 'gt';
+    let coSweep = q.get('sweep') === '10';
+    let cheDoMau = q.get('mau') || 'do_cao';
     let vatChonIdx = -1;
+    let diemHienTai = null;
 
-    // datCam = false: chỉ vẽ lại hộp, giữ góc người xem đã xoay (đổi vòng / nguồn); chỉ đổi bộ mới đặt lại góc
+    const khoiPhucNut = caiDatNutMauSlide('toan_canh', cheDoMau);
+    ctx.toMauSlide = (cd) => {
+      cheDoMau = cd;
+      if (diemHienTai) diemHienTai.toMau(cd);
+    };
+
+    // datCam = false: chỉ vẽ lại hộp, giữ góc người xem đã xoay (đổi vòng / nguồn / sweep); chỉ đổi bộ mới đặt lại góc
     function capNhatCanh(datCam = true) {
       xoaNhom(nhom);
       xoaNhom(nhomChon);
       const giuChon = datCam ? -1 : vatChonIdx;
       vatChonIdx = -1;
 
-      const gocCam = dungCanhKeyframe(ctx, nhom, bo, vong, nguon);
-      if (datCam) ctx.tweenCamera(gocCam.cam, gocCam.nhin, TINH ? 0 : 0.6);
+      const ketQuaDung = dungCanhKeyframe(ctx, nhom, bo, vong, nguon, coSweep);
+      diemHienTai = ketQuaDung.diem;
+      if (diemHienTai) diemHienTai.toMau(cheDoMau);
+
+      if (datCam) ctx.tweenCamera(ketQuaDung.cam, ketQuaDung.nhin, TINH ? 0 : 0.6);
       else if (giuChon >= 0) chonVat(giuChon, false);
       veLai(ctx);
     }
@@ -222,7 +257,7 @@ export const slideKetQuaCanh = {
       const soVat = kf.vat.length;
       const pctDat = soVat > 0 ? ((soDat / soVat) * 100).toFixed(1).replace('.', ',') : '0,0';
 
-      // 1. Khung điều khiển
+      // 1. Khung điều khiển (thêm công tắc sweep T73)
       chenDieuKhien('kq_dieu_khien', `
         <div class="cv_dk_hang">
           ${[1, 2, 3, 4, 5].map(b => `<button class="cv_nut${b === bo ? ' active' : ''}" data-bo="${b}">Bộ ${b}</button>`).join('')}
@@ -233,6 +268,10 @@ export const slideKetQuaCanh = {
         <div class="cv_dk_hang">
           <button class="cv_nut${nguon === 'gt' ? ' active' : ''}" data-nguon="gt">Khung GT</button>
           <button class="cv_nut${nguon === 'yolo' ? ' active' : ''}" data-nguon="yolo">YOLO</button>
+        </div>
+        <div class="cv_dk_hang">
+          <button class="cv_nut${!coSweep ? ' active' : ''}" data-sweep="1">1 sweep (keyframe)</button>
+          <button class="cv_nut${coSweep ? ' active' : ''}" data-sweep="10">+9 sweep quanh vật (như V5)</button>
         </div>
         <div class="cv_chu_giai">
           <div class="cv_hang_chu_giai">
@@ -260,6 +299,19 @@ export const slideKetQuaCanh = {
         dkEl.querySelectorAll('[data-nguon]').forEach(btn => btn.addEventListener('click', () => {
           nguon = btn.dataset.nguon;
           capNhatCanh(false);
+          capNhatGiaoDien();
+        }));
+        dkEl.querySelectorAll('[data-sweep]').forEach(btn => btn.addEventListener('click', () => {
+          const swMoi = btn.dataset.sweep === '10';
+          if (coSweep === swMoi) return;
+          coSweep = swMoi;
+          if (CO_WINDOW) {
+            const u = new URL(window.location);
+            if (coSweep) u.searchParams.set('sweep', '10');
+            else u.searchParams.delete('sweep');
+            window.history.replaceState(null, '', u);
+          }
+          capNhatCanh(false); // đổi công tắc không đặt lại camera
           capNhatGiaoDien();
         }));
       }
@@ -358,8 +410,6 @@ export const slideKetQuaCanh = {
       }
 
       if (!datCam) { veLai(ctx); return; }
-      // Tween camera tới vị trí vật
-      // lùi theo cỡ vật (như S22): xe tải 6 m không lấp màn hình, người đi bộ không bé tí; nhìn từ phía cảm biến ra vật
       const g = v.gt;
       const xa = Math.max(9, 2.4 * Math.max(g.l, g.w, g.h) + 3);
       const r = Math.hypot(g.cx, g.cy) || 1;
@@ -376,6 +426,8 @@ export const slideKetQuaCanh = {
     if (chon >= 1 && KET_QUA.khung[bo - 1] && chon <= KET_QUA.khung[bo - 1].vat.length) chonVat(chon - 1);
   },
   ra(ctx) {
+    delete ctx.toMauSlide;
+    if (typeof khoiPhucNut === 'function') khoiPhucNut();
     anTheGioi(ctx, false);
     goPhanTu(['kq_dieu_khien', 'kq_panel']);
   }
@@ -411,6 +463,15 @@ export const slideKetQuaVat = {
     let vatIdx = Math.max(1, +q.get('vat') || 1) - 1; // 0-indexed nội bộ
     let nguon = q.get('nguon') === 'yolo' ? 'yolo' : 'gt';
     let cheDoAnh = q.get('anh') === 'ca' ? 'ca' : 'phong'; // 'phong' (mặc định) hoặc 'ca'
+    let coSweep = q.get('sweep') === '10';
+    let cheDoMau = q.get('mau') || 'frustum';
+    let hienTaiDiem = null;
+
+    const khoiPhucNut = caiDatNutMauSlide('vat', cheDoMau);
+    ctx.toMauSlide = (cd) => {
+      cheDoMau = cd;
+      if (hienTaiDiem) hienTaiDiem.toMau(cd);
+    };
 
     // Ô tích chọn V1..V5 (Set các số từ 1..5, mặc định chỉ có 5)
     let vChon = new Set([5]);
@@ -419,7 +480,7 @@ export const slideKetQuaVat = {
       if (vArr.length > 0) vChon = new Set(vArr);
     }
 
-    // datCam = false: tích/bỏ tích vòng, đổi nguồn → giữ góc người xem đang xoay; đổi vật / bộ mới lấy nét lại
+    // datCam = false: tích/bỏ tích vòng, đổi nguồn, đổi sweep → giữ góc người xem đang xoay; đổi vật / bộ mới lấy nét lại
     function capNhatCanh3D(datCam = true) {
       xoaNhom(nhom);
 
@@ -428,51 +489,32 @@ export const slideKetQuaVat = {
       if (vatIdx >= kf.vat.length) vatIdx = 0;
       const v = kf.vat[vatIdx];
 
-      // 1. Điểm LiDAR trong bán kính max(6 m, 1.5 * đường chéo GT) quanh tâm GT
+      // 1. Điểm LiDAR trong bán kính max(6 m, 1.5 * đường chéo GT) quanh tâm GT từ LIDAR_KQ
       const gt = v.gt;
       const diag = Math.hypot(gt.l, gt.w, gt.h);
       const banKinh = Math.max(6.0, 1.5 * diag);
 
-      const ptsArr = kf.diem;
-      const nPts = Math.floor(ptsArr.length / 3);
-      const ptsLoc = [];
+      const lk = LIDAR_KQ ? LIDAR_KQ[kf.bo] : null;
+      if (lk) {
+        const camData = lk.cam[v.camera];
+        const bboxVao = (nguon === 'yolo' && v.vong['1'] && v.vong['1'].yolo && v.vong['1'].yolo.bbox_vao)
+          ? v.vong['1'].yolo.bbox_vao
+          : v.bbox_gt;
 
-      let minZ = 1e9, maxZ = -1e9;
-      for (let i = 0; i < nPts; i++) {
-        const x = ptsArr[i * 3], y = ptsArr[i * 3 + 1], z = ptsArr[i * 3 + 2];
-        const d = Math.hypot(x - gt.cx, y - gt.cy);
-        if (d <= banKinh && Math.abs(z - gt.cz) <= banKinh) {
-          ptsLoc.push(x, y, z);
-          if (z < minZ) minZ = z;
-          if (z > maxZ) maxZ = z;
-        }
-      }
-
-      if (ptsLoc.length > 0) {
-        const nLoc = ptsLoc.length / 3;
-        const geo = new T.BufferGeometry();
-        const pos = new Float32Array(nLoc * 3);
-        const col = new Float32Array(nLoc * 3);
-        const c = new T.Color();
-
-        for (let i = 0; i < nLoc; i++) {
-          const px = ptsLoc[i * 3], py = ptsLoc[i * 3 + 1], pz = ptsLoc[i * 3 + 2];
-          const ptVec = ctx.S([px, py, pz]);
-          pos[i * 3] = ptVec.x;
-          pos[i * 3 + 1] = ptVec.y;
-          pos[i * 3 + 2] = ptVec.z;
-
-          const t = (pz - minZ) / Math.max(maxZ - minZ, 1e-6);
-          c.setHSL(0.55 - 0.45 * t, 0.85, 0.50);
-          col[i * 3] = c.r;
-          col[i * 3 + 1] = c.g;
-          col[i * 3 + 2] = c.b;
-        }
-
-        geo.setAttribute('position', new T.BufferAttribute(pos, 3));
-        geo.setAttribute('color', new T.BufferAttribute(col, 3));
-        const mat = new T.PointsMaterial({ size: 0.15, vertexColors: true, sizeAttenuation: true });
-        nhom.add(new T.Points(geo, mat));
+        hienTaiDiem = taoDiemLidar(ctx, {
+          xyz: lk.kf.xyz,
+          cuongDo: lk.kf.cuong_do,
+          swXyz: lk.sw.xyz,
+          swK: lk.sw.k
+        }, {
+          coSweep,
+          vatGt: gt,
+          cam: camData,
+          bboxVao,
+          banKinh
+        });
+        nhom.add(hienTaiDiem);
+        hienTaiDiem.toMau(cheDoMau);
       }
 
       // 2. Hộp GT (vai gt)
@@ -504,26 +546,14 @@ export const slideKetQuaVat = {
       tiaSeg.userData.hop = 'pipeline';
       nhom.add(tiaSeg);
 
-      // 5. Camera bao trọn GT và các hộp đang hiện, tính offset sang vùng 3D bên phải (x ∈ [940, 1900])
+      // 5. Camera bao trọn GT và các hộp đang hiện
       const coMax = Math.max(...cacHopHien.map(h => Math.max(h.l, h.w, h.h)));
       const xa = Math.max(10.0, 2.7 * coMax + 4.5);
 
       const tam = ctx.S([gt.cx, gt.cy, gt.cz]);
       const dir = new T.Vector3(0.7, 0.5, 0.7).normalize();
       const camPos = new T.Vector3().copy(tam).addScaledVector(dir, xa);
-      const forward = new T.Vector3().subVectors(tam, camPos).normalize();
-      const up = new T.Vector3(0, 1, 0);
-      const right = new T.Vector3().crossVectors(forward, up).normalize();
 
-      // Dịch tâm nhìn sang trái để vật xuất hiện ở x = 1420 px (chính giữa vùng 3D bên phải)
-      const fovRad = (45.0 * Math.PI) / 180.0;
-      const widthFrustum = 2.0 * xa * Math.tan(fovRad / 2.0) * (16.0 / 9.0);
-      const shift = (460.0 / 1920.0) * widthFrustum;
-
-      const finalCam = new T.Vector3().copy(camPos).addScaledVector(right, -shift);
-      const finalNhin = new T.Vector3().copy(tam).addScaledVector(right, -shift);
-
-      // canh.js đã lệch khung nhìn sang vùng 3D bên phải (như cac_vong.js), không dịch thêm
       if (datCam) ctx.tweenCamera(veEgo(camPos), veEgo(tam), TINH ? 0 : 0.8);
       veLai(ctx);
     }
@@ -535,7 +565,7 @@ export const slideKetQuaVat = {
       const v = kf.vat[vatIdx];
       const tongVat = kf.vat.length;
 
-      // 1. Dòng điều khiển trên cùng (bên phải hoặc trong panel)
+      // 1. Dòng điều khiển trên cùng (có thêm công tắc sweep T73)
       chenDieuKhien('kq_vat_dieu_khien', `
         <div class="cv_dk_hang">
           ${[1, 2, 3, 4, 5].map(b => `<button class="cv_nut${b === bo ? ' active' : ''}" data-bo="${b}">Bộ ${b}</button>`).join('')}
@@ -548,6 +578,10 @@ export const slideKetQuaVat = {
         <div class="cv_dk_hang">
           <button class="cv_nut${nguon === 'gt' ? ' active' : ''}" data-nguon="gt">Khung GT</button>
           <button class="cv_nut${nguon === 'yolo' ? ' active' : ''}" data-nguon="yolo">YOLO</button>
+        </div>
+        <div class="cv_dk_hang">
+          <button class="cv_nut${!coSweep ? ' active' : ''}" data-sweep="1">1 sweep (keyframe)</button>
+          <button class="cv_nut${coSweep ? ' active' : ''}" data-sweep="10">+9 sweep quanh vật (như V5)</button>
         </div>
       `);
 
@@ -563,14 +597,12 @@ export const slideKetQuaVat = {
         let targetW = Math.max(320, bw * 2.2);
         let targetH = Math.max(180, bh * 2.2);
 
-        // Giữ tỉ lệ 16:9
         if (targetW / targetH > 16 / 9) {
           targetH = targetW * (9 / 16);
         } else {
           targetW = targetH * (16 / 9);
         }
 
-        // Kẹp trong ảnh gốc 1600x900
         targetW = Math.min(1600, targetW);
         targetH = targetW * (9 / 16);
         const vx = Math.max(0, Math.min(1600 - targetW, cx - targetW / 2));
@@ -690,6 +722,16 @@ export const slideKetQuaVat = {
         `;
       }).join('');
 
+      // Lấy dữ liệu điểm LiDAR từ LIDAR_KQ cho dòng số T73
+      const lk = LIDAR_KQ ? LIDAR_KQ[kf.bo] : null;
+      const vatLidar = (lk && lk.vat) ? lk.vat[v.gt_id] : null;
+      const nKfHop = vatLidar ? vatLidar.so_diem_hop : 0;
+      const nSwHop = vatLidar ? (vatLidar.so_diem_hop_sw - vatLidar.so_diem_hop) : 0;
+      const nNusc = v.so_diem;
+      const nFrustum = (vatLidar && vatLidar.so_frustum && vatLidar.so_frustum[nguon] !== undefined)
+        ? vatLidar.so_frustum[nguon]
+        : 0;
+
       chenPanel('kq_vat_panel', `
         <div class="the_trang kq_vat_hop_dk" style="padding:4px 8px; margin-bottom:2px;">
           <div class="kq_vat_ten_ca">
@@ -720,7 +762,10 @@ export const slideKetQuaVat = {
           <div class="${lopKhungSoSanh}">
             ${danhSachSoSanhHtml}
           </div>
-          <div class="cv_ghi_nho" style="margin-top:4px;">
+          <div class="cv_ghi_nho" style="margin-top:4px; font-size:var(--c-nho); color:var(--mau-chu); line-height:1.4;">
+            Điểm LiDAR trong hộp GT: keyframe <b>${nKfHop}</b> · thêm 9 sweep <b>${nSwHop}</b> · nuScenes ghi <b>${nNusc}</b> · trong frustum 2D <b>${nFrustum}</b>
+          </div>
+          <div class="cv_ghi_nho" style="margin-top:2px;">
             ✓ đạt khi IoU 3D ≥ 0,5 (xe) · ≥ 0,3 (người đi bộ, 2 bánh)
           </div>
         </div>
@@ -750,6 +795,19 @@ export const slideKetQuaVat = {
           capNhatCanh3D(false);
           capNhatGiaoDien();
         }));
+        dkEl.querySelectorAll('[data-sweep]').forEach(btn => btn.addEventListener('click', () => {
+          const swMoi = btn.dataset.sweep === '10';
+          if (coSweep === swMoi) return;
+          coSweep = swMoi;
+          if (CO_WINDOW) {
+            const u = new URL(window.location);
+            if (coSweep) u.searchParams.set('sweep', '10');
+            else u.searchParams.delete('sweep');
+            window.history.replaceState(null, '', u);
+          }
+          capNhatCanh3D(false); // đổi công tắc không đặt lại camera
+          capNhatGiaoDien();
+        }));
       }
 
       const pnlEl = document.getElementById('kq_vat_panel');
@@ -772,6 +830,8 @@ export const slideKetQuaVat = {
     capNhatGiaoDien();
   },
   ra(ctx) {
+    delete ctx.toMauSlide;
+    if (typeof khoiPhucNut === 'function') khoiPhucNut();
     anTheGioi(ctx, false);
     goPhanTu(['kq_vat_dieu_khien', 'kq_vat_panel']);
   }
@@ -805,11 +865,22 @@ export const slideKetQuaPhanBo = {
     let nguon = q.get('nguon') === 'yolo' ? 'yolo' : 'gt';
     let tab = q.get('tab') === 'kc' ? 'kc' : 'lop';
     let tabNhomVat = 'xe'; // 'xe' (ngưỡng 0.5) hoặc 'nguoi' (ngưỡng 0.3)
+    let cheDoMau = q.get('mau') || 'do_cao';
+    let hienTaiDiem = null;
 
-    // Cảnh 3D: toàn cảnh keyframe Bộ 1 ở V5 nhìn từ trên xuống (T65, T69: bao các hộp GT lề 10%)
+    const khoiPhucNut = caiDatNutMauSlide('toan_canh', cheDoMau);
+    ctx.toMauSlide = (cd) => {
+      cheDoMau = cd;
+      if (hienTaiDiem) hienTaiDiem.toMau(cd);
+    };
+
+    // Cảnh 3D: toàn cảnh keyframe Bộ 1 ở V5 nhìn từ trên xuống (T65, T69, T73: dùng chung dungCanhKeyframe với S20)
     function capNhatCanh3D(datCam = true) {
       xoaNhom(nhom);
-      dungCanhKeyframe(ctx, nhom, 1, 5, nguon);
+      const ketQuaDung = dungCanhKeyframe(ctx, nhom, 1, 5, nguon, false);
+      hienTaiDiem = ketQuaDung.diem;
+      if (hienTaiDiem) hienTaiDiem.toMau(cheDoMau);
+
       if (datCam) {
         const kf1 = KET_QUA.khung[0];
         if (kf1 && kf1.vat.length > 0) {
@@ -907,6 +978,8 @@ export const slideKetQuaPhanBo = {
     capNhatGiaoDien();
   },
   ra(ctx) {
+    delete ctx.toMauSlide;
+    if (typeof khoiPhucNut === 'function') khoiPhucNut();
     anTheGioi(ctx, false);
     goPhanTu(['kq_pb_panel']);
   }

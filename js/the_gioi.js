@@ -4,7 +4,7 @@ import { setup, projAll, chay } from './toan_loi.js';
 import { S } from './canh.js';
 import { xeMin, nguoi, coc, nonGiaoThong, xeEgo, chonKieu } from './xe_min.js';
 
-function taoDiscSprite() {
+export function taoDiscSprite() {
   const c = document.createElement('canvas');
   c.width = 64;
   c.height = 64;

@@ -41,13 +41,26 @@ const theGioi = dungTheGioi(canh);
 
 // Bắt sự kiện đổi màu điểm
 const nutMau = document.querySelectorAll('.cham_mau');
+function apDungMauDiem(cheDo) {
+  nutMau.forEach(b => {
+    if (b.dataset.cheDo === cheDo) {
+      b.classList.add('active');
+    } else {
+      b.classList.remove('active');
+    }
+  });
+  if (boMay && boMay.ctx && typeof boMay.ctx.toMauSlide === 'function') {
+    boMay.ctx.toMauSlide(cheDo);
+  } else {
+    theGioi.toMau(cheDo);
+  }
+  if (chup) canh.veMotLan();
+}
+
 nutMau.forEach(btn => {
   btn.addEventListener('click', () => {
-    nutMau.forEach(b => b.classList.remove('active'));
-    btn.classList.add('active');
     const cheDo = btn.dataset.cheDo;
-    theGioi.toMau(cheDo);
-    if (chup) canh.veMotLan();
+    apDungMauDiem(cheDo);
   });
 });
 
@@ -70,6 +83,10 @@ const boMay = taoBoMaySlide({
   chup,
   debug
 });
+
+if (boMay && boMay.ctx) {
+  boMay.ctx.apDungMauDiem = apDungMauDiem;
+}
 
 // Xác định slide và góc nhìn ban đầu (T33)
 let startIdx = 0;
@@ -119,6 +136,11 @@ if (cheDoQua === 'all' || cheDoQua === 'tien') {
 }
 
 boMay.chuyenSlide(startIdx, startViewIdx);
+
+const paramMau = params.get('mau');
+if (paramMau) {
+  apDungMauDiem(paramMau);
+}
 
 if (params.has('test_mem')) {
   (async () => {
