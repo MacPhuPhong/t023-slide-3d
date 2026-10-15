@@ -43,7 +43,7 @@ function anTheGioi(ctx, an) {
   if (tg.ego) tg.ego.visible = !an;
 }
 
-function taoLuoiDatMesh(ctx, md, mau, op = 0.5) {
+function taoLuoiDatMesh(ctx, md, mau, op = 0.25) {
   const T = ctx.THREE;
   const { o, x0, y0, z } = md;
   const n = z.length; // 17
@@ -79,15 +79,29 @@ function taoLuoiDatMesh(ctx, md, mau, op = 0.5) {
   geom.setIndex(indices);
   geom.computeVertexNormals();
 
-  const mat = new T.MeshBasicMaterial({
+  const grp = new T.Group();
+
+  // 1. Mặt phẳng mờ (opacity 0,25)
+  const matSurface = new T.MeshBasicMaterial({
+    color: mau,
+    transparent: true,
+    opacity: 0.25,
+    side: T.DoubleSide,
+    depthWrite: false
+  });
+  grp.add(new T.Mesh(geom, matSurface));
+
+  // 2. Viền đậm
+  const matWire = new T.MeshBasicMaterial({
     color: mau,
     wireframe: true,
     transparent: true,
-    opacity: op,
+    opacity: 0.85,
     depthTest: true
   });
+  grp.add(new T.Mesh(geom, matWire));
 
-  return new T.Mesh(geom, mat);
+  return grp;
 }
 
 const v5Nb = (VONG_THAT.vong && VONG_THAT.vong['5'] && VONG_THAT.vong['5'].dat_pct) ? VONG_THAT.vong['5'].dat_pct.nam_bo.gt : 80.3;
@@ -101,8 +115,8 @@ export const slideVong6 = {
   y: '',
   ml: 'Lọc bỏ các điểm nhiễu sâu dưới lòng đường để bảo vệ mặt đất: cứu người đi bộ khỏi bị loại nhầm.',
   goc_nhin: [
-    { ten: 'Nghiêng nhìn người đi bộ & 2 lưới', cam: [22.0, 16.0, 4.0], nhin: [19.0, 12.0, 0.5] },
-    { ten: 'Ngang mặt đường', cam: [20.5, 14.5, 1.2], nhin: [19.0, 12.0, 0.5] }
+    { ten: 'Nghiêng nhìn người đi bộ & 2 lưới', cam: [9.5, -4.5, 2.2], nhin: [4.6, -8.9, 0.2] },
+    { ten: 'Ngang mặt đường', cam: [8.5, -7.0, 0.8], nhin: [4.6, -8.9, 0.0] }
   ],
   vao(ctx) {
     anTheGioi(ctx, true);
@@ -116,25 +130,25 @@ export const slideVong6 = {
     const md = VONG_THAT.mat_dat_vi_du;
 
     if (ca && md) {
-      // 1. Lưới mặt đất V5 "v1" (màu đỏ nhạt 0xef4444)
-      const meshV1 = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v1 }, 0xef4444, 0.45);
+      // 1. Lưới mặt đất V5 "v1" (màu đỏ 0xef4444: mặt phẳng mờ 0.25 + viền đậm)
+      const meshV1 = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v1 }, 0xef4444, 0.25);
       nhom.add(meshV1);
 
-      // 2. Lưới mặt đất V6 "v3a" (màu xanh 0x10b981)
-      const meshV3a = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v3a }, 0x10b981, 0.65);
+      // 2. Lưới mặt đất V6 "v3a" (màu xanh 0x10b981: mặt phẳng mờ 0.25 + viền đậm)
+      const meshV3a = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v3a }, 0x10b981, 0.25);
       nhom.add(meshV3a);
 
-      // 3. Điểm LiDAR của người đi bộ
+      // 3. Điểm LiDAR của người đi bộ (chỉ để keyframe, ẩn sweep)
       if (ca.diem) {
         const diemObj = taoDiemLidar(ctx, {
           xyz: ca.diem.kf_xyz,
           cuongDo: ca.diem.kf_i,
-          swXyz: ca.diem.sw_xyz,
-          swK: ca.diem.sw_k
+          swXyz: null,
+          swK: null
         }, {
           coSweep: false,
           vatGt: ca.gt,
-          banKinh: 5.0
+          banKinh: 3.5
         });
         nhom.add(diemObj);
       }
@@ -162,11 +176,10 @@ export const slideVong6 = {
       const lineMat = new T.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
       nhom.add(new T.LineSegments(lineGeo, lineMat));
 
-      // Camera đặt nhìn bao quát người đi bộ và lưới đất
-      const tam = ctx.S([ca.gt.cx, ca.gt.cy, ca.gt.cz]);
-      const dir = new T.Vector3(0.65, 0.45, 0.65).normalize();
-      const camPos = new T.Vector3().copy(tam).addScaledVector(dir, 9.5);
-      ctx.tweenCamera(veEgo(camPos), veEgo(tam), TINH ? 0 : 0.8);
+      // Camera đặt nhìn ngang hơi chếch từ trên bao quát người đi bộ và 2 lưới đất
+      const tamEgo = [ca.gt.cx, ca.gt.cy, 0.2];
+      const camEgo = [9.5, -4.5, 2.2];
+      ctx.tweenCamera(camEgo, tamEgo, TINH ? 0 : 0.8);
       veLai(ctx);
     }
 

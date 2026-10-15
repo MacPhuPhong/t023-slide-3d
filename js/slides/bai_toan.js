@@ -255,49 +255,118 @@ export const SLIDES_BAI_TOAN = [
       pnl.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
       pnl.style.marginTop = '0px';
 
-      const hangBang = [
-        ['1. Frustum', 'Chiếu 2D góc nhìn', 'frustum_mask', 'frustum_mask'],
-        ['2. Bỏ đất', 'RANSAC mặt phẳng', 'z ≥ 0,08 m + RANSAC', 'Lưới mặt đất v3a (lọc 9×9)'],
-        ['3. Gom cụm', 'Góc quét φ (FGR)', 'Bán kính 0,75 m', 'max(0,5; 0,012·d), z nén 0,5'],
-        ['4. Lọc cụm', 'Theo độ cao & số điểm', '≥ 20 điểm', '≥ 3 điểm'],
-        ['5. Chọn cụm', 'Luật 80% (FGR)', 'Gần tâm khung 2D', 'Logistic 13 đặc trưng'],
-        ['6. Fit hộp', 'Hàm f(θ) FGR', 'Diện tích nhỏ nhất', 'Năng lượng E(x,y,yaw,L)'],
-        ['7. Hậu xử lý', 'Bù che tia biên', 'Không có bù che', 'Đáy theo khung, trừ lệch tia'],
-        ['8. Mất cụm', 'Bỏ qua', 'Không ra hộp', 'Dự phòng cắt mặt đất'],
-        ['9. Đầu xe', 'Không có', 'Không có: người bấm C', 'C(v) 9 sweep + cờ 3 mức (áp khi chấm; chưa đưa vào công cụ)']
-      ].map(([b, c1, c2, c3]) => `
-        <tr style="border-bottom:1px solid #e2e8f0;">
-          <td style="padding:0.5px 3px; font-weight:700; color:#1e293b; font-size:18px;">${b}</td>
-          <td style="padding:0.5px 3px; color:#64748b; font-size:18px;">${c1}</td>
-          <td style="padding:0.5px 3px; color:#1e40af; font-size:18px;">${c2}</td>
-          <td style="padding:0.5px 3px; color:#0891b2; font-weight:600; font-size:18px;">${c3}</td>
-        </tr>
-      `).join('');
+      const q = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+      let tab = q.get('tab') || 'doi_chieu';
 
-      pnl.innerHTML = `
-        <div class="the_trang" style="padding:2px 5px; margin-bottom:2px; overflow-x:auto;">
-          <table style="width:100%; border-collapse:collapse; text-align:left; line-height:1.15;">
-            <thead>
-              <tr style="border-bottom:2px solid #cbd5e1; font-size:18px;">
-                <th style="padding:1px 3px; color:#475569;">Bước</th>
-                <th style="padding:1px 3px; color:#64748b;">Lõi minh hoạ (chương Toán)</th>
-                <th style="padding:1px 3px; color:#1e40af;">V1 Frustum Studio</th>
-                <th style="padding:1px 3px; color:#0891b2;">V6 (vòng cuối đã thử)</th>
-              </tr>
-            </thead>
-            <tbody>${hangBang}</tbody>
-          </table>
-        </div>
+      function capNhat() {
+        const laTabPhamVi = (tab === 'pham_vi');
 
-        <div class="the_trang" style="padding:2px 5px; background:#f8fafc; border:1px solid #cbd5e1; font-size:18px; line-height:1.15;">
-          <div style="font-weight:700; color:#0f172a; margin-bottom:0px; font-size:18px;">4 trạng thái dự án (CHOT_GIAI_DOAN §4–5):</div>
-          <div style="font-size:18px; color:#334155;">• <b>Công cụ đang chạy V1:</b> Frustum Studio cài đặt thuật toán V1 gốc (Mạnh).</div>
-          <div style="font-size:18px; color:#334155;">• <b>V5/V6 chưa chọn:</b> Quyết định mở của cả nhóm; web trình bày cả hai.</div>
-          <div style="font-size:18px; color:#334155;">• <b>Tập chấm cuối chưa chạy:</b> 2 scene giữ kín chỉ chạy một lần sau khi chốt.</div>
-          <div style="font-size:18px; color:#334155;">• <b>Giây/cuboid chưa đo:</b> Đang chuẩn bị đo thời gian người gán tay so với sửa.</div>
-        </div>
-      `;
+        const tabNavHtml = `
+          <div style="display:flex; gap:4px; margin-bottom:2px;">
+            <button class="cv_nut${!laTabPhamVi ? ' active' : ''}" data-tab="doi_chieu" style="padding:2px 8px; font-size:18px;">
+              1. Bảng đối chiếu ba luồng
+            </button>
+            <button class="cv_nut${laTabPhamVi ? ' active' : ''}" data-tab="pham_vi" style="padding:2px 8px; font-size:18px;">
+              2. Phạm vi: Web nói gì, chưa nói gì
+            </button>
+          </div>
+        `;
 
+        let tabBodyHtml = '';
+        if (!laTabPhamVi) {
+          const hangBang = [
+            ['1. Frustum', 'Chiếu 2D góc nhìn', 'frustum_mask', 'frustum_mask'],
+            ['2. Bỏ đất', 'RANSAC mặt phẳng', 'z ≥ 0,08 m + RANSAC', 'Lưới mặt đất v3a (lọc 9×9)'],
+            ['3. Gom cụm', 'Góc quét φ (FGR)', 'Bán kính 0,75 m', 'max(0,5; 0,012·d), z nén 0,5'],
+            ['4. Lọc cụm', 'Theo độ cao & số điểm', '≥ 20 điểm', '≥ 3 điểm'],
+            ['5. Chọn cụm', 'Luật 80% (FGR)', 'Gần tâm khung 2D', 'Logistic 13 đặc trưng'],
+            ['6. Fit hộp', 'Hàm f(θ) FGR', 'Diện tích nhỏ nhất', 'Năng lượng E(x,y,yaw,L)'],
+            ['7. Hậu xử lý', 'Bù che tia biên', 'Không có bù che', 'Đáy theo khung, trừ lệch tia'],
+            ['8. Mất cụm', 'Bỏ qua', 'Không ra hộp', 'Dự phòng cắt mặt đất'],
+            ['9. Đầu xe', 'Không có', 'Không có: người bấm C', 'C(v) 9 sweep + cờ 3 mức (áp khi chấm; chưa đưa vào công cụ)']
+          ].map(([b, c1, c2, c3]) => `
+            <tr style="border-bottom:1px solid #e2e8f0;">
+              <td style="padding:0.5px 3px; font-weight:700; color:#1e293b; font-size:18px;">${b}</td>
+              <td style="padding:0.5px 3px; color:#64748b; font-size:18px;">${c1}</td>
+              <td style="padding:0.5px 3px; color:#1e40af; font-size:18px;">${c2}</td>
+              <td style="padding:0.5px 3px; color:#0891b2; font-weight:600; font-size:18px;">${c3}</td>
+            </tr>
+          `).join('');
+
+          tabBodyHtml = `
+            <div class="the_trang" style="padding:2px 5px; margin-bottom:2px; overflow-x:auto;">
+              <table style="width:100%; border-collapse:collapse; text-align:left; line-height:1.15;">
+                <thead>
+                  <tr style="border-bottom:2px solid #cbd5e1; font-size:18px;">
+                    <th style="padding:1px 3px; color:#475569;">Bước</th>
+                    <th style="padding:1px 3px; color:#64748b;">Lõi minh hoạ (chương Toán)</th>
+                    <th style="padding:1px 3px; color:#1e40af;">V1 Frustum Studio</th>
+                    <th style="padding:1px 3px; color:#0891b2;">V6 (vòng cuối đã thử)</th>
+                  </tr>
+                </thead>
+                <tbody>${hangBang}</tbody>
+              </table>
+            </div>
+
+            <div class="the_trang" style="padding:2px 5px; background:#f8fafc; border:1px solid #cbd5e1; font-size:18px; line-height:1.15;">
+              <div style="font-weight:700; color:#0f172a; margin-bottom:0px; font-size:18px;">4 trạng thái dự án (CHOT_GIAI_DOAN §4–5):</div>
+              <div style="font-size:18px; color:#334155;">• <b>Công cụ đang chạy V1:</b> Frustum Studio cài đặt thuật toán V1 gốc (Mạnh).</div>
+              <div style="font-size:18px; color:#334155;">• <b>V5/V6 chưa chọn:</b> Quyết định mở của cả nhóm; web trình bày cả hai.</div>
+              <div style="font-size:18px; color:#334155;">• <b>Tập chấm cuối chưa chạy:</b> 2 scene giữ kín chỉ chạy một lần sau khi chốt.</div>
+              <div style="font-size:18px; color:#334155;">• <b>Giây/cuboid chưa đo:</b> Đang chuẩn bị đo thời gian người gán tay so với sửa.</div>
+            </div>
+          `;
+        } else {
+          // TAB 2: Phạm vi: Web nói gì, chưa nói gì (Task T102)
+          tabBodyHtml = `
+            <div style="display:flex; flex-direction:column; gap:3px;">
+              <!-- Nhóm 1: Chỉ là minh hoạ -->
+              <div class="the_trang" style="padding:3px 6px; border-left:3px solid #64748b; font-size:18px; line-height:1.2;">
+                <div style="font-weight:700; color:#334155; font-size:18px; margin-bottom:1px;">1. Chỉ là minh hoạ:</div>
+                <div style="font-size:18px; color:#475569;">• Chương Toán S8–S13 chạy lõi minh hoạ theo FGR <span style="color:#64748b; font-style:italic;">(nguồn: FGR paper & code demo)</span>.</div>
+                <div style="font-size:18px; color:#475569;">• Xe ví dụ là 1 xe (scene-0061 kf 8, 24,58 m) thuộc tập train của V5/V6 <span style="color:#64748b; font-style:italic;">(nguồn: rows_V6_train.pkl)</span>.</div>
+                <div style="font-size:18px; color:#475569;">• Các nhãn [G] trên slide S24, S25 là giả thuyết minh hoạ <span style="color:#64748b; font-style:italic;">(nguồn: CHOT §4)</span>.</div>
+              </div>
+
+              <!-- Nhóm 2: Công cụ thật đang có -->
+              <div class="the_trang" style="padding:3px 6px; border-left:3px solid #0284c7; font-size:18px; line-height:1.2;">
+                <div style="font-weight:700; color:#0369a1; font-size:18px; margin-bottom:1px;">2. Công cụ thật (Frustum Studio) đang có:</div>
+                <div style="font-size:18px; color:#334155;">• Thuật toán V1 gốc đang chạy trong công cụ <span style="color:#0369a1; font-style:italic;">(nguồn: backend/service.py:87)</span>.</div>
+                <div style="font-size:18px; color:#334155;">• Phím C để lật 180° khi hộp bị ngược đầu <span style="color:#0369a1; font-style:italic;">(nguồn: Frustum Studio UI)</span>.</div>
+                <div style="font-size:18px; color:#334155;">• Bù chiều dài xe: có trong công cụ, <b>không</b> nằm trong số chấm đánh giá <span style="color:#0369a1; font-style:italic;">(nguồn: backend/completion.py)</span>.</div>
+                <div style="font-size:18px; color:#334155;">• Chưa có chọn đầu xe và chưa có V5/V6 <span style="color:#b45309; font-style:italic;">(nguồn: CHOT §5 việc 1–2)</span>.</div>
+              </div>
+
+              <!-- Nhóm 3: Chưa làm / chưa đo -->
+              <div class="the_trang" style="padding:3px 6px; border-left:3px solid #e11d48; font-size:18px; line-height:1.2;">
+                <div style="font-weight:700; color:#be123c; font-size:18px; margin-bottom:1px;">3. Chưa làm / chưa đo:</div>
+                <div style="font-size:18px; color:#475569;">• Tập chấm cuối (scene-0103, scene-0916) chưa chạy, giữ kín cho vòng chấm cuối <span style="color:#9f1239; font-style:italic;">(nguồn: CHOT §5)</span>.</div>
+                <div style="font-size:18px; color:#475569;">• Giây/cuboid với người gán nhãn thực tế chưa đo <span style="color:#9f1239; font-style:italic;">(nguồn: CHOT §5)</span>.</div>
+                <div style="font-size:18px; color:#475569;">• Chưa thử cảm biến khác, đường Việt Nam, khung do người vẽ <span style="color:#9f1239; font-style:italic;">(nguồn: CASE_STUDY dòng 104)</span>.</div>
+                <div style="font-size:18px; color:#475569;">• V6 sinh lỗi mặt đất bị nâng, giả thuyết dốc/gờ chưa kiểm <span style="color:#9f1239; font-style:italic;">(nguồn: CHOT §4, mat_dat.json)</span>.</div>
+              </div>
+            </div>
+          `;
+        }
+
+        pnl.innerHTML = tabNavHtml + tabBodyHtml;
+
+        pnl.querySelectorAll('button[data-tab]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            tab = btn.dataset.tab;
+            const u = new URL(window.location.href);
+            if (tab === 'pham_vi') {
+              u.searchParams.set('tab', 'pham_vi');
+            } else {
+              u.searchParams.delete('tab');
+            }
+            window.history.replaceState({}, '', u.toString());
+            capNhat();
+          });
+        });
+      }
+
+      capNhat();
       elY.parentNode.insertBefore(pnl, elY.nextSibling);
     },
     ra() {

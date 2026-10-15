@@ -70,6 +70,89 @@ function moTaLyDo(lyDoObj) {
     .join(', ');
 }
 
+function taoKhungMoPhongVsThat(k) {
+  const mp = (VONG_THAT.mo_phong_vs_that && VONG_THAT.mo_phong_vs_that[String(k)]) || null;
+  if (!mp) return '';
+  const kPrev = k - 1;
+  const mpPrev = k >= 2 ? (VONG_THAT.mo_phong_vs_that && VONG_THAT.mo_phong_vs_that[String(kPrev)]) : null;
+
+  let cauKetLuan = '';
+  if (k === 1) {
+    cauKetLuan = `Cùng kiểu lỗi: hộp co về phía cảm biến. Xe ví dụ dài ${so(mp.xe.ti_l, 2)}, rộng ${so(mp.xe.ti_w, 2)} lần GT; 289 vật: ${so(mp.that.ti_l_tv, 2)} / ${so(mp.that.ti_w_tv, 2)}.`;
+  } else {
+    const dXe = mp.d_xe;
+    const dThat = mp.d_that;
+    const datPrev = mpPrev ? mpPrev.that.dat_pct : 0;
+    const datCur = mp.that.dat_pct;
+    const dXeStr = (dXe > 0 ? '+' : '') + so(dXe, 3);
+    const dThatStr = (dThat > 0 ? '+' : '') + so(dThat, 3);
+
+    switch (mp.ket_luan) {
+      case 'cung_chieu':
+        cauKetLuan = 'Xe ví dụ và dữ liệu thật thay đổi cùng chiều.';
+        break;
+      case 'xe_khong_doi':
+        cauKetLuan = `Xe ví dụ không đổi, nhưng trên 289 vật: ${dThatStr} (đạt ${so(datPrev, 1)} % → ${so(datCur, 1)} %).`;
+        break;
+      case 'xe_phong_dai':
+        cauKetLuan = `Xe ví dụ <b>phóng đại</b> cải tiến: ${dXeStr} so với ${dThatStr} trên dữ liệu thật.`;
+        break;
+      case 'xe_danh_gia_thap':
+        cauKetLuan = `Xe ví dụ <b>đánh giá thấp</b> cải tiến: ${dXeStr} so với ${dThatStr} trên dữ liệu thật.`;
+        break;
+      case 'nguoc_chieu':
+        cauKetLuan = 'Xe ví dụ và dữ liệu thật <b>ngược chiều</b>.';
+        break;
+      default:
+        cauKetLuan = '';
+    }
+  }
+
+  const cotIouTieuDe = k === 1 ? 'IoU V1' : `IoU V${kPrev} → V${k}`;
+  const iouXeText = k === 1 ? so(mp.xe.iou, 3) : `${so(mpPrev.xe.iou, 3)} → ${so(mp.xe.iou, 3)}`;
+  const iouThatText = k === 1 ? so(mp.that.iou_tv, 3) : `${so(mpPrev.that.iou_tv, 3)} → ${so(mp.that.iou_tv, 3)}`;
+
+  const tamXeText = `${so(mp.xe.tam_m, 2)} m`;
+  const tamThatText = `${so(mp.that.tam_tv, 2)} m`;
+
+  const yawXeText = `${so(mp.xe.yaw_deg, 1)}°`;
+  const yawThatText = `${so(mp.that.e180_tv, 1)}°`;
+
+  const dongTrain = k >= 5 ? `<div style="font-size:18px; color:#64748b; font-style:italic; margin-top:1px;">Xe ví dụ thuộc tập train của V5/V6</div>` : '';
+
+  return `
+    <div class="the_trang" style="padding:2px 5px; margin-bottom:2px; font-size:18px; line-height:1.15; border-left:3px solid #6366f1;">
+      <div style="font-weight:700; color:#4338ca; font-size:18px; margin-bottom:1px;">Xe ví dụ (slide phương pháp) ↔ 289 vật thật:</div>
+      <table style="width:100%; border-collapse:collapse; font-size:18px; line-height:1.15; margin-bottom:1px;">
+        <thead>
+          <tr style="border-bottom:1px solid #cbd5e1; color:#475569; text-align:left;">
+            <th style="padding:0 3px;">Nguồn</th>
+            <th style="padding:0 3px;">${cotIouTieuDe}</th>
+            <th style="padding:0 3px;">Lệch tâm</th>
+            <th style="padding:0 3px;">Sai số hướng</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:0 3px; font-weight:600; color:#1e293b;">Xe ví dụ</td>
+            <td style="padding:0 3px; color:#1e40af;">${iouXeText}</td>
+            <td style="padding:0 3px;">${tamXeText}</td>
+            <td style="padding:0 3px;">${yawXeText}</td>
+          </tr>
+          <tr>
+            <td style="padding:0 3px; font-weight:600; color:#1e293b;">289 vật (trung vị)</td>
+            <td style="padding:0 3px; color:#0891b2;">${iouThatText}</td>
+            <td style="padding:0 3px;">${tamThatText}</td>
+            <td style="padding:0 3px;">${yawThatText}</td>
+          </tr>
+        </tbody>
+      </table>
+      <div style="font-size:18px; color:#0f172a;">${cauKetLuan}</div>
+      ${dongTrain}
+    </div>
+  `;
+}
+
 const MUC_TIEU = {
   2: ['khong_ra_hop', 'lech_tam', 'khac'],
   3: ['khong_ra_hop', 'sai_truc'],
@@ -189,7 +272,7 @@ export const slideThatV1 = {
         const svgNhom = svgNhomLoi([{ nhan: 'V1 gốc', nhom: nhomV1 }], {
           noiBat: ['khong_ra_hop'],
           w: 420,
-          h: 210
+          h: 155
         });
 
         let lyDoHtml = Object.entries(lyDoV1)
@@ -201,17 +284,18 @@ export const slideThatV1 = {
         hienKhung2d = false;
 
         noiDungHtml = `
-          <div class="the_trang" style="padding:4px 8px; margin-bottom:2px;">
+          <div class="the_trang" style="padding:2px 6px; margin-bottom:2px;">
             <div style="display:flex; justify-content:center;">${svgNhom}</div>
             <div class="cv_ghi_nho" style="margin-top:2px; font-size:18px;">
               Tổng cộng <b>${nhomV1.khong_ra_hop}</b> vật không ra hộp trong 289 vật 5 bộ GT:
               <ul style="margin:2px 0 0 16px; padding:0; font-size:18px;">${lyDoHtml}</ul>
             </div>
           </div>
-          <div class="the_trang" style="padding:4px 8px; margin-bottom:2px; border-left:4px solid #ef4444; font-size:18px; line-height:1.2;">
+          <div class="the_trang" style="padding:2px 6px; margin-bottom:2px; border-left:4px solid #ef4444; font-size:18px; line-height:1.15;">
             <div style="font-weight:700; color:#ef4444;">Nguyên nhân cốt lõi:</div>
-            <div style="margin-top:2px;">${nhomV1.khong_ra_hop} vật không ra hộp: ${moTaLyDo(lyDoV1)} (backend/service.py).</div>
+            <div style="margin-top:1px;">${nhomV1.khong_ra_hop} vật không ra hộp: ${moTaLyDo(lyDoV1)} (backend/service.py).</div>
           </div>
+          ${taoKhungMoPhongVsThat(1)}
         `;
       } else if (buoc === 2) {
         // BƯỚC 2: 9 thành phần gốc của V1
@@ -451,30 +535,49 @@ export function slideVongThat(k) {
             `;
           }).join('');
 
+          const biLoaiK = (VONG_THAT.bi_loai || []).filter(b => b.vong === k);
+          let biLoaiHtml = '';
+          if (biLoaiK.length > 0) {
+            const cacDong = biLoaiK.map(b => {
+              const sauNayStr = b.sau_nay ? ` → ${b.sau_nay}` : '';
+              return `<div style="margin-top:1px; font-size:18px;">
+                <span style="display:inline-block; padding:0 4px; border-radius:3px; background:#e2e8f0; color:#475569; font-weight:700; font-size:18px; margin-right:4px;">BỎ</span>
+                <b>${b.ma}</b> · ${b.ten}: ${b.so_do}. <i>Vì sao bỏ:</i> ${b.ly_do}.${sauNayStr}
+              </div>`;
+            }).join('');
+            biLoaiHtml = `
+              <div class="the_trang" style="padding:2px 5px; margin-bottom:2px; border-left:3px solid #94a3b8; background:#f8fafc; font-size:18px; line-height:1.15;">
+                <div style="font-weight:700; color:#475569; font-size:18px;">Đã thử nhưng bỏ:</div>
+                ${cacDong}
+              </div>
+            `;
+          }
+
           noiDungHtml = `
-            <div class="the_trang" style="padding:4px 8px; margin-bottom:2px; border-left:4px solid #0284c7;">
+            <div class="the_trang" style="padding:2px 6px; margin-bottom:2px; border-left:4px solid #0284c7;">
               <div style="font-weight:700; color:#0284c7; font-size:18px;">${info.tieu_de}</div>
-              <div style="font-size:18px; margin-top:2px; line-height:1.2;">${info.noi_dung}</div>
+              <div style="font-size:18px; margin-top:1px; line-height:1.15;">${info.noi_dung}</div>
             </div>
-            <div class="the_trang" style="padding:4px 8px; margin-bottom:2px; max-height:300px; overflow-y:auto;">
-              <table style="width:100%; border-collapse:collapse; font-size:18px; line-height:1.2;">
+            <div class="the_trang" style="padding:2px 6px; margin-bottom:2px;">
+              <table style="width:100%; border-collapse:collapse; font-size:18px; line-height:1.15;">
                 <thead>
                   <tr style="border-bottom:1.5px solid #cbd5e1; text-align:left; color:#475569;">
-                    <th style="padding:2px 4px;">Bước</th>
-                    <th style="padding:2px 4px;">V${kPrev}</th>
-                    <th style="padding:2px 4px;">V${k}</th>
+                    <th style="padding:1px 3px;">Bước</th>
+                    <th style="padding:1px 3px;">V${kPrev}</th>
+                    <th style="padding:1px 3px;">V${k}</th>
                   </tr>
                 </thead>
                 <tbody>${hangThanhPhan}</tbody>
               </table>
             </div>
+            ${biLoaiHtml}
           `;
         } else if (buoc === 3) {
           // BƯỚC 3: Kết quả Vk
           const svgNhom = svgNhomLoi([
             { nhan: `V${kPrev}`, nhom: statPrev.nhom.nam_bo.gt },
             { nhan: `V${k}`, nhom: statCur.nhom.nam_bo.gt }
-          ], { w: 420, h: 210 });
+          ], { w: 420, h: 155 });
 
           // Top chuyển dịch vào đạt
           const chuyenVaoDat = [];
@@ -515,14 +618,14 @@ export function slideVongThat(k) {
           vongHien = new Set([kPrev, k]);
 
           noiDungHtml = `
-            <div class="the_trang" style="padding:4px 8px; margin-bottom:2px;">
+            <div class="the_trang" style="padding:2px 6px; margin-bottom:2px;">
               <div style="display:flex; justify-content:center;">${svgNhom}</div>
-              <div class="cv_ghi_nho" style="margin-top:2px; font-size:18px;">
+              <div class="cv_ghi_nho" style="margin-top:1px; font-size:18px;">
                 Chuyển dịch vào Đạt: ${top3Str || 'Không có'}.
                 ${cauChuyenDacBiet}
               </div>
             </div>
-            <div class="the_trang" style="padding:3px 6px; margin-bottom:2px; font-size:18px; line-height:1.2;">
+            <div class="the_trang" style="padding:2px 6px; margin-bottom:2px; font-size:18px; line-height:1.15;">
               <div style="display:flex; justify-content:space-between; margin-bottom:1px;">
                 <span>5 bộ GT: <b>${so(datNbGt, 1)}%</b></span>
                 <span>YOLO: <b>${so(datNbYolo, 1)}%</b></span>
@@ -532,6 +635,7 @@ export function slideVongThat(k) {
                 Đúng hướng V${k} (trước → sau chọn đầu xe): <b>${so(huongTr, 1)}%</b> → <b>${so(huongSau, 1)}%</b>
               </div>
             </div>
+            ${taoKhungMoPhongVsThat(k)}
           `;
         } else if (buoc === 4) {
           // BƯỚC 4: Lỗi mới / còn lại

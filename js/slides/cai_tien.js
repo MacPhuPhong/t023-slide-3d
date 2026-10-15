@@ -33,7 +33,10 @@ function taoSvgSauVongOracle(w = 820, h = 160) {
   const yOracle = mapY(oracleVal);
   const vachOracle = `
     <line x1="${padL}" y1="${yOracle}" x2="${padL + pw}" y2="${yOracle}" stroke="#e11d48" stroke-dasharray="4,3" stroke-width="1.8"/>
-    <text x="${padL + pw + 6}" y="${yOracle + 6}" font-size="18" font-weight="700" fill="#e11d48">Trần chọn cụm hoàn hảo ${so(oracleVal, 1)} %</text>
+    <text x="${padL + pw + 6}" y="${yOracle - 4}" font-size="18" font-weight="700" fill="#e11d48">
+      <tspan x="${padL + pw + 6}" dy="0">Trần chọn cụm</tspan>
+      <tspan x="${padL + pw + 6}" dy="19">hoàn hảo ${so(oracleVal, 1)} %</tspan>
+    </text>
   `;
 
   // Các polyline
@@ -168,6 +171,18 @@ export const SLIDES_CAI_TIEN = [
           </tr>
         `).join('');
 
+        // Bảng 4 cải tiến đã thử nhưng bỏ (T101)
+        const hangBiLoai = (VONG_THAT.bi_loai || []).map(b => `
+          <tr style="border-bottom:1px solid #e2e8f0;">
+            <td style="padding:1px 3px; font-weight:700; text-align:center; border:1px solid #e2e8f0; width:45px;">V${b.vong}</td>
+            <td style="padding:1px 3px; font-weight:700; color:#dc2626; border:1px solid #e2e8f0; width:45px; text-align:center;">${b.ma}</td>
+            <td style="padding:1px 3px; border:1px solid #e2e8f0; line-height:1.15;">${b.ten}</td>
+            <td style="padding:1px 3px; color:#b91c1c; border:1px solid #e2e8f0; line-height:1.15; width:200px;">${b.so_do}</td>
+            <td style="padding:1px 3px; border:1px solid #e2e8f0; line-height:1.15; width:180px;">${b.ly_do}</td>
+            <td style="padding:1px 3px; color:#0369a1; border:1px solid #e2e8f0; line-height:1.15; width:160px;">${b.sau_nay || '—'}</td>
+          </tr>
+        `).join('');
+
         const tabNavHtml = `
           <div style="display:flex; gap:4px; margin-bottom:2px;">
             <button class="cv_nut${laTab1 ? ' active' : ''}" data-tab="bieu_do" style="padding:2px 8px; font-size:18px;">
@@ -217,6 +232,27 @@ export const SLIDES_CAI_TIEN = [
             </div>
             <div style="font-size:18px; color:#64748b; font-style:italic; margin-top:2px;">
               * Cột V5: luật V2–V4 không còn chạy riêng; ý tưởng đã được viết lại trong năng lượng tia.
+            </div>
+
+            <!-- Bảng 4 cải tiến đã thử nhưng bỏ (T101) -->
+            <div style="margin-top:3px; border:1px solid #cbd5e1; border-radius:4px;">
+              <div style="background:#f1f5f9; padding:2px 5px; font-weight:700; font-size:18px; color:#475569; display:flex; justify-content:space-between; align-items:center;">
+                <span>Đã thử nhưng bỏ (4 cải tiến: B3, C1a, D2, D3)</span>
+                <span style="font-weight:400; font-size:18px; color:#64748b; font-style:italic;">* Đối chiếu số liệu từ BAO_CAO_DANH_GIA_IOU</span>
+              </div>
+              <table style="width:100%; border-collapse:collapse; text-align:left; line-height:1.15; font-size:18px;">
+                <thead>
+                  <tr style="background:#f8fafc; color:#475569; font-size:18px;">
+                    <th style="padding:1px 3px; border:1px solid #e2e8f0; text-align:center;">Vòng</th>
+                    <th style="padding:1px 3px; border:1px solid #e2e8f0; text-align:center;">Mã</th>
+                    <th style="padding:1px 3px; border:1px solid #e2e8f0;">Thử gì</th>
+                    <th style="padding:1px 3px; border:1px solid #e2e8f0;">Số đo</th>
+                    <th style="padding:1px 3px; border:1px solid #e2e8f0;">Vì sao bỏ</th>
+                    <th style="padding:1px 3px; border:1px solid #e2e8f0;">Về sau</th>
+                  </tr>
+                </thead>
+                <tbody>${hangBiLoai}</tbody>
+              </table>
             </div>
           `;
         } else {
