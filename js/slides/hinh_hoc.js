@@ -459,7 +459,7 @@ export const SLIDES_HINH_HOC = [
       String.raw`P_C(Z) = Z \, K^{-1} \begin{bmatrix} u \\ v \\ 1 \end{bmatrix}`
     ],
     so: ['fx', 'cxcy', 'anh_kt', 'fov', 'uv', 'px_do', 'buoc_doc_px', 'vong_trong_khung'],
-    ml: 'Bài toán ngược ill-posed: ảnh 2D đơn lẻ không đủ thông tin khôi phục độ sâu Z. Cần đám mây điểm LiDAR cung cấp độ sâu chuẩn xác thay vì phụ thuộc mô hình học prior độ sâu.',
+    ml: 'Bài toán ngược ill-posed: ảnh 2D đơn lẻ không đủ thông tin khôi phục độ sâu Z. Cần đám mây điểm LiDAR cung cấp độ sâu vật lý trực tiếp thay vì phụ thuộc mô hình học prior độ sâu.',
     goc_nhin: [
       { ten: 'Toàn cảnh camera, mặt ảnh & điểm', cam: [-5.0, -12.0, 6.0], nhin: [9.0, 1.0, 1.5] },
       { ten: 'Nhìn từ phía sau camera', cam: [0.0, -3.5, 2.5], nhin: [7.7, 0.0, 1.5] }

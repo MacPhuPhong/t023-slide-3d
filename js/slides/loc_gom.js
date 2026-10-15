@@ -10,7 +10,7 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'none',
     muc: 'Toán từng bước · Phân bố dữ liệu',
     tieu_de: 'Mật độ điểm suy giảm theo khoảng cách',
-    y: 'Mật độ điểm LiDAR giảm theo tỷ lệ d<sup>−3,06</sup> (xe con) và d<sup>−1,80</sup> (người lớn). Ngưỡng ≥ 5 điểm giới hạn tầm dựng hộp ở 34 m (xe) và 22 m (người).',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">Mật độ điểm LiDAR giảm theo tỷ lệ d<sup>−3,06</sup> (xe con) và d<sup>−1,80</sup> (người lớn). Ngưỡng ≥ 5 điểm giới hạn tầm dựng hộp ở 34 m (xe) và 22 m (người).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 ≥ 20 điểm; V2 clip(20(10/d)², 6, 20); V5 ≥ 3</div>',
     cong_thuc: [
       String.raw`N(d) \approx \frac{W}{d \, \Delta\phi} \cdot \frac{H}{d \, \Delta\theta} = \frac{c}{d^2}`
     ],
@@ -96,7 +96,7 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Ước lượng mặt đất',
     tieu_de: 'RANSAC loại bỏ mặt đất và ngưỡng khoảng cách τ',
-    y: 'Mặt đất chiếm 38 % số điểm trong vùng 25 m quanh vật. RANSAC lấy mẫu ngẫu nhiên 3 điểm để khớp mặt phẳng n·P + d = 0 với ngưỡng độ dày τ = 0,15 m; 81 lần lặp đảm bảo xác suất thành công p = 0,99.',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">Mặt đất chiếm 38 % điểm trong vùng 25 m. RANSAC lấy mẫu 3 điểm khớp mặt phẳng n·P + d = 0 với ngưỡng τ = 0,15 m; 81 lần lặp đảm bảo xác suất p = 0,99.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 RANSAC 0,12 m, 96 lần; V5 lưới mặt đất 1 m; V6 lưới v3a</div>',
     cong_thuc: [
       String.raw`\vec{n} = \frac{(P_2 - P_1) \times (P_3 - P_1)}{\|(P_2 - P_1) \times (P_3 - P_1)\|}, \quad |n \cdot P + d_0| < \tau`,
       String.raw`N \ge \frac{\ln(1 - p)}{\ln(1 - w^3)} \quad (\text{khi } w \approx 0{,}38 \implies N_{99} = 81)`
@@ -222,7 +222,7 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Gom cụm không giám sát',
     tieu_de: 'Gom cụm FGR và ngưỡng khoảng cách φ',
-    y: 'FGR quét ngưỡng lân cận φ ∈ {0,1; …; 0,7} m tìm cụm liên thông lớn nhất thoả luật 80 %. Cự ly > 30,1 m, bước quét dọc vượt 0,7 m làm vỡ cụm.',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">FGR quét ngưỡng φ ∈ {0,1; …; 0,7} m tìm cụm liên thông lớn nhất thoả luật 80 %. Cự ly > 30,1 m, bước quét dọc vượt 0,7 m làm vỡ cụm.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1–V4 bán kính 0,75 m; V5 max(0,5; 0,012·d)</div>',
     cong_thuc: [
       String.raw`d \tan \Delta\theta < \phi < g, \quad d_{\max} = \frac{0{,}7}{\tan 1{,}333^\circ} \approx 30{,}1 \text{ m}`
     ],
@@ -350,7 +350,7 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Lọc cụm',
     tieu_de: 'Luật 80 % lọc cụm và lỗi dính vật thể',
-    y: 'Luật 80 % yêu cầu ít nhất 80 % điểm cụm phải nằm trong frustum 2D để loại bỏ các cụm nền bên ngoài. Tuy nhiên, nếu hai xe nối đuôi nhau cùng nằm trong frustum, luật 80 % hoàn toàn bị mù và gây lỗi dính hai xe (false merge).',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">Luật 80 % yêu cầu ≥ 80 % điểm cụm nằm trong frustum 2D. Hai xe nối đuôi nhau trong cùng frustum sẽ gây lỗi dính hai xe (false merge).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> không có luật 80 %; V1–V4 chọn gần tâm khung; V5 logistic 13 đặc trưng</div>',
     cong_thuc: [
       String.raw`\frac{|C \cap F|}{|C|} \ge 0{,}8 \iff n_{\text{out}} \le \frac{n_{\text{in}}}{4}, \quad M_{\text{best}} = \operatorname{argmax}_k |M_k|`
     ],

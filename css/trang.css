@@ -181,6 +181,11 @@ sub, sup {
 sub { bottom: -0.2em; }
 sup { top: -0.4em; }
 
+code {
+  font-family: inherit;
+  font-size: inherit;
+}
+
 html, body {
   width: 100%;
   height: 100%;
@@ -1219,4 +1224,172 @@ body[data-slide="ket-qua-vat"] .kq_vat_khung_2d {
 }
 body[data-slide="ket-qua-vat"] #slide_goc_nhin {
   margin-top: 2px;
+}
+
+/* T88: Quy tắc thu gọn cho các slide mới để đảm bảo tran = 0 và chu_min >= 18px */
+body[data-slide="doi-chieu"] #slide_tieu_de {
+  font-size: 40px;
+  margin-bottom: 2px;
+}
+body[data-slide="doi-chieu"] #slide_y {
+  margin-bottom: 2px;
+}
+body[data-slide="vong-6"] #slide_tieu_de {
+  font-size: 40px;
+  margin-bottom: 2px;
+}
+body[data-slide="sau-vong-tong"] #slide_tieu_de {
+  font-size: 40px;
+  margin-bottom: 2px;
+}
+body[data-slide="con-sai"] #slide_tieu_de {
+  font-size: 40px;
+  margin-bottom: 2px;
+}
+body[data-slide^="that-v"] #slide_tieu_de {
+  font-size: 40px;
+  margin-bottom: 2px;
+}
+body[data-slide^="that-v"] .kq_vat_khung_2d {
+  max-height: 200px;
+}
+body[data-slide="con-sai"] .kq_vat_khung_2d {
+  max-height: 190px;
+}
+
+/* Thu gọn tiêu đề và ô ML để tránh tràn cho các slide nhiều nội dung */
+body[data-slide="pipeline"] #slide_tieu_de,
+body[data-slide="dau-duoi"] #slide_tieu_de,
+body[data-slide="cham-diem"] #slide_tieu_de,
+body[data-slide="thoi-gian"] #slide_tieu_de,
+body[data-slide="qa-qc"] #slide_tieu_de,
+body[data-slide="hien-trang"] #slide_tieu_de {
+  font-size: 38px;
+  margin-bottom: 2px;
+}
+
+body[data-slide="pipeline"] .o_ml,
+body[data-slide="dau-duoi"] .o_ml,
+body[data-slide="cham-diem"] .o_ml,
+body[data-slide="thoi-gian"] .o_ml,
+body[data-slide="qa-qc"] .o_ml,
+body[data-slide="hien-trang"] .o_ml {
+  margin-top: 2px;
+  padding: 3px 8px;
+  font-size: 18px;
+  line-height: 1.25;
+}
+
+body[data-slide="cham-diem"] #cot_trai,
+body[data-slide="thoi-gian"] #cot_trai,
+body[data-slide="qa-qc"] #cot_trai,
+body[data-slide="hien-trang"] #cot_trai {
+  gap: 3px;
+}
+
+body[data-slide="dau-duoi"] #cot_trai {
+  width: 960px;
+  max-height: 870px;
+  gap: 2px;
+}
+body[data-slide="dau-duoi"] #slide_tieu_de {
+  font-size: 32px !important;
+  margin-bottom: 0px !important;
+  line-height: 1.15 !important;
+}
+body[data-slide="dau-duoi"] #slide_y {
+  margin-bottom: 0px !important;
+  line-height: 1.18 !important;
+}
+body[data-slide="dau-duoi"] .o_ml {
+  margin-top: 1px !important;
+  padding: 2px 6px !important;
+}
+body[data-slide="dau-duoi"] #slide_chips {
+  gap: 2px;
+  margin-top: 1px;
+}
+body[data-slide="dau-duoi"] .chip {
+  padding: 1px 6px;
+  font-size: 18px;
+}
+body[data-slide="dau-duoi"] #slide_cong_thuc {
+  margin: 1px 0;
+  padding: 4px 10px;
+  gap: 2px;
+}
+body[data-slide="dau-duoi"] .the_cong_thuc .katex {
+  font-size: 18px !important;
+}
+body[data-slide="dau-duoi"] .katex-display {
+  margin: 1px 0;
+}
+body[data-slide="dau-duoi"] #s13_panel .the_trang_lon {
+  padding: 6px 10px !important;
+  margin-bottom: 2px !important;
+}
+body[data-slide="dau-duoi"] #btn_lat_180 {
+  padding: 4px 10px !important;
+}
+body[data-slide="dau-duoi"] #s13_panel .chu-nho {
+  margin-top: 2px !important;
+  padding: 3px 6px !important;
+  line-height: 1.2 !important;
+}
+body[data-slide="thoi-gian"] #cot_trai {
+  width: 920px;
+  max-height: 885px;
+  gap: 1px;
+}
+body[data-slide="thoi-gian"] #slide_tieu_de {
+  font-size: 32px !important;
+  margin-bottom: 0px !important;
+  line-height: 1.15 !important;
+}
+body[data-slide="thoi-gian"] #slide_y {
+  margin-bottom: 0px !important;
+  line-height: 1.25 !important;
+}
+body[data-slide="thoi-gian"] .the_cong_thuc {
+  margin: 1px 0 !important;
+  padding: 2px 6px !important;
+}
+body[data-slide="thoi-gian"] .o_ml {
+  margin-top: 1px !important;
+  padding: 2px 6px !important;
+}
+body[data-slide="thoi-gian"] #slide_chips {
+  margin-top: 1px !important;
+  gap: 2px !important;
+}
+body[data-slide="thoi-gian"] .chip {
+  padding: 1px 6px !important;
+  font-size: 18px !important;
+}
+body[data-slide="cham-diem"] .the_trang {
+  padding: 3px 8px;
+  margin-bottom: 3px;
+}
+
+body[data-slide="sau-vong-tong"] #cot_trai {
+  width: 920px;
+  max-height: 885px;
+  gap: 1px;
+}
+body[data-slide="sau-vong-tong"] #slide_tieu_de {
+  font-size: 34px !important;
+  margin-bottom: 1px !important;
+  line-height: 1.15 !important;
+}
+body[data-slide="sau-vong-tong"] #slide_y {
+  margin-bottom: 1px !important;
+  line-height: 1.25 !important;
+}
+body[data-slide="sau-vong-tong"] .o_ml {
+  margin-top: 1px !important;
+  padding: 2px 6px !important;
+}
+body[data-slide="sau-vong-tong"] .the_trang {
+  padding: 2px 6px;
+  margin-bottom: 1px;
 }

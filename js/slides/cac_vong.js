@@ -669,3 +669,9 @@ export const SLIDES_CAC_VONG = [
   slideVong(5, `V5: đặt hộp bằng cực tiểu năng lượng — đạt ${t(4)} → ${t(5)}`,
     'Học tham số như huấn luyện: tách train/test theo scene.')
 ];
+
+export const slideLuongChinh = SLIDES_CAC_VONG[0];
+export const slideVong2 = SLIDES_CAC_VONG[1];
+export const slideVong3 = SLIDES_CAC_VONG[2];
+export const slideVong4 = SLIDES_CAC_VONG[3];
+export const slideVong5 = SLIDES_CAC_VONG[4];

@@ -17,17 +17,21 @@
   <!-- Bắt lỗi trước khi bất kỳ module nào chạy -->
   <script>
     window.addEventListener('error', function(e) {
+      var msg = 'LỖI: ' + (e.message || e) + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
+      fetch('/__loi?msg=' + encodeURIComponent(msg)).catch(function(){});
       var el = document.getElementById('loi');
       if (el) {
         el.style.display = 'block';
-        el.textContent = 'LỖI: ' + (e.message || e) + '\n@ ' + (e.filename || '') + ':' + (e.lineno || '');
+        el.textContent = msg;
       }
     }, true);
     window.addEventListener('unhandledrejection', function(e) {
+      var msg = 'LỖI PROMISE: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason));
+      fetch('/__loi?msg=' + encodeURIComponent(msg)).catch(function(){});
       var el = document.getElementById('loi');
       if (el) {
         el.style.display = 'block';
-        el.textContent = 'LỖI PROMISE: ' + (e.reason && (e.reason.stack || e.reason.message || e.reason));
+        el.textContent = msg;
       }
     });
   </script>
@@ -79,7 +83,7 @@
           <!-- Các chấm tiến trình động -->
         </div>
 
-        <div class="chi_so_slide" id="chi_so_slide">1 / 28</div>
+        <div class="chi_so_slide" id="chi_so_slide">1 / 37</div>
       </footer>
     </div>
 

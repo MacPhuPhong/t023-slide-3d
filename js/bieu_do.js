@@ -259,7 +259,8 @@ export const MAU_VONG = {
   2: '#60a5fa',
   3: '#a78bfa',
   4: '#c98200',
-  5: '#e5484d'
+  5: '#e5484d',
+  6: '#0891b2'
 };
 
 /**
@@ -380,15 +381,15 @@ export function svgCotNhom(nhom, { nhan = '', nguon = 'gt', w = 820, h = 220 } =
     const ten = item.ten || item.lop || item.dai || '';
     const nStr = item.n !== undefined ? ` (n=${item.n})` : '';
 
-    // Lấy nguồn dữ liệu cho từng vòng 1..5
+    // Lấy nguồn dữ liệu cho từng vòng 1..6
     const duLieu = item.dat ? (item.dat[nguon] || item.dat) : (item.gia_tri ? (item.gia_tri[nguon] || item.gia_tri) : null);
 
-    // Vẽ 5 cột cho 5 vòng
-    for (let k = 1; k <= 5; k++) {
+    // Vẽ 6 cột cho 6 vòng
+    for (let k = 1; k <= 6; k++) {
       let val = 0;
       if (duLieu) val = duLieu[String(k)] ?? duLieu[k] ?? 0;
 
-      const xBar = cx - 2.5 * barWidth + (k - 1) * barWidth;
+      const xBar = cx - 3.0 * barWidth + (k - 1) * barWidth;
       const yBar = mapY(val);
       const hBar = Math.max(0, padT + ph - yBar);
 
@@ -403,9 +404,9 @@ export function svgCotNhom(nhom, { nhan = '', nguon = 'gt', w = 820, h = 220 } =
     `;
   }
 
-  // Chú giải 5 vòng ở thanh trên
-  const chuGiai = [1, 2, 3, 4, 5].map((k, idx) => `
-    <g transform="translate(${padL + idx * 80}, 16)">
+  // Chú giải 6 vòng ở thanh trên
+  const chuGiai = [1, 2, 3, 4, 5, 6].map((k, idx) => `
+    <g transform="translate(${padL + idx * 72}, 16)">
       <rect x="0" y="-12" width="12" height="12" fill="${MAU_VONG[k]}" rx="2"/>
       <text x="16" y="-1" font-size="18" font-weight="700" fill="${MAU_VONG[k]}">V${k}</text>
     </g>
@@ -416,5 +417,109 @@ export function svgCotNhom(nhom, { nhan = '', nguon = 'gt', w = 820, h = 220 } =
       ${barsSvg}
       ${chuGiai}
     </svg>`;
+}
+
+export const MAU_NHOM_LOI = {
+  dat: '#10b981',
+  khong_ra_hop: '#64748b',
+  sai_cum: '#ef4444',
+  sai_truc: '#8b5cf6',
+  lech_tam: '#f59e0b',
+  khac: '#0284c7'
+};
+
+export const TEN_NHOM_LOI = {
+  dat: 'Đạt',
+  khong_ra_hop: 'Không ra hộp',
+  sai_cum: 'Sai cụm',
+  sai_truc: 'Sai trục',
+  lech_tam: 'Lệch tâm',
+  khac: 'Khác'
+};
+
+/**
+ * Biểu đồ thanh chồng 6 nhóm lỗi (T83)
+ * @param {Array<{nhan: string, nhom: object}>} cot Danh sách các cột
+ * @param {object} opts { noiBat: Set|Array, w: number, h: number }
+ */
+export function svgNhomLoi(cot = [], { noiBat = null, w = 420, h = 260 } = {}) {
+  if (!Array.isArray(cot) || cot.length === 0) return '';
+  const padL = 35, padR = 165, padT = 24, padB = 40;
+  const pw = w - padL - padR, ph = h - padT - padB;
+
+  const thuTuNhom = ['dat', 'khong_ra_hop', 'sai_cum', 'sai_truc', 'lech_tam', 'khac'];
+  const nCot = cot.length;
+  const cotW = Math.min(64, pw / Math.max(1, nCot * 1.5));
+  const khoangCach = pw / nCot;
+
+  const setNoiBat = noiBat ? new Set(Array.isArray(noiBat) ? noiBat : Array.from(noiBat)) : null;
+
+  let stackBarsSvg = '';
+
+  for (let cIdx = 0; cIdx < nCot; cIdx++) {
+    const item = cot[cIdx];
+    const xMid = padL + cIdx * khoangCach + khoangCach / 2;
+    const x0 = xMid - cotW / 2;
+
+    const dataNhom = item.nhom || {};
+    const tong = thuTuNhom.reduce((acc, k) => acc + (dataNhom[k] || 0), 0) || 289;
+
+    let curY = padT + ph;
+
+    for (const k of thuTuNhom) {
+      const val = dataNhom[k] || 0;
+      if (val <= 0) continue;
+
+      const segH = (val / tong) * ph;
+      const y0 = curY - segH;
+      curY = y0;
+
+      const laNoiBat = !setNoiBat || setNoiBat.has(k);
+      const op = laNoiBat ? 1.0 : 0.35;
+      const mau = MAU_NHOM_LOI[k] || '#94a3b8';
+
+      stackBarsSvg += `
+        <rect x="${x0}" y="${y0}" width="${cotW}" height="${segH}" fill="${mau}" fill-opacity="${op}" stroke="#ffffff" stroke-width="1"/>
+      `;
+
+      // Số trên từng đoạn ≥ 18 px nếu đủ chỗ
+      if (segH >= 20) {
+        stackBarsSvg += `
+          <text x="${xMid}" y="${y0 + segH / 2 + 6}" font-size="18" font-weight="700" fill="#ffffff" text-anchor="middle">${val}</text>
+        `;
+      }
+    }
+
+    // Nhãn cột dưới trục
+    stackBarsSvg += `
+      <text x="${xMid}" y="${padT + ph + 24}" font-size="18" font-weight="700" fill="#1e293b" text-anchor="middle">${item.nhan || ''}</text>
+    `;
+  }
+
+  // Chú giải bên phải
+  let chuGiaiSvg = '';
+  thuTuNhom.forEach((k, idx) => {
+    const yCg = padT + idx * 30 + 10;
+    const mau = MAU_NHOM_LOI[k] || '#94a3b8';
+    const laNoiBat = !setNoiBat || setNoiBat.has(k);
+    const op = laNoiBat ? 1.0 : 0.4;
+    const fontWeight = laNoiBat && setNoiBat ? '800' : '600';
+
+    chuGiaiSvg += `
+      <g transform="translate(${w - padR + 10}, ${yCg})" opacity="${op}">
+        <rect x="0" y="-12" width="14" height="14" fill="${mau}" rx="3"/>
+        <text x="20" y="0" font-size="18" font-weight="${fontWeight}" fill="#1e293b">${TEN_NHOM_LOI[k]}</text>
+      </g>
+    `;
+  });
+
+  return `
+    <svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}" style="background:#fff; border-radius:12px; border:1px solid rgba(20,23,28,0.08); font-family:'Be Vietnam Pro',sans-serif;">
+      <!-- Trục hoành -->
+      <line x1="${padL - 10}" y1="${padT + ph}" x2="${w - padR}" y2="${padT + ph}" stroke="#cbd5e1" stroke-width="1.5"/>
+      ${stackBarsSvg}
+      ${chuGiaiSvg}
+    </svg>
+  `;
 }
 

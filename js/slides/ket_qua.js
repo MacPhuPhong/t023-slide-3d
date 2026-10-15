@@ -5,6 +5,7 @@ import { LIDAR_KQ } from '../../data/lidar_kq.js';
 import { MAU_VONG, svgTiLeDat, svgCotNhom } from '../bieu_do.js';
 import { taoHop, anChuGiaiHop } from '../hop.js';
 import { taoDiemLidar } from '../diem_lidar.js';
+import { taoXemCa } from '../xem_ca.js';
 
 const so = (v, n = 1) => Number(v).toFixed(n).replace('.', ',');
 const thamSo = () => new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
@@ -18,8 +19,11 @@ const MAU_VONG_HEX = {
   2: 0x8b5cf6,
   3: 0xec4899,
   4: 0xf59e0b,
-  5: 0x10b981
+  5: 0x10b981,
+  6: 0x0891b2
 };
+
+let xemCaVat = null, khoiPhucVat = null, khoiPhucCanh = null, khoiPhucPb = null;
 
 function chenPanel(id, html) {
   const elY = document.getElementById('slide_y');
@@ -29,6 +33,7 @@ function chenPanel(id, html) {
   const el = document.createElement('div');
   el.id = id;
   el.className = 'fade-in kq_panel';
+  el.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
   el.innerHTML = html;
   elY.parentNode.insertBefore(el, elY.nextSibling);
   return el;
@@ -40,6 +45,7 @@ function chenDieuKhien(id, html) {
   const el = document.createElement('div');
   el.id = id;
   el.className = 'cv_dieu_khien';
+  el.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
   el.innerHTML = html;
   (document.getElementById('canh_3d') || document.body).appendChild(el);
   return el;
@@ -188,12 +194,13 @@ function dungCanhKeyframe(ctx, nhom, bo, vong, nguon, coSweep = false) {
 // =====================================================================
 const t1Tong = KET_QUA.tong && KET_QUA.tong.gt ? KET_QUA.tong.gt['1'] : 10.0;
 const t5Tong = KET_QUA.tong && KET_QUA.tong.gt ? KET_QUA.tong.gt['5'] : 80.3;
+const t6Tong = KET_QUA.tong && KET_QUA.tong.gt ? KET_QUA.tong.gt['6'] : 82.7;
 
 export const slideKetQuaCanh = {
   id: 'ket-qua-canh',
   vat_chinh: 'none',
   muc: 'Kết quả đánh giá · Toàn cảnh',
-  tieu_de: `Cả keyframe: V1 đạt ${so(t1Tong, 1)} % → V5 ${so(t5Tong, 1)} % (khung GT, 289 vật)`,
+  tieu_de: `Cả keyframe: V1 ${so(t1Tong, 1)} % → V5 ${so(t5Tong, 1)} % · V6 ${so(t6Tong, 1)} % (khung GT, 289 vật)`,
   y: '',
   ml: 'Chấm trên mọi vật của keyframe, không chọn ca đẹp: mỗi vật một IoU 3D, đạt khi ≥ 0,5 (xe) hoặc ≥ 0,3 (người, 2 bánh).',
   goc_nhin: [
@@ -224,7 +231,7 @@ export const slideKetQuaCanh = {
     let vatChonIdx = -1;
     let diemHienTai = null;
 
-    const khoiPhucNut = caiDatNutMauSlide('toan_canh', cheDoMau);
+    khoiPhucCanh = caiDatNutMauSlide('toan_canh', cheDoMau);
     ctx.toMauSlide = (cd) => {
       cheDoMau = cd;
       if (diemHienTai) diemHienTai.toMau(cd);
@@ -263,7 +270,7 @@ export const slideKetQuaCanh = {
           ${[1, 2, 3, 4, 5].map(b => `<button class="cv_nut${b === bo ? ' active' : ''}" data-bo="${b}">Bộ ${b}</button>`).join('')}
         </div>
         <div class="cv_dk_hang">
-          ${[1, 2, 3, 4, 5].map(v => `<button class="cv_nut${v === vong ? ' active' : ''}" data-vong="${v}">V${v}</button>`).join('')}
+          ${[1, 2, 3, 4, 5, 6].map(v => `<button class="cv_nut${v === vong ? ' active' : ''}" data-vong="${v}">V${v}</button>`).join('')}
         </div>
         <div class="cv_dk_hang">
           <button class="cv_nut${nguon === 'gt' ? ' active' : ''}" data-nguon="gt">Khung GT</button>
@@ -318,7 +325,7 @@ export const slideKetQuaCanh = {
 
       // 2. Cột trái
       const dongHtml = kf.vat.map((v, idx) => {
-        const oVong = [1, 2, 3, 4, 5].map(k => {
+        const oVong = [1, 2, 3, 4, 5, 6].map(k => {
           const res = v.vong && v.vong[String(k)] ? v.vong[String(k)][nguon] : null;
           const chonK = k === vong ? ' kq_o_chon_vong' : '';
           if (!res || !res.hop) return `<td class="kq_o_khong${chonK}">—</td>`;
@@ -348,7 +355,7 @@ export const slideKetQuaCanh = {
             <thead>
               <tr>
                 <th style="text-align:left;">Lớp · Khoảng cách · Ngưỡng</th>
-                <th>V1</th><th>V2</th><th>V3</th><th>V4</th><th>V5</th>
+                <th>V1</th><th>V2</th><th>V3</th><th>V4</th><th>V5</th><th>V6</th>
               </tr>
             </thead>
             <tbody>
@@ -427,7 +434,7 @@ export const slideKetQuaCanh = {
   },
   ra(ctx) {
     delete ctx.toMauSlide;
-    if (typeof khoiPhucNut === 'function') khoiPhucNut();
+    if (typeof khoiPhucCanh === 'function') { khoiPhucCanh(); khoiPhucCanh = null; }
     anTheGioi(ctx, false);
     goPhanTu(['kq_dieu_khien', 'kq_panel']);
   }
@@ -467,95 +474,56 @@ export const slideKetQuaVat = {
     let cheDoMau = q.get('mau') || 'frustum';
     let hienTaiDiem = null;
 
-    const khoiPhucNut = caiDatNutMauSlide('vat', cheDoMau);
+    khoiPhucVat = caiDatNutMauSlide('vat', cheDoMau);
     ctx.toMauSlide = (cd) => {
       cheDoMau = cd;
       if (hienTaiDiem) hienTaiDiem.toMau(cd);
     };
 
-    // Ô tích chọn V1..V5 (Set các số từ 1..5, mặc định chỉ có 5)
+    // Ô tích chọn V1..V6 (Set các số từ 1..6, mặc định chỉ có 5)
     let vChon = new Set([5]);
     if (q.has('v')) {
-      const vArr = q.get('v').split(',').map(Number).filter(n => n >= 1 && n <= 5);
+      const vArr = q.get('v').split(',').map(Number).filter(n => n >= 1 && n <= 6);
       if (vArr.length > 0) vChon = new Set(vArr);
     }
 
-    // datCam = false: tích/bỏ tích vòng, đổi nguồn, đổi sweep → giữ góc người xem đang xoay; đổi vật / bộ mới lấy nét lại
-    function capNhatCanh3D(datCam = true) {
-      xoaNhom(nhom);
+    xemCaVat = taoXemCa(ctx, { elAnh: '#kq_vat_khung_2d', nhom });
 
+    function layDiemKhung(kf, v) {
+      const lk = LIDAR_KQ ? LIDAR_KQ[kf.bo] : null;
+      if (!lk) return null;
+      const camData = lk.cam[v.camera];
+      const bboxVao = (nguon === 'yolo' && v.vong['1'] && v.vong['1'].yolo && v.vong['1'].yolo.bbox_vao)
+        ? v.vong['1'].yolo.bbox_vao
+        : v.bbox_gt;
+      return {
+        xyz: lk.kf.xyz,
+        cuongDo: lk.kf.cuong_do,
+        swXyz: lk.sw.xyz,
+        swK: lk.sw.k,
+        cam: camData,
+        bboxVao
+      };
+    }
+
+    function capNhatCanh3D(datCam = true) {
       const kf = KET_QUA.khung[bo - 1];
       if (!kf || kf.vat.length === 0) return;
       if (vatIdx >= kf.vat.length) vatIdx = 0;
       const v = kf.vat[vatIdx];
+      const anhKey = `bo${bo}/${v.camera}`;
+      v.anh = KET_QUA.anh && KET_QUA.anh[anhKey] ? KET_QUA.anh[anhKey] : `assets/nuscenes/bo${bo}_${v.camera}.jpg`;
 
-      // 1. Điểm LiDAR trong bán kính max(6 m, 1.5 * đường chéo GT) quanh tâm GT từ LIDAR_KQ
-      const gt = v.gt;
-      const diag = Math.hypot(gt.l, gt.w, gt.h);
-      const banKinh = Math.max(6.0, 1.5 * diag);
-
-      const lk = LIDAR_KQ ? LIDAR_KQ[kf.bo] : null;
-      if (lk) {
-        const camData = lk.cam[v.camera];
-        const bboxVao = (nguon === 'yolo' && v.vong['1'] && v.vong['1'].yolo && v.vong['1'].yolo.bbox_vao)
-          ? v.vong['1'].yolo.bbox_vao
-          : v.bbox_gt;
-
-        hienTaiDiem = taoDiemLidar(ctx, {
-          xyz: lk.kf.xyz,
-          cuongDo: lk.kf.cuong_do,
-          swXyz: lk.sw.xyz,
-          swK: lk.sw.k
-        }, {
-          coSweep,
-          vatGt: gt,
-          cam: camData,
-          bboxVao,
-          banKinh
-        });
-        nhom.add(hienTaiDiem);
-        hienTaiDiem.toMau(cheDoMau);
-      }
-
-      // 2. Hộp GT (vai gt)
-      const hopGtObj = taoHop(ctx, gt, 'gt', { fill: true, color: 0x1f9d55 });
-      nhom.add(hopGtObj);
-
-      // 3. Hộp các vòng được tích chọn
-      const cacHopHien = [gt];
-      for (const k of [1, 2, 3, 4, 5]) {
-        if (!vChon.has(k)) continue;
-        const vRes = v.vong && v.vong[String(k)] ? v.vong[String(k)][nguon] : null;
-        if (vRes && vRes.hop) {
-          cacHopHien.push(vRes.hop);
-          const hopVkObj = taoHop(ctx, vRes.hop, 'de_xuat', {
-            fill: false,
-            color: MAU_VONG_HEX[k],
-            netDut: true
-          });
-          nhom.add(hopVkObj);
-        }
-      }
-
-      // 4. Tia từ cảm biến LiDAR (0,0,0) tới tâm GT (mảnh, xám để biết hướng nhìn)
-      const pSensor = ctx.S([0, 0, 0]);
-      const pGt = ctx.S([gt.cx, gt.cy, gt.cz]);
-      const lineGeo = new T.BufferGeometry().setFromPoints([pSensor, pGt]);
-      const lineMat = new T.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.6 });
-      const tiaSeg = new T.LineSegments(lineGeo, lineMat);
-      tiaSeg.userData.hop = 'pipeline';
-      nhom.add(tiaSeg);
-
-      // 5. Camera bao trọn GT và các hộp đang hiện
-      const coMax = Math.max(...cacHopHien.map(h => Math.max(h.l, h.w, h.h)));
-      const xa = Math.max(10.0, 2.7 * coMax + 4.5);
-
-      const tam = ctx.S([gt.cx, gt.cy, gt.cz]);
-      const dir = new T.Vector3(0.7, 0.5, 0.7).normalize();
-      const camPos = new T.Vector3().copy(tam).addScaledVector(dir, xa);
-
-      if (datCam) ctx.tweenCamera(veEgo(camPos), veEgo(tam), TINH ? 0 : 0.8);
-      veLai(ctx);
+      const diemKhung = layDiemKhung(kf, v);
+      hienTaiDiem = xemCaVat.hien(v, {
+        vong: vChon,
+        nguon,
+        sweep: coSweep,
+        cheDoAnh,
+        datCam,
+        diemKhung,
+        cheDoMau
+      });
     }
 
     function capNhatGiaoDien() {
@@ -585,97 +553,11 @@ export const slideKetQuaVat = {
         </div>
       `);
 
-      // 2. Tính toán viewBox SVG cho ảnh camera
-      let viewBox = '0 0 1600 900';
-      if (cheDoAnh === 'phong') {
-        const bb = v.bbox_gt;
-        const bw = bb[2] - bb[0];
-        const bh = bb[3] - bb[1];
-        const cx = (bb[0] + bb[2]) / 2;
-        const cy = (bb[1] + bb[3]) / 2;
-
-        let targetW = Math.max(320, bw * 2.2);
-        let targetH = Math.max(180, bh * 2.2);
-
-        if (targetW / targetH > 16 / 9) {
-          targetH = targetW * (9 / 16);
-        } else {
-          targetW = targetH * (16 / 9);
-        }
-
-        targetW = Math.min(1600, targetW);
-        targetH = targetW * (9 / 16);
-        const vx = Math.max(0, Math.min(1600 - targetW, cx - targetW / 2));
-        const vy = Math.max(0, Math.min(900 - targetH, cy - targetH / 2));
-        viewBox = `${vx.toFixed(1)} ${vy.toFixed(1)} ${targetW.toFixed(1)} ${targetH.toFixed(1)}`;
-      }
-
-      // Đường dẫn ảnh camera
-      const anhKey = `bo${bo}/${v.camera}`;
-      const anhSrc = KET_QUA.anh && KET_QUA.anh[anhKey] ? KET_QUA.anh[anhKey] : `assets/nuscenes/bo${bo}_${v.camera}.jpg`;
-
-      // Vẽ hình chiếu 2D của GT và các vòng
-      let svgDoHoa = '';
-
-      // GT 2D box
-      const [gx1, gy1, gx2, gy2] = v.bbox_gt;
-      svgDoHoa += `<rect x="${gx1}" y="${gy1}" width="${gx2 - gx1}" height="${gy2 - gy1}" fill="none" stroke="#1f9d55" stroke-width="3.5" />`;
-
-      // GT 3D chiếu (12 đoạn nối 8 đỉnh goc2d_gt)
-      if (v.goc2d_gt && v.goc2d_gt.length === 8) {
-        const p = v.goc2d_gt;
-        const doanGt = [
-          [0, 1], [1, 2], [2, 3], [3, 0],
-          [4, 5], [5, 6], [6, 7], [7, 4],
-          [0, 4], [1, 5], [2, 6], [3, 7]
-        ];
-        for (const [i1, i2] of doanGt) {
-          svgDoHoa += `<line x1="${p[i1][0]}" y1="${p[i1][1]}" x2="${p[i2][0]}" y2="${p[i2][1]}" stroke="#1f9d55" stroke-width="1.8" />`;
-        }
-      }
-
-      // Khung YOLO đầu vào (nếu chọn nguồn yolo)
-      if (nguon === 'yolo') {
-        const vResYolo = v.vong['1'] ? v.vong['1'].yolo : null;
-        if (vResYolo && vResYolo.bbox_vao) {
-          const [yx1, yy1, yx2, yy2] = vResYolo.bbox_vao;
-          svgDoHoa += `<rect x="${yx1}" y="${yy1}" width="${yx2 - yx1}" height="${yy2 - yy1}" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-dasharray="6,4" />`;
-        }
-      }
-
-      // Các vòng Vk được tích chọn
-      for (const k of [1, 2, 3, 4, 5]) {
-        if (!vChon.has(k)) continue;
-        const vRes = v.vong && v.vong[String(k)] ? v.vong[String(k)][nguon] : null;
-        if (!vRes) continue;
-
-        const mauK = MAU_VONG[k];
-
-        // Khung 2D bao hop2d
-        if (vRes.hop2d) {
-          const [hx1, hy1, hx2, hy2] = vRes.hop2d;
-          svgDoHoa += `<rect x="${hx1}" y="${hy1}" width="${hx2 - hx1}" height="${hy2 - hy1}" fill="none" stroke="${mauK}" stroke-width="1.6" />`;
-        }
-
-        // 12 cạnh hình chiếu hộp 3D (goc2d)
-        if (vRes.goc2d && vRes.goc2d.length === 8) {
-          const p = vRes.goc2d;
-          const doanVk = [
-            [0, 1], [1, 2], [2, 3], [3, 0],
-            [4, 5], [5, 6], [6, 7], [7, 4],
-            [0, 4], [1, 5], [2, 6], [3, 7]
-          ];
-          for (const [i1, i2] of doanVk) {
-            svgDoHoa += `<line x1="${p[i1][0]}" y1="${p[i1][1]}" x2="${p[i2][0]}" y2="${p[i2][1]}" stroke="${mauK}" stroke-width="2.2" stroke-dasharray="6,4" />`;
-          }
-        }
-      }
-
       // Bảng so sánh IoU 2D/3D dưới ảnh (T68: mỗi dòng <= 34px, tích >= 3 vòng thì 2 cột)
       const soVongTich = vChon.size;
       const lopKhungSoSanh = soVongTich >= 3 ? 'kq_so_sanh_grid' : 'kq_so_sanh_don';
       let danhSachSoSanhHtml = '';
-      for (const k of [1, 2, 3, 4, 5]) {
+      for (const k of [1, 2, 3, 4, 5, 6]) {
         if (!vChon.has(k)) continue;
         const vRes = v.vong && v.vong[String(k)] ? v.vong[String(k)][nguon] : null;
         const mauK = MAU_VONG[k];
@@ -710,8 +592,8 @@ export const slideKetQuaVat = {
         }
       }
 
-      // Ô tích chọn V1..V5
-      const oTichHtml = [1, 2, 3, 4, 5].map(k => {
+      // Ô tích chọn V1..V6
+      const oTichHtml = [1, 2, 3, 4, 5, 6].map(k => {
         const daTich = vChon.has(k);
         const mauK = MAU_VONG[k];
         return `
@@ -743,16 +625,7 @@ export const slideKetQuaVat = {
           </div>
         </div>
 
-        <div class="kq_vat_khung_2d">
-          <div class="kq_vat_nut_che_do">
-            <button class="kq_nut_nho${cheDoAnh === 'phong' ? ' active' : ''}" data-che-do="phong">Phóng vật</button>
-            <button class="kq_nut_nho${cheDoAnh === 'ca' ? ' active' : ''}" data-che-do="ca">Cả ảnh</button>
-          </div>
-          <svg class="kq_vat_svg" viewBox="${viewBox}" preserveAspectRatio="xMidYMid meet">
-            <image href="${anhSrc}" x="0" y="0" width="1600" height="900" />
-            ${svgDoHoa}
-          </svg>
-        </div>
+        <div class="kq_vat_khung_2d" id="kq_vat_khung_2d"></div>
 
         <div class="kq_ghi_cong">
           Ảnh/LiDAR: nuScenes v1.0-mini (Motional), CC BY-NC-SA 4.0
@@ -770,6 +643,20 @@ export const slideKetQuaVat = {
           </div>
         </div>
       `);
+
+      const anhKey = `bo${bo}/${v.camera}`;
+      v.anh = KET_QUA.anh && KET_QUA.anh[anhKey] ? KET_QUA.anh[anhKey] : `assets/nuscenes/bo${bo}_${v.camera}.jpg`;
+      const diemKhung = layDiemKhung(kf, v);
+      xemCaVat.hien(v, {
+        vong: vChon,
+        nguon,
+        sweep: coSweep,
+        cheDoAnh,
+        datCam: false,
+        diemKhung,
+        cheDoMau
+      });
+
 
       // Gắn sự kiện
       const dkEl = document.getElementById('kq_vat_dieu_khien');
@@ -831,7 +718,8 @@ export const slideKetQuaVat = {
   },
   ra(ctx) {
     delete ctx.toMauSlide;
-    if (typeof khoiPhucNut === 'function') khoiPhucNut();
+    if (typeof khoiPhucVat === 'function') { khoiPhucVat(); khoiPhucVat = null; }
+    if (xemCaVat) { xemCaVat.xoa(); xemCaVat = null; }
     anTheGioi(ctx, false);
     goPhanTu(['kq_vat_dieu_khien', 'kq_vat_panel']);
   }
@@ -868,7 +756,7 @@ export const slideKetQuaPhanBo = {
     let cheDoMau = q.get('mau') || 'do_cao';
     let hienTaiDiem = null;
 
-    const khoiPhucNut = caiDatNutMauSlide('toan_canh', cheDoMau);
+    khoiPhucPb = caiDatNutMauSlide('toan_canh', cheDoMau);
     ctx.toMauSlide = (cd) => {
       cheDoMau = cd;
       if (hienTaiDiem) hienTaiDiem.toMau(cd);
@@ -900,7 +788,7 @@ export const slideKetQuaPhanBo = {
 
       // Tạo dữ liệu cho tab xe / người
       const pbDuLieu = {};
-      const cacVongKey = ['1', '2', '3', '4', '5'];
+      const cacVongKey = ['1', '2', '3', '4', '5', '6'];
       cacVongKey.forEach(k => {
         const item = pbNguon[k] || { xe: [], nguoi: [] };
         pbDuLieu[k] = (tabNhomVat === 'xe') ? item.xe : item.nguoi;
@@ -911,7 +799,7 @@ export const slideKetQuaPhanBo = {
       const nguongTab = (tabNhomVat === 'xe') ? 0.5 : 0.3;
 
       const svgPhanBo = svgTiLeDat(pbDuLieu, {
-        vong: [1, 2, 3, 4, 5],
+        vong: [1, 2, 3, 4, 5, 6],
         nguong: nguongTab,
         w: 820,
         h: 185
@@ -922,7 +810,7 @@ export const slideKetQuaPhanBo = {
 
       // Dòng tổng phía trên từ KET_QUA.tong (T63)
       const t = KET_QUA.tong && KET_QUA.tong[nguon] ? KET_QUA.tong[nguon] : {};
-      const dongTong = `Tỉ lệ đạt (ngưỡng theo lớp): V1 ${so(t['1'] || 0, 1)} % → V2 ${so(t['2'] || 0, 1)} % → V3 ${so(t['3'] || 0, 1)} % → V4 ${so(t['4'] || 0, 1)} % → V5 ${so(t['5'] || 0, 1)} %`;
+      const dongTong = `Tỉ lệ đạt (ngưỡng theo lớp): V1 ${so(t['1'] || 0, 1)} % → V2 ${so(t['2'] || 0, 1)} % → V3 ${so(t['3'] || 0, 1)} % → V4 ${so(t['4'] || 0, 1)} % → V5 ${so(t['5'] || 0, 1)} % → V6 ${so(t['6'] || 0, 1)} %`;
 
       chenPanel('kq_pb_panel', `
         <div class="the_trang chu-the" style="padding:6px 12px; display:flex; flex-direction:column; gap:4px;">
@@ -979,7 +867,7 @@ export const slideKetQuaPhanBo = {
   },
   ra(ctx) {
     delete ctx.toMauSlide;
-    if (typeof khoiPhucNut === 'function') khoiPhucNut();
+    if (typeof khoiPhucPb === 'function') { khoiPhucPb(); khoiPhucPb = null; }
     anTheGioi(ctx, false);
     goPhanTu(['kq_pb_panel']);
   }

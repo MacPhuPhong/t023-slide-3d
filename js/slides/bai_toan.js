@@ -9,9 +9,9 @@ export const SLIDES_BAI_TOAN = [
     vat_chinh: 'ego',
     muc: 'Bài toán · Giới thiệu dự án',
     tieu_de: 'DỰNG CUBOID 3D TỪ KHUNG 2D',
-    y: 'Người vẽ khung 2D trên ảnh camera, LiDAR và calibration tự động dựng cuboid 3D có hướng chuẩn xác, người kiểm tra và hiệu chỉnh rồi lưu vào CVAT.',
+    y: 'Người vẽ khung 2D trên ảnh camera; công cụ dùng LiDAR và calibration đề xuất cuboid 3D; người duyệt, sửa rồi lưu vào CVAT.',
     cong_thuc: [],
-    so: ['vd_iou', 'vd_yaw', 'vd_cach'],
+    so: ['xe_vd_v1_iou', 'xe_vd_v6_iou', 'vd_cach'],
     ml: '',
     goc_nhin: [
       { ten: 'Toàn cảnh xe Ego & Ví dụ', cam: [13.0, -12.0, 7.5], nhin: [3.0, 0.5, 1.0] },
@@ -51,7 +51,8 @@ export const SLIDES_BAI_TOAN = [
               <button id="btn_bat_dau" class="nut_vien_thuoc tuong_tac chu-nut" style="padding:12px 28px;">Bắt đầu →</button>
             </div>
             <div class="chu-nho" style="color:var(--mau-chu-phu);">
-              Nhóm T023 · Build phase VinUni · 05/10–23/10/2026
+              Nhóm T023 · Build phase VinUni · 05/10–23/10/2026<br>
+              <span style="color:var(--mau-chu-phu); display:inline-block; margin-top:4px;">Xe ví dụ: V1 IoU 0,218 → V6 IoU 0,792 (xe này thuộc tập train của V5/V6)</span>
             </div>
           `;
           elY.parentNode.insertBefore(extra, elY.nextSibling);
@@ -167,11 +168,12 @@ export const SLIDES_BAI_TOAN = [
     id: 'pipeline',
     vat_chinh: 'vd',
     muc: 'Bài toán · Kiến trúc tổng thể',
-    tieu_de: 'Chuỗi 5 bước dựng cuboid 3D',
-    y: 'Quy trình khép kín không sử dụng mạng nơ-ron học sâu: từ khung 2D trên ảnh camera, lọc frustum, tách mặt đất RANSAC, gom cụm thích ứng φ, khớp hộp L-shape và bù che khuất hình học.',
+    tieu_de: 'Chuỗi pipeline dựng cuboid 3D',
+    y: '<div style="font-size:18px; line-height:1.2; margin-bottom:4px;">• <b>V1 (Frustum Studio, công cụ đang chạy)</b>: frustum → RANSAC 0,12 m, 96 lần (geometry.py:182) → cụm Euclid bán kính 0,75 m, loại cụm &lt; 20 điểm (service.py:117) → chọn cụm gần tâm khung → fit chữ nhật diện tích min (geometry.py:158). Không có bù che. Không có chọn đầu xe (người bấm C).</div>' +
+       '<div style="font-size:18px; line-height:1.2; margin-bottom:4px;">• <b>V6 (vòng cuối đã thử)</b>: frustum → lưới mặt đất v3a (BAO_CAO §4.2:170) → cụm thích ứng max(0,5; 0,012·d) ≥ 3 điểm → chọn cụm hồi quy logistic 13 đặc trưng (BAO_CAO §4.2:173) → fit cực tiểu năng lượng E(x,y,yaw,L) → đáy theo khung 2D → chọn đầu xe bằng 9 sweep (áp khi chấm, chưa có trong Frustum Studio). Học 54 số, dò 22 tham số; YOLO là mạng nơ-ron cho khung 2D tự động.</div>',
     cong_thuc: [],
     so: ['vd_cach'],
-    ml: 'Chuỗi không có tham số học: mọi siêu tham số (φ, θ_seg, τ, θ_rect) được chọn trên tập phát triển theo scene, tập chấm chỉ chạy một lần.',
+    ml: 'V1 là giải thuật hình học không học tham số. V6 kết hợp học thống kê (học 54 số, dò 22 tham số) và YOLO phát hiện khung 2D tự động.',
     goc_nhin: [
       { ten: 'Toàn cảnh xe ví dụ & hộp 3D', cam: [34.0, -8.0, 6.0], nhin: [24.4, 3.1, 1.1] },
       { ten: 'Từ trên cao', cam: [24.4, 3.1, 18.0], nhin: [24.4, 3.1, 1.0] }
@@ -195,19 +197,20 @@ export const SLIDES_BAI_TOAN = [
         if (!buocEl) {
           buocEl = document.createElement('div');
           buocEl.id = 's2_buoc';
-          buocEl.style.marginTop = '18px';
+          buocEl.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
+          buocEl.style.marginTop = '6px';
           buocEl.innerHTML = `
-            <div class="chu-the" style="font-weight:700; color:var(--mau-chu); margin-bottom:8px;">Nhảy nhanh tới các bước:</div>
-            <div style="display:flex; flex-wrap:wrap; gap:8px;">
-              <button class="nut_goc_nhin tuong_tac" data-id="frustum">1. Khung 2D & Frustum</button>
-              <button class="nut_goc_nhin tuong_tac" data-id="ransac">2. Bỏ đất & Gom cụm</button>
-              <button class="nut_goc_nhin tuong_tac" data-id="l-shape">3. Fit hộp & Bù che</button>
-              <button class="nut_goc_nhin tuong_tac" data-id="dau-duoi">4. Đầu / Đuôi</button>
-              <button class="nut_goc_nhin tuong_tac" data-id="luong-chinh">★ 5 vòng cải tiến</button>
-              <button class="nut_goc_nhin tuong_tac" data-id="qa-qc">5. Đánh giá QA/QC</button>
+            <div style="font-weight:700; color:var(--mau-chu); margin-bottom:3px; font-size:18px;">Nhảy nhanh tới các bước:</div>
+            <div style="display:flex; flex-wrap:wrap; gap:4px;">
+              <button class="nut_goc_nhin tuong_tac" data-id="frustum" style="padding:2px 6px; font-size:18px;">1. Khung 2D & Frustum</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="ransac" style="padding:2px 6px; font-size:18px;">2. Bỏ đất & Gom cụm</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="l-shape" style="padding:2px 6px; font-size:18px;">3. Fit hộp & Bù che</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="dau-duoi" style="padding:2px 6px; font-size:18px;">4. Đầu / Đuôi</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="luong-chinh" style="padding:2px 6px; font-size:18px;">★ 6 vòng cải tiến</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="qa-qc" style="padding:2px 6px; font-size:18px;">5. Đánh giá QA/QC</button>
             </div>
-            <div class="chu-nho" style="margin-top:10px; color:var(--mau-chu-phu);">
-              Thang cải tiến V0 (khung 2D thô) → V5 (đầy đủ các bước hình học).
+            <div style="margin-top:4px; color:var(--mau-chu-phu); font-size:18px;">
+              Thang cải tiến V1 (Frustum Studio đang chạy) → V6 (vòng cuối đã thử).
             </div>
           `;
           elY.parentNode.insertBefore(buocEl, elY.nextSibling);
@@ -224,6 +227,82 @@ export const SLIDES_BAI_TOAN = [
     ra() {
       const buocEl = document.getElementById('s2_buoc');
       if (buocEl) buocEl.remove();
+    }
+  },
+
+  // --- S3b: Đối chiếu (Task T87) ---
+  {
+    id: 'doi-chieu',
+    vat_chinh: 'vd',
+    muc: 'Bài toán · Đối chiếu ba luồng',
+    tieu_de: 'Đối chiếu: Lõi minh hoạ ↔ V1 Studio ↔ V6',
+    y: 'Phân định rõ ba luồng thuật toán trong tài liệu và 4 trạng thái dự án ngày 15/10/2026.',
+    cong_thuc: [],
+    so: [],
+    ml: 'Lõi minh hoạ (chương Toán) theo FGR; V1 Frustum Studio đang chạy; V6 là vòng cuối nhóm đã thử nghiệm.',
+    goc_nhin: [
+      { ten: 'Toàn cảnh xe ví dụ', cam: [34.0, -8.0, 6.0], nhin: [24.4, 3.1, 1.1] },
+      { ten: 'Nhìn từ trên cao', cam: [24.4, 3.1, 20.0], nhin: [24.4, 3.1, 0.0] }
+    ],
+    vao(ctx) {
+      const elY = document.getElementById('slide_y');
+      if (!elY) return;
+      const cu = document.getElementById('doi_chieu_panel');
+      if (cu) cu.remove();
+      const pnl = document.createElement('div');
+      pnl.id = 'doi_chieu_panel';
+      pnl.className = 'fade-in';
+      pnl.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
+      pnl.style.marginTop = '0px';
+
+      const hangBang = [
+        ['1. Frustum', 'Chiếu 2D góc nhìn', 'frustum_mask', 'frustum_mask'],
+        ['2. Bỏ đất', 'RANSAC mặt phẳng', 'z ≥ 0,08 m + RANSAC', 'Lưới mặt đất v3a (lọc 9×9)'],
+        ['3. Gom cụm', 'Góc quét φ (FGR)', 'Bán kính 0,75 m', 'max(0,5; 0,012·d), z nén 0,5'],
+        ['4. Lọc cụm', 'Theo độ cao & số điểm', '≥ 20 điểm', '≥ 3 điểm'],
+        ['5. Chọn cụm', 'Luật 80% (FGR)', 'Gần tâm khung 2D', 'Logistic 13 đặc trưng'],
+        ['6. Fit hộp', 'Hàm f(θ) FGR', 'Diện tích nhỏ nhất', 'Năng lượng E(x,y,yaw,L)'],
+        ['7. Hậu xử lý', 'Bù che tia biên', 'Không có bù che', 'Đáy theo khung, trừ lệch tia'],
+        ['8. Mất cụm', 'Bỏ qua', 'Không ra hộp', 'Dự phòng cắt mặt đất'],
+        ['9. Đầu xe', 'Không có', 'Không có: người bấm C', 'C(v) 9 sweep + cờ 3 mức (áp khi chấm; chưa đưa vào công cụ)']
+      ].map(([b, c1, c2, c3]) => `
+        <tr style="border-bottom:1px solid #e2e8f0;">
+          <td style="padding:0.5px 3px; font-weight:700; color:#1e293b; font-size:18px;">${b}</td>
+          <td style="padding:0.5px 3px; color:#64748b; font-size:18px;">${c1}</td>
+          <td style="padding:0.5px 3px; color:#1e40af; font-size:18px;">${c2}</td>
+          <td style="padding:0.5px 3px; color:#0891b2; font-weight:600; font-size:18px;">${c3}</td>
+        </tr>
+      `).join('');
+
+      pnl.innerHTML = `
+        <div class="the_trang" style="padding:2px 5px; margin-bottom:2px; overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; text-align:left; line-height:1.15;">
+            <thead>
+              <tr style="border-bottom:2px solid #cbd5e1; font-size:18px;">
+                <th style="padding:1px 3px; color:#475569;">Bước</th>
+                <th style="padding:1px 3px; color:#64748b;">Lõi minh hoạ (chương Toán)</th>
+                <th style="padding:1px 3px; color:#1e40af;">V1 Frustum Studio</th>
+                <th style="padding:1px 3px; color:#0891b2;">V6 (vòng cuối đã thử)</th>
+              </tr>
+            </thead>
+            <tbody>${hangBang}</tbody>
+          </table>
+        </div>
+
+        <div class="the_trang" style="padding:2px 5px; background:#f8fafc; border:1px solid #cbd5e1; font-size:18px; line-height:1.15;">
+          <div style="font-weight:700; color:#0f172a; margin-bottom:0px; font-size:18px;">4 trạng thái dự án (CHOT_GIAI_DOAN §4–5):</div>
+          <div style="font-size:18px; color:#334155;">• <b>Công cụ đang chạy V1:</b> Frustum Studio cài đặt thuật toán V1 gốc (Mạnh).</div>
+          <div style="font-size:18px; color:#334155;">• <b>V5/V6 chưa chọn:</b> Quyết định mở của cả nhóm; web trình bày cả hai.</div>
+          <div style="font-size:18px; color:#334155;">• <b>Tập chấm cuối chưa chạy:</b> 2 scene giữ kín chỉ chạy một lần sau khi chốt.</div>
+          <div style="font-size:18px; color:#334155;">• <b>Giây/cuboid chưa đo:</b> Đang chuẩn bị đo thời gian người gán tay so với sửa.</div>
+        </div>
+      `;
+
+      elY.parentNode.insertBefore(pnl, elY.nextSibling);
+    },
+    ra() {
+      const pnl = document.getElementById('doi_chieu_panel');
+      if (pnl) pnl.remove();
     }
   }
 ];
