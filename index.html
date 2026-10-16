@@ -17,6 +17,7 @@
   <!-- Bắt lỗi trước khi bất kỳ module nào chạy -->
   <script>
     window.addEventListener('error', function(e) {
+      if (!e.message && e.target && e.target !== window) return;
       var msg = 'LỖI: ' + (e.message || e) + ' @ ' + (e.filename || '') + ':' + (e.lineno || '');
       fetch('/__loi?msg=' + encodeURIComponent(msg)).catch(function(){});
       var el = document.getElementById('loi');

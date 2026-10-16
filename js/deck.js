@@ -146,6 +146,12 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
     if (index < 0 || index >= slides.length) return;
     if (index === chiSoHienTai && viewIndex === 0) return;
 
+    if (index !== window.__lastSlideIdx) {
+      window.__daBamThu = false;
+      window.__lastSlideIdx = index;
+      window.__loiBam = 0;
+    }
+
     window.__loiSlide = [];
 
     // Thoát slide cũ
@@ -355,7 +361,9 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
     // Chế độ chụp ảnh: render và lưu
     if (chup && !window.__dangQuaAll) {
       const coBamThu = new URLSearchParams(window.location.search).has('bam_thu');
-      if (coBamThu) {
+      if (coBamThu && !window.__daBamThu) {
+        window.__daBamThu = true;
+
         // Tạo ảnh giữ kết nối wait với server để Firefox không chụp ảnh sớm
         const imgWait = document.createElement('img');
         imgWait.src = '/__wait';
@@ -363,6 +371,8 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         document.body.appendChild(imgWait);
 
         // Bấm thử lần lượt mọi nút trong slide (T105a)
+        let loiBam = 0;
+        const loiSlideTruoc = (window.__loiSlide || []).length;
         const selNut = '[data-muc],[data-buoc],[data-tab],[data-ca],[data-bo],[data-nguon],[data-sweep],[data-che-do],[data-v],.nut_goc_nhin';
         const dsNut = Array.from(document.querySelectorAll(selNut)).slice(0, 40);
         for (const nut of dsNut) {
@@ -371,8 +381,30 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
           } catch (err) {
             (window.__loiSlide ||= []).push(`ClickError: ${err.message || String(err)}`);
           }
-          await new Promise(res => setTimeout(res, 150));
+          await new Promise(res => setTimeout(res, 40));
         }
+
+        const elLoi = document.getElementById('loi');
+        if (elLoi && elLoi.style.display === 'block') {
+          loiBam++;
+          elLoi.style.display = 'none';
+        }
+
+        const loiTrongLucBam = (window.__loiSlide || []).length - loiSlideTruoc;
+        loiBam += loiTrongLucBam;
+        window.__loiBam = (window.__loiBam || 0) + loiBam;
+        if (window.__loiSlide && loiTrongLucBam > 0) {
+          window.__loiSlide = window.__loiSlide.slice(0, loiSlideTruoc);
+        }
+
+        // Dọn sạch các panel và phần tử động đã tạo trong lúc bấm thử
+        const cacPanelCu = document.querySelectorAll('[data-cua-slide], .cv_dieu_khien, .cv_hop_dieu_khien, .kq_panel');
+        cacPanelCu.forEach(p => p.remove());
+
+        // Chuyển lại slide về trạng thái ban đầu của URL (viewIndex và mọi tham số URL)
+        chiSoHienTai = -1;
+        await chuyenSlide(index, viewIndex);
+        return;
       }
 
       canh.veMotLan();
@@ -716,11 +748,14 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
       const loiMsgs = (window.__loiSlide || []).join('; ');
       const racMsgs = Array.from(document.querySelectorAll('[data-cua-slide]')).filter(el => el.dataset.cuaSlide !== slide.id).map(el => `${el.id || el.className}[cua=${el.dataset.cuaSlide}]`).join('; ');
 
+      const loiBamTong = window.__loiBam || 0;
+      document.body.dataset.loi_bam = String(loiBamTong);
+
       try {
         const sh = cotTrai ? cotTrai.scrollHeight : 0;
         const ch = cotTrai ? cotTrai.clientHeight : 0;
         const tn = tranNgang ? 1 : 0;
-        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&hop_ngoai=${hopNgoai}&day_cot=${dayCot.toFixed(1)}&loi_js=${loiJs}&rac_dom=${racDom}&cuon_an=${cuonAn}&cuon_info=${encodeURIComponent(cuonAnInfo)}&loi_msg=${encodeURIComponent(loiMsgs)}&rac_msg=${encodeURIComponent(racMsgs)}&el=${encodeURIComponent(minElInfo)}&max_el=${encodeURIComponent(maxElInfo)}`).catch(() => {});
+        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&hop_ngoai=${hopNgoai}&day_cot=${dayCot.toFixed(1)}&loi_js=${loiJs}&loi_bam=${loiBamTong}&rac_dom=${racDom}&cuon_an=${cuonAn}&cuon_info=${encodeURIComponent(cuonAnInfo)}&loi_msg=${encodeURIComponent(loiMsgs)}&rac_msg=${encodeURIComponent(racMsgs)}&el=${encodeURIComponent(minElInfo)}&max_el=${encodeURIComponent(maxElInfo)}`).catch(() => {});
       } catch (e) {}
 
       document.body.dataset.xong = '1';

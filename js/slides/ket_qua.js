@@ -455,7 +455,7 @@ export const slideKetQuaVat = {
   muc: 'Kết quả đánh giá · Từng vật thật',
   tieu_de: 'Ca nuScenes thật: ảnh camera 2D và cảnh 3D',
   y: '',
-  ml: 'Xem từng vật trên ảnh camera thật và đám điểm LiDAR: bật/tắt V1–V5 độc lập để so với GT.',
+  ml: 'Xem từng vật trên ảnh camera thật và đám điểm LiDAR: bật/tắt V1–V6 độc lập để so với GT.',
   goc_nhin: [
     { ten: 'Nghiêng bao quanh vật', cam: [28.2, 5.8, 4.4], nhin: [24.3, 3.1, 0.9] },
     { ten: 'Từ trên nhìn xuống', cam: [24.3, 3.1, 9.5], nhin: [24.3, 3.1, 0.9] }
@@ -631,7 +631,7 @@ export const slideKetQuaVat = {
           </div>
         </div>
 
-        <div class="kq_vat_khung_2d" id="kq_vat_khung_2d"></div>
+        <div class="kq_vat_khung_2d" id="kq_vat_khung_2d"${soVongTich >= 4 ? ' style="max-height:310px;"' : ''}></div>
 
         <div class="kq_ghi_cong">
           Ảnh/LiDAR: nuScenes v1.0-mini (Motional), CC BY-NC-SA 4.0
@@ -641,10 +641,10 @@ export const slideKetQuaVat = {
           <div class="${lopKhungSoSanh}">
             ${danhSachSoSanhHtml}
           </div>
-          <div class="cv_ghi_nho" style="margin-top:4px; font-size:var(--c-nho); color:var(--mau-chu); line-height:1.4;">
-            Điểm LiDAR trong hộp GT: keyframe <b>${nKfHop}</b> · thêm 9 sweep <b>${nSwHop}</b> · nuScenes ghi <b>${nNusc}</b> · trong frustum 2D <b>${nFrustum}</b>
+          <div class="cv_ghi_nho" style="margin-top:2px; font-size:var(--c-nho); color:var(--mau-chu); line-height:1.2; white-space:nowrap;">
+            Điểm LiDAR trong GT: kf <b>${nKfHop}</b> · +9 sweep <b>${nSwHop}</b> · nuScenes <b>${nNusc}</b> · frustum <b>${nFrustum}</b>
           </div>
-          <div class="cv_ghi_nho" style="margin-top:2px;">
+          <div class="cv_ghi_nho" style="margin-top:2px; line-height:1.2;">
             ✓ đạt khi IoU 3D ≥ 0,5 (xe) · ≥ 0,3 (người đi bộ, 2 bánh)
           </div>
         </div>

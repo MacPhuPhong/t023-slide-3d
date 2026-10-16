@@ -1198,9 +1198,10 @@ html, body {
   color: #fff;
 }
 
-/* Tối ưu bố cục riêng cho slide ket-qua-vat (T68: day_cot <= 990, tran = 0) */
+/* Tối ưu bố cục riêng cho slide ket-qua-vat (T68, T106: day_cot <= 990, tran = 0) */
 body[data-slide="ket-qua-vat"] #cot_trai {
-  gap: 4px;
+  max-height: 930px;
+  gap: 3px;
 }
 body[data-slide="ket-qua-vat"] .tieu_de_slide {
   font-size: 28px;
@@ -1226,7 +1227,7 @@ body[data-slide="ket-qua-vat"] .nut_goc_nhin {
   font-size: var(--c-nho);
 }
 body[data-slide="ket-qua-vat"] .kq_vat_khung_2d {
-  max-height: 400px;
+  max-height: 350px;
 }
 body[data-slide="ket-qua-vat"] #slide_goc_nhin {
   margin-top: 2px;
