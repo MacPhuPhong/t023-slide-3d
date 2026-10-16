@@ -5,6 +5,7 @@ import { VONG_THAT } from '../../data/vong_that.js';
 import { taoXemCa } from '../xem_ca.js';
 
 const so = (v, n = 1) => Number(v).toFixed(n).replace('.', ',');
+const CO_WINDOW = typeof window !== 'undefined';
 const thamSo = () => new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
 
 function chenPanel(id, html) {
