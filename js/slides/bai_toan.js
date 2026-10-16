@@ -76,10 +76,10 @@ export const SLIDES_BAI_TOAN = [
     vat_chinh: 'vd',
     muc: 'Bài toán · Đề bài N1-01B',
     tieu_de: 'Đề bài và mục tiêu hỗ trợ gán nhãn',
-    y: 'Đề bài VinUni N1-01B đánh giá chất lượng cuboid qua 3 chỉ số cốt lõi: thời gian giây/cuboid, độ phủ IoU 3D và sai số góc xoay yaw. Nhóm tiếp cận dưới góc nhìn hỗ trợ con người (human-in-the-loop), không phải hệ thống detector 3D độc lập. Ví dụ xuyên suốt: một xe con cách 24,6 m trước bên trái, scene-0061 keyframe 8.',
+    y: 'Đề bài N1-01B chấm cuboid theo 3 chỉ số: thời gian giây/cuboid, IoU 3D và sai số góc yaw. Nhóm làm công cụ hỗ trợ người gán (human-in-the-loop), không làm detector 3D độc lập. Ví dụ xuyên suốt: xe con cách 24,6 m, scene-0061 keyframe 8.',
     cong_thuc: [],
     so: ['mini_scene', 'mini_kf', 'mini_cuboid', 'mini_vat', 'mini_khong_diem'],
-    ml: 'Bài toán là hỗ trợ gán nhãn chứ không phải detector: đầu vào có gợi ý của người (khung 2D), nên đánh giá cả năng suất người lẫn chất lượng hộp.',
+    ml: 'Hỗ trợ gán nhãn, không phải detector: đầu vào có khung 2D của người, nên chấm cả năng suất người lẫn chất lượng hộp.',
     goc_nhin: [
       { ten: 'Toàn cảnh Ego & xe ví dụ', cam: [-11.0, -9.0, 6.5], nhin: [12.5, 5.0, 0.6] },
       { ten: 'Cận cảnh xe ví dụ', cam: [32.0, -6.0, 5.0], nhin: [24.4, 3.1, 1.1] }
@@ -169,11 +169,12 @@ export const SLIDES_BAI_TOAN = [
     vat_chinh: 'vd',
     muc: 'Bài toán · Kiến trúc tổng thể',
     tieu_de: 'Chuỗi pipeline dựng cuboid 3D',
-    y: '<div style="font-size:18px; line-height:1.2; margin-bottom:4px;">• <b>V1 (Frustum Studio, công cụ đang chạy)</b>: frustum → RANSAC 0,12 m, 96 lần (geometry.py:182) → cụm Euclid bán kính 0,75 m, loại cụm &lt; 20 điểm (service.py:117) → chọn cụm gần tâm khung → fit chữ nhật diện tích min (geometry.py:158). Không có bù che. Không có chọn đầu xe (người bấm C).</div>' +
-       '<div style="font-size:18px; line-height:1.2; margin-bottom:4px;">• <b>V6 (vòng cuối đã thử)</b>: frustum → lưới mặt đất v3a (BAO_CAO §4.2:170) → cụm thích ứng max(0,5; 0,012·d) ≥ 3 điểm → chọn cụm hồi quy logistic 13 đặc trưng (BAO_CAO §4.2:173) → fit cực tiểu năng lượng E(x,y,yaw,L) → đáy theo khung 2D → chọn đầu xe bằng 9 sweep (áp khi chấm, chưa có trong Frustum Studio). Học 54 số, dò 22 tham số; YOLO là mạng nơ-ron cho khung 2D tự động.</div>',
+    // trích: V1 geometry.py:182 (RANSAC 0,12 m, 96 lần), service.py:117 (cụm < 20 điểm), geometry.py:158; V6 BAO_CAO §4.2:170, :173
+    y: '<div style="font-size:18px; line-height:1.25; margin-bottom:4px;">• <b>V1 (Frustum Studio, đang chạy)</b>: frustum → bỏ đất RANSAC → gom cụm bán kính 0,75 m, ≥ 20 điểm → chọn cụm gần tâm khung → fit chữ nhật diện tích nhỏ nhất. Không bù che; người bấm C để lật đầu xe.</div>' +
+       '<div style="font-size:18px; line-height:1.25; margin-bottom:4px;">• <b>V6 (vòng cuối đã thử)</b>: frustum → lưới mặt đất v3a → gom cụm theo cự ly → chọn cụm bằng logistic 13 đặc trưng → fit cực tiểu năng lượng → chọn đầu xe bằng 9 sweep (mới áp khi chấm, chưa có trong Studio).</div>',
     cong_thuc: [],
     so: ['vd_cach'],
-    ml: 'V1 là giải thuật hình học không học tham số. V6 kết hợp học thống kê (học 54 số, dò 22 tham số) và YOLO phát hiện khung 2D tự động.',
+    ml: 'V1 thuần hình học, ngưỡng đặt tay. V6 học 54 số và dò 22 tham số; khung 2D tự động lấy từ YOLO.',
     goc_nhin: [
       { ten: 'Toàn cảnh xe ví dụ & hộp 3D', cam: [34.0, -8.0, 6.0], nhin: [24.4, 3.1, 1.1] },
       { ten: 'Từ trên cao', cam: [24.4, 3.1, 18.0], nhin: [24.4, 3.1, 1.0] }
@@ -209,9 +210,6 @@ export const SLIDES_BAI_TOAN = [
               <button class="nut_goc_nhin tuong_tac" data-id="luong-chinh" style="padding:2px 6px; font-size:18px;">★ 6 vòng cải tiến</button>
               <button class="nut_goc_nhin tuong_tac" data-id="qa-qc" style="padding:2px 6px; font-size:18px;">5. Đánh giá QA/QC</button>
             </div>
-            <div style="margin-top:4px; color:var(--mau-chu-phu); font-size:18px;">
-              Thang cải tiến V1 (Frustum Studio đang chạy) → V6 (vòng cuối đã thử).
-            </div>
           `;
           elY.parentNode.insertBefore(buocEl, elY.nextSibling);
 
@@ -236,10 +234,10 @@ export const SLIDES_BAI_TOAN = [
     vat_chinh: 'vd',
     muc: 'Bài toán · Đối chiếu ba luồng',
     tieu_de: 'Đối chiếu: Lõi minh hoạ ↔ V1 Studio ↔ V6',
-    y: 'Phân định rõ ba luồng thuật toán trong tài liệu và 4 trạng thái dự án ngày 15/10/2026.',
+    y: 'Ba luồng thuật toán xuất hiện trong web, và phần nào đã có, phần nào chưa.',
     cong_thuc: [],
     so: [],
-    ml: 'Lõi minh hoạ (chương Toán) theo FGR; V1 Frustum Studio đang chạy; V6 là vòng cuối nhóm đã thử nghiệm.',
+    ml: 'Chương Toán minh hoạ theo FGR; V1 là công cụ đang chạy; V6 là vòng cuối nhóm đã thử.',
     goc_nhin: [
       { ten: 'Toàn cảnh xe ví dụ', cam: [34.0, -8.0, 6.0], nhin: [24.4, 3.1, 1.1] },
       { ten: 'Nhìn từ trên cao', cam: [24.4, 3.1, 20.0], nhin: [24.4, 3.1, 0.0] }
@@ -283,7 +281,7 @@ export const SLIDES_BAI_TOAN = [
             ['6. Fit hộp', 'Hàm f(θ) FGR', 'Diện tích nhỏ nhất', 'Năng lượng E(x,y,yaw,L)'],
             ['7. Hậu xử lý', 'Bù che tia biên', 'Không có bù che', 'Đáy theo khung, trừ lệch tia'],
             ['8. Mất cụm', 'Bỏ qua', 'Không ra hộp', 'Dự phòng cắt mặt đất'],
-            ['9. Đầu xe', 'Không có', 'Không có: người bấm C', 'C(v) 9 sweep + cờ 3 mức (áp khi chấm; chưa đưa vào công cụ)']
+            ['9. Đầu xe', 'Không có', 'Không có: người bấm C', 'C(v) 9 sweep + cờ 3 mức (chỉ khi chấm)']
           ].map(([b, c1, c2, c3]) => `
             <tr style="border-bottom:1px solid #e2e8f0;">
               <td style="padding:0.5px 3px; font-weight:700; color:#1e293b; font-size:18px;">${b}</td>
@@ -309,11 +307,11 @@ export const SLIDES_BAI_TOAN = [
             </div>
 
             <div class="the_trang" style="padding:2px 5px; background:#f8fafc; border:1px solid #cbd5e1; font-size:18px; line-height:1.15;">
-              <div style="font-weight:700; color:#0f172a; margin-bottom:0px; font-size:18px;">4 trạng thái dự án (CHOT_GIAI_DOAN §4–5):</div>
-              <div style="font-size:18px; color:#334155;">• <b>Công cụ đang chạy V1:</b> Frustum Studio cài đặt thuật toán V1 gốc (Mạnh).</div>
-              <div style="font-size:18px; color:#334155;">• <b>V5/V6 chưa chọn:</b> Quyết định mở của cả nhóm; web trình bày cả hai.</div>
-              <div style="font-size:18px; color:#334155;">• <b>Tập chấm cuối chưa chạy:</b> 2 scene giữ kín chỉ chạy một lần sau khi chốt.</div>
-              <div style="font-size:18px; color:#334155;">• <b>Giây/cuboid chưa đo:</b> Đang chuẩn bị đo thời gian người gán tay so với sửa.</div>
+              <div style="font-weight:700; color:#0f172a; margin-bottom:0px; font-size:18px;">Trạng thái dự án:</div>
+              <div style="font-size:18px; color:#334155;">• <b>Công cụ đang chạy V1:</b> Frustum Studio chạy thuật toán V1 gốc.</div>
+              <div style="font-size:18px; color:#334155;">• <b>V5/V6 chưa chọn:</b> nhóm quyết định; web trình bày cả hai.</div>
+              <div style="font-size:18px; color:#334155;">• <b>Tập chấm cuối chưa chạy:</b> 2 scene giữ kín, chạy một lần sau khi chốt.</div>
+              <div style="font-size:18px; color:#334155;">• <b>Giây/cuboid chưa đo:</b> sẽ đo gán tay so với sửa hộp gợi ý.</div>
             </div>
           `;
         } else {
@@ -323,27 +321,27 @@ export const SLIDES_BAI_TOAN = [
               <!-- Nhóm 1: Chỉ là minh hoạ -->
               <div class="the_trang" style="padding:3px 6px; border-left:3px solid #64748b; font-size:18px; line-height:1.2;">
                 <div style="font-weight:700; color:#334155; font-size:18px; margin-bottom:1px;">1. Chỉ là minh hoạ:</div>
-                <div style="font-size:18px; color:#475569;">• Chương Toán S8–S13 chạy lõi minh hoạ theo FGR <span style="color:#64748b; font-style:italic;">(nguồn: FGR paper & code demo)</span>.</div>
-                <div style="font-size:18px; color:#475569;">• Xe ví dụ là 1 xe (scene-0061 kf 8, 24,58 m) thuộc tập train của V5/V6 <span style="color:#64748b; font-style:italic;">(nguồn: rows_V6_train.pkl)</span>.</div>
-                <div style="font-size:18px; color:#475569;">• Các nhãn [G] trên slide S24, S25 là giả thuyết minh hoạ <span style="color:#64748b; font-style:italic;">(nguồn: CHOT §4)</span>.</div>
+                <div style="font-size:18px; color:#475569;">• Slide 9–14 (chương Toán) chạy lõi minh hoạ theo FGR.</div>
+                <div style="font-size:18px; color:#475569;">• Xe ví dụ là 1 xe (scene-0061 kf 8, 24,58 m) thuộc tập train của V5/V6.</div>
+                <div style="font-size:18px; color:#475569;">• Số gắn nhãn [G] là giả định minh hoạ, chưa đo.</div>
               </div>
 
               <!-- Nhóm 2: Công cụ thật đang có -->
               <div class="the_trang" style="padding:3px 6px; border-left:3px solid #0284c7; font-size:18px; line-height:1.2;">
                 <div style="font-weight:700; color:#0369a1; font-size:18px; margin-bottom:1px;">2. Công cụ thật (Frustum Studio) đang có:</div>
-                <div style="font-size:18px; color:#334155;">• Thuật toán V1 gốc đang chạy trong công cụ <span style="color:#0369a1; font-style:italic;">(nguồn: backend/service.py:87)</span>.</div>
-                <div style="font-size:18px; color:#334155;">• Phím C để lật 180° khi hộp bị ngược đầu <span style="color:#0369a1; font-style:italic;">(nguồn: Frustum Studio UI)</span>.</div>
-                <div style="font-size:18px; color:#334155;">• Bù chiều dài xe: có trong công cụ, <b>không</b> nằm trong số chấm đánh giá <span style="color:#0369a1; font-style:italic;">(nguồn: backend/completion.py)</span>.</div>
-                <div style="font-size:18px; color:#334155;">• Chưa có chọn đầu xe và chưa có V5/V6 <span style="color:#b45309; font-style:italic;">(nguồn: CHOT §5 việc 1–2)</span>.</div>
+                <div style="font-size:18px; color:#334155;">• Thuật toán V1 gốc đang chạy trong công cụ.</div>
+                <div style="font-size:18px; color:#334155;">• Phím C để lật 180° khi hộp bị ngược đầu.</div>
+                <div style="font-size:18px; color:#334155;">• Bù chiều dài xe: có trong công cụ, <b>không</b> nằm trong số chấm đánh giá.</div>
+                <div style="font-size:18px; color:#334155;">• Chưa có chọn đầu xe và chưa có V5/V6.</div>
               </div>
 
               <!-- Nhóm 3: Chưa làm / chưa đo -->
               <div class="the_trang" style="padding:3px 6px; border-left:3px solid #e11d48; font-size:18px; line-height:1.2;">
                 <div style="font-weight:700; color:#be123c; font-size:18px; margin-bottom:1px;">3. Chưa làm / chưa đo:</div>
-                <div style="font-size:18px; color:#475569;">• Tập chấm cuối (scene-0103, scene-0916) chưa chạy, giữ kín cho vòng chấm cuối <span style="color:#9f1239; font-style:italic;">(nguồn: CHOT §5)</span>.</div>
-                <div style="font-size:18px; color:#475569;">• Giây/cuboid với người gán nhãn thực tế chưa đo <span style="color:#9f1239; font-style:italic;">(nguồn: CHOT §5)</span>.</div>
-                <div style="font-size:18px; color:#475569;">• Chưa thử cảm biến khác, đường Việt Nam, khung do người vẽ <span style="color:#9f1239; font-style:italic;">(nguồn: CASE_STUDY dòng 104)</span>.</div>
-                <div style="font-size:18px; color:#475569;">• V6 sinh lỗi mặt đất bị nâng, giả thuyết dốc/gờ chưa kiểm <span style="color:#9f1239; font-style:italic;">(nguồn: CHOT §4, mat_dat.json)</span>.</div>
+                <div style="font-size:18px; color:#475569;">• Tập chấm cuối (scene-0103, scene-0916) chưa chạy, giữ kín cho vòng chấm cuối.</div>
+                <div style="font-size:18px; color:#475569;">• Giây/cuboid với người gán nhãn thực tế chưa đo.</div>
+                <div style="font-size:18px; color:#475569;">• Chưa thử cảm biến khác, đường Việt Nam, khung do người vẽ.</div>
+                <div style="font-size:18px; color:#475569;">• V6 sinh lỗi mặt đất bị nâng, giả thuyết dốc/gờ chưa kiểm.</div>
               </div>
             </div>
           `;

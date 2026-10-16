@@ -10,12 +10,12 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'none',
     muc: 'Toán từng bước · Phân bố dữ liệu',
     tieu_de: 'Mật độ điểm suy giảm theo khoảng cách',
-    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">Mật độ điểm LiDAR giảm theo tỷ lệ d<sup>−3,06</sup> (xe con) và d<sup>−1,80</sup> (người lớn). Ngưỡng ≥ 5 điểm giới hạn tầm dựng hộp ở 34 m (xe) và 22 m (người).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 ≥ 20 điểm; V2 clip(20(10/d)², 6, 20); V5 ≥ 3</div>',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Mật độ điểm LiDAR giảm theo tỷ lệ d<sup>−3,06</sup> (xe con) và d<sup>−1,80</sup> (người lớn). Ngưỡng ≥ 5 điểm giới hạn tầm dựng hộp ở 34 m (xe) và 22 m (người).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 ≥ 20 điểm; V2 clip(20(10/d)², 6, 20); V5 ≥ 3</div>',
     cong_thuc: [
       String.raw`N(d) \approx \frac{W}{d \, \Delta\phi} \cdot \frac{H}{d \, \Delta\theta} = \frac{c}{d^2}`
     ],
     so: ['N_xe', 'nguong5_xe', 'tap_dg'],
-    ml: 'Covariate shift theo cự ly: mô hình hình học suy giảm mạnh khi d > 35 m; bắt buộc báo cáo metric theo từng dải 0–20 / 20–35 / 35–50 m.',
+    ml: 'Covariate shift theo cự ly: hình học kém hẳn khi d > 35 m, nên báo metric theo dải 0–20 / 20–35 / 35–50 m.',
     goc_nhin: [
       { ten: 'Góc nghiêng toàn cảnh vòng cự ly', cam: [24, -22, 16], nhin: [14, 0, 0] },
       { ten: 'Từ trên nhìn vòng cự ly', cam: [15, 0, 48], nhin: [15, 0, 0] }
@@ -96,13 +96,13 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Ước lượng mặt đất',
     tieu_de: 'RANSAC loại bỏ mặt đất và ngưỡng khoảng cách τ',
-    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">Mặt đất chiếm 38 % điểm trong vùng 25 m. RANSAC lấy mẫu 3 điểm khớp mặt phẳng n·P + d = 0 với ngưỡng τ = 0,15 m; 81 lần lặp đảm bảo xác suất p = 0,99.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 RANSAC 0,12 m, 96 lần; V5 lưới mặt đất 1 m; V6 lưới v3a</div>',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Mặt đất chiếm 38 % điểm trong vùng 25 m. RANSAC lấy mẫu 3 điểm khớp mặt phẳng n·P + d = 0 với ngưỡng τ = 0,15 m; 81 lần lặp đảm bảo xác suất p = 0,99.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 RANSAC 0,12 m, 96 lần; V5 lưới mặt đất 1 m; V6 lưới v3a</div>',
     cong_thuc: [
       String.raw`\vec{n} = \frac{(P_2 - P_1) \times (P_3 - P_1)}{\|(P_2 - P_1) \times (P_3 - P_1)\|}, \quad |n \cdot P + d_0| < \tau`,
       String.raw`N \ge \frac{\ln(1 - p)}{\ln(1 - w^3)} \quad (\text{khi } w \approx 0{,}38 \implies N_{99} = 81)`
     ],
     so: ['w_dat', 'ransac_N99', 'ransac_N999', 'tau', 'mat_chan'],
-    ml: 'Ước lượng bền vững (robust estimation) khi có outlier; τ là siêu tham số đánh đổi: τ quá lớn sẽ cắt phạm vào gầm xe (10 % điểm xe bị mất), τ quá nhỏ sẽ để sót điểm đất nối các vật thể lại với nhau.',
+    ml: 'Ước lượng bền vững (robust estimation). τ lớn cắt vào gầm xe (mất 10 % điểm xe); τ nhỏ để sót đất nối các vật.',
     goc_nhin: [
       { ten: 'Toàn cảnh mặt phẳng đất RANSAC', cam: [14.0, -10.0, 14.0], nhin: [24.4, 3.1, 0.0] },
       { ten: 'Từ trên cao kiểm tra mặt đất', cam: [24.4, 3.1, 16.0], nhin: [24.4, 3.1, 0.5] }
@@ -222,7 +222,7 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Gom cụm không giám sát',
     tieu_de: 'Gom cụm FGR và ngưỡng khoảng cách φ',
-    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">FGR quét ngưỡng φ ∈ {0,1; …; 0,7} m tìm cụm liên thông lớn nhất thoả luật 80 %. Cự ly > 30,1 m, bước quét dọc vượt 0,7 m làm vỡ cụm.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1–V4 bán kính 0,75 m; V5 max(0,5; 0,012·d)</div>',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">FGR quét ngưỡng φ ∈ {0,1; …; 0,7} m tìm cụm liên thông lớn nhất thoả luật 80 %. Cự ly > 30,1 m, bước quét dọc vượt 0,7 m làm vỡ cụm.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1–V4 bán kính 0,75 m; V5 max(0,5; 0,012·d)</div>',
     cong_thuc: [
       String.raw`d \tan \Delta\theta < \phi < g, \quad d_{\max} = \frac{0{,}7}{\tan 1{,}333^\circ} \approx 30{,}1 \text{ m}`
     ],
@@ -350,12 +350,12 @@ export const SLIDES_LOC_GOM = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Lọc cụm',
     tieu_de: 'Luật 80 % lọc cụm và lỗi dính vật thể',
-    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">Luật 80 % yêu cầu ≥ 80 % điểm cụm nằm trong frustum 2D. Hai xe nối đuôi nhau trong cùng frustum sẽ gây lỗi dính hai xe (false merge).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> không có luật 80 %; V1–V4 chọn gần tâm khung; V5 logistic 13 đặc trưng</div>',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Luật 80 % yêu cầu ≥ 80 % điểm cụm nằm trong frustum 2D. Hai xe nối đuôi nhau trong cùng frustum sẽ gây lỗi dính hai xe (false merge).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> không có luật 80 %; V1–V4 chọn gần tâm khung; V5 logistic 13 đặc trưng</div>',
     cong_thuc: [
       String.raw`\frac{|C \cap F|}{|C|} \ge 0{,}8 \iff n_{\text{out}} \le \frac{n_{\text{in}}}{4}, \quad M_{\text{best}} = \operatorname{argmax}_k |M_k|`
     ],
     so: ['vd_phi', 'vd_cum', 'cum_dinh_ti_le'],
-    ml: 'Hàm chấm cụm là một scoring function; luật 80 % là bộ lọc precision. Lỗi dính hai xe nối đuôi nhau là hiện tượng false merge kinh điển khi frustum bao trọn cả hai vật thể cùng tia nhìn.',
+    ml: 'Luật 80 % là bộ lọc precision; khi frustum bao trọn hai xe nối đuôi, nó vẫn để lọt lỗi dính (false merge).',
     goc_nhin: [
       { ten: 'Toàn cảnh xe ví dụ & xe sau trong Frustum', cam: [36.0, -10.0, 8.0], nhin: [27.0, 3.5, 1.2] },
       { ten: 'Từ trên nhìn hai xe dính', cam: [26.0, 3.5, 16.0], nhin: [26.0, 3.5, 1.0] }

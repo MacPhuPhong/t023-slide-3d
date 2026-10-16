@@ -2,6 +2,7 @@
 // Số lấy từ data/vong_that.js (VONG_THAT, THANH_PHAN) và tài liệu chuẩn CHOT §4
 
 import { VONG_THAT, THANH_PHAN } from '../../data/vong_that.js';
+import { CAC_VONG } from '../../data/cac_vong.js';
 import { taoHop, hopGT, hienChuGiaiHop, anChuGiaiHop } from '../hop.js';
 
 const so = (v, n = 1) => Number(v).toFixed(n).replace('.', ',');
@@ -85,10 +86,10 @@ export const SLIDES_CAI_TIEN = [
     id: 'sau-vong-tong',
     vat_chinh: 'vd',
     muc: 'Các vòng cải tiến · Tổng kết',
-    tieu_de: `Tổng kết 6 vòng: đạt ${so(d1NbGt, 1)} % → ${so(d6NbGt, 1)} % (trần nếu chọn cụm hoàn hảo: ${so(oracleVal, 1)} %)`,
-    y: `Đã dừng ở V6: nếu chọn cụm hoàn hảo, V6 cũng chỉ đạt ${so(oracleVal, 1)} %. Muốn tăng nữa phải có thông tin mới (nhiều khung hình, bộ tìm khung 2D tốt hơn) — CHOT §1`,
+    tieu_de: `Tổng kết 6 vòng: đạt ${so(d1NbGt, 1)} % → ${so(d6NbGt, 1)} %`,
+    y: `Dừng ở V6: kể cả khi chọn cụm hoàn hảo, V6 cũng chỉ đạt ${so(oracleVal, 1)} %. Muốn tăng nữa cần thêm thông tin (nhiều khung hình, khung 2D tốt hơn).`,
     so: [],
-    ml: 'Đối chiếu trọn vẹn 6 vòng: thành phần thay đổi, phân bố nhóm lỗi và bảng cân nhắc V5–V6.',
+    ml: 'So 6 vòng: thành phần thay đổi, nhóm lỗi và cân nhắc V5–V6.',
     goc_nhin: [
       { ten: 'Toàn cảnh xe ví dụ & hộp V6', cam: [33.0, -7.0, 6.0], nhin: [24.3, 3.1, 1.2] },
       { ten: 'Từ trên nhìn hộp V6 và GT', cam: [24.3, 3.1, 16.0], nhin: [24.3, 3.1, 1.2] }
@@ -98,8 +99,9 @@ export const SLIDES_CAI_TIEN = [
       const bGt = hopGT(ctx.theGioi);
       if (bGt) {
         lop.add(taoHop(ctx, bGt, 'gt', { fill: false }));
-        // Lấy hộp V6 của xe ví dụ
-        lop.add(taoHop(ctx, { cx: 24.38, cy: 3.12, cz: 1.15, l: 4.65, w: 1.95, h: 1.62, yaw: 0.12 }, 'de_xuat', { fill: true, color: 0x0891b2 }));
+        // Hộp V6 của xe ví dụ: trùng hộp V5 (mo_phong_vs_that['6'].d_xe = 0), lấy từ CAC_VONG.xe_vd
+        const hopV6Vd = CAC_VONG.xe_vd.vong[4];
+        lop.add(taoHop(ctx, hopV6Vd, 'de_xuat', { fill: true, color: 0x0891b2 }));
         hienChuGiaiHop(['gt', 'de_xuat']);
       }
 
@@ -259,7 +261,6 @@ export const SLIDES_CAI_TIEN = [
             <div style="border:1px solid #cbd5e1; border-radius:4px;">
               <div style="background:#f1f5f9; padding:2px 5px; font-weight:700; font-size:18px; color:#475569; display:flex; justify-content:space-between; align-items:center;">
                 <span>Đã thử nhưng bỏ (4 cải tiến: B3, C1a, D2, D3)</span>
-                <span style="font-weight:400; font-size:18px; color:#64748b; font-style:italic;">* Đối chiếu số liệu từ BAO_CAO_DANH_GIA_IOU</span>
               </div>
               <table style="width:100%; border-collapse:collapse; text-align:left; line-height:1.2; font-size:18px;">
                 <thead>
@@ -280,7 +281,7 @@ export const SLIDES_CAI_TIEN = [
           tabBodyHtml = `
             <div class="the_trang" style="padding:2px 6px; background:#fafafa; border:1px solid #e2e8f0;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:2px;">
-                <span style="font-weight:700; font-size:18px; color:#1e293b;">Bảng đối chiếu V5 ↔ V6 (CHOT §4)</span>
+                <span style="font-weight:700; font-size:18px; color:#1e293b;">Đối chiếu V5 ↔ V6</span>
                 <span style="font-size:18px; color:#b45309; font-weight:700;">⚠ Nhóm chưa chọn bản cho công cụ; Frustum Studio đang chạy V1</span>
               </div>
               <div style="position:relative; margin-bottom:2px;">
@@ -303,7 +304,7 @@ export const SLIDES_CAI_TIEN = [
               </div>
               <div style="font-size:18px; color:#64748b; font-style:italic; margin-bottom:2px; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 4px 4px; padding:2px 0;">▼ còn 6 tiêu chí — cuộn để xem</div>
               <div class="cv_ghi_nho" style="font-size:18px; line-height:1.15; background:#fffbeb; border:1px solid #fef3c7; color:#92400e; padding:2px 5px;">
-                <div style="font-weight:700;">Câu hỏi để nhóm chốt (CHOT §4):</div>
+                <div style="font-weight:700;">Câu hỏi để nhóm chốt:</div>
                 <div>1. Dữ liệu đích có nhiều người đi bộ, vỉa hè đô thị (V6 mạnh), hay nhiều xe ở xa trên đường lớn (V5 mạnh)?</div>
                 <div>2. Nhóm chấp nhận rủi ro nào hơn: mặt đất sập do nhiễu (V5), hay mặt đất bị nâng ở dốc/gờ (V6)?</div>
               </div>

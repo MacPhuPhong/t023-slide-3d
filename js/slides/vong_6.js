@@ -128,7 +128,7 @@ export const slideVong6 = {
   muc: 'Các vòng cải tiến · V6',
   tieu_de: `V6: Lưới mặt đất thống kê bền v3a — đạt ${so(v5Nb, 1)}% → ${so(v6Nb, 1)}%`,
   y: '',
-  ml: 'Lọc bỏ các điểm nhiễu sâu dưới lòng đường để bảo vệ mặt đất: cứu người đi bộ khỏi bị loại nhầm.',
+  ml: 'Ước lượng bền với nhiễu: bỏ điểm quá thấp trước khi dựng lưới đất, nên người đi bộ không còn bị loại nhầm.',
   goc_nhin: [
     { ten: 'Chếch từ trên 35°', cam: [15.0, -1.0, 7.5], nhin: [4.62, -8.91, -0.8] },
     { ten: 'Ngang mặt đường', cam: [11.0, -5.0, 0.0], nhin: [4.62, -8.91, -0.2] },
@@ -243,15 +243,14 @@ export const slideVong6 = {
       <div class="the_trang" style="padding:6px 10px; margin-bottom:4px; border-left:4px solid #0891b2;">
         <div style="font-weight:700; color:#0891b2; font-size:18px;">Cơ chế: Lưới mặt đất thống kê bền v3a</div>
         <div style="font-size:18px; margin-top:3px; line-height:1.4;">
-          Ở V5, vài chục điểm nhiễu nằm 3–4 m dưới mặt đường khiến bộ lọc "lấy nhỏ nhất" kéo sập mặt đất cả vùng 5×5 m.
-          Người đi bộ vì thế bị coi là vật treo trên cao 4–5 m và bị loại nhầm.<br>
-          <b>Cách sửa:</b> V6 tính phân vị z thô, lấy trung vị lân cận 9×9 ô làm mốc tham chiếu và loại bỏ triệt để điểm z &lt; mốc − 1,0 m trước khi nội suy lưới đất.
+          <b>V5:</b> vài chục điểm nhiễu 3–4 m dưới mặt đường kéo sập mặt đất cả vùng 5×5 m; người đi bộ trông như cao 4–5 m nên bị loại nhầm.<br>
+          <b>V6:</b> lấy trung vị 9×9 ô làm mốc, bỏ điểm thấp hơn mốc 1,0 m rồi mới dựng lưới đất.
         </div>
       </div>
 
       <div class="the_trang" style="padding:6px 10px; margin-bottom:4px;">
         <div style="font-weight:700; font-size:18px; color:#1e293b; margin-bottom:3px;">
-          Số liệu đo mặt đất (mat_dat.json) qua V5 → V6:
+          Số vật lệch mặt đất so với đáy GT, V5 → V6:
         </div>
         <table style="width:100%; border-collapse:collapse; font-size:18px; line-height:1.2;">
           <thead>
@@ -278,14 +277,14 @@ export const slideVong6 = {
           </tbody>
         </table>
         <div class="cv_ghi_nho" style="margin-top:4px; font-size:18px; color:#b45309;">
-          ⚠ <b>Lỗi mới:</b> Số vật có mặt đất ước cao hơn đáy GT tăng (giả thuyết: dốc hoặc gờ; chưa kiểm).
+          ⚠ <b>Lỗi mới:</b> mặt đất bị ước cao hơn đáy GT nhiều hơn (nghi do dốc, gờ; chưa kiểm).
         </div>
       </div>
 
       <div class="the_trang" style="padding:6px 10px; margin-bottom:4px; background:#f0fdf4; border:1px solid #bbf7d0;">
         <div style="font-weight:700; color:#166534; font-size:18px;">Hiệu quả trên người đi bộ:</div>
         <div style="font-size:18px; color:#15803d; margin-top:2px; line-height:1.4;">
-          Người đi bộ ở tập phụ đạt tăng từ <b>${v5PhuPed}%</b> (V5) lên <b>${v6PhuPed}%</b> (V6). Toàn bộ 5 bộ tăng từ ${so(v5Nb, 1)}% lên ${so(v6Nb, 1)}%.
+          Người đi bộ ở tập phụ: <b>${v5PhuPed}%</b> → <b>${v6PhuPed}%</b>. Cả 5 bộ: ${so(v5Nb, 1)}% → ${so(v6Nb, 1)}%.
         </div>
       </div>
 

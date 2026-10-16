@@ -130,13 +130,13 @@ export const SLIDES_HINH_HOC = [
     vat_chinh: 'ego',
     muc: 'Toán từng bước · Hiệu chuẩn không gian',
     tieu_de: 'Ba hệ toạ độ và phép biến đổi xoay',
-    y: 'Dữ liệu đến từ 3 hệ quy chiếu: hệ xe (ego, gốc trục bánh sau), hệ LiDAR và 6 camera. Sai lệch góc lắp đặt (như LiDAR chúc 1,39°) tạo ra sai số độ cao 0,56 m ở khoảng cách 23 m.',
+    y: 'Dữ liệu nằm ở 3 hệ toạ độ: xe (ego, gốc giữa trục sau), LiDAR và 6 camera. Bỏ qua góc chúc 1,39° của LiDAR sẽ lệch độ cao 0,56 m ở cự ly 23 m.',
     cong_thuc: [
       String.raw`R(q) = \begin{bmatrix} 1-2(y^2+z^2) & 2(xy-wz) & 2(xz+wy) \\ 2(xy+wz) & 1-2(x^2+z^2) & 2(yz-wx) \\ 2(xz-wy) & 2(yz+wx) & 1-2(x^2+y^2) \end{bmatrix}`,
       String.raw`\psi_{\text{yaw}} = \operatorname{atan2}(2(wz+xy),\, 1-2(y^2+z^2))`
     ],
-    so: ['q_lidar', 'lidar_chuc', 'lech_cao_23m', 'ego_minh_hoa'],
-    ml: 'Chuẩn hoá đầu vào: mọi đặc trưng (khoảng cách, độ cao) chỉ có ý nghĩa khi quy về cùng một hệ; sai hệ trục tạo ra nhiễu hệ thống (systematic bias) trên toàn tập dữ liệu.',
+    so: ['q_lidar', 'lidar_chuc', 'lech_cao_23m'],
+    ml: 'Mọi đặc trưng (cự ly, độ cao) phải quy về cùng một hệ; sai hệ trục là nhiễu hệ thống (systematic bias) trên cả tập.',
     goc_nhin: [
       { ten: 'Cả ba hệ', cam: [8.5, -9.5, 6.0], nhin: [1.2, 0.0, 1.2] },
       // Nhìn vào tâm "gốc + 3 đầu trục" của từng hệ, cách ≈ 4 × độ dài trục để cả 3 trục và nhãn nằm trong khung
@@ -347,12 +347,12 @@ export const SLIDES_HINH_HOC = [
     vat_chinh: 'ego',
     muc: 'Toán từng bước · Đồng bộ đa cảm biến',
     tieu_de: 'Chuỗi biến đổi toạ độ và bù thời gian',
-    y: 'Camera và LiDAR quét lệch trung vị −35,5 ms khiến xe đi 0,238 m. Bỏ bù thời gian sẽ làm lệch phép chiếu 2,7 px, vượt ngưỡng cho phép 2 px.',
+    y: 'Camera và LiDAR chụp lệch nhau trung vị −35,5 ms, đủ để xe đi 0,238 m. Không bù thời gian, phép chiếu lệch 2,7 px, vượt ngưỡng 2 px.',
     cong_thuc: [
       String.raw`P_C = T_{E \to C} \, T_{G \to E}(t_{\text{cam}}) \, T_{E \to G}(t_{\text{lidar}}) \, T_{L \to E} \, P_L`
     ],
     so: ['lech_gio_tv', 'xe_di', 'lech_px'],
-    ml: 'Đồng bộ đa cảm biến tương tự như căn chỉnh nhãn với đặc trưng: lệch 35 ms gây sai 2,7 px — một dạng label noise có hệ thống.',
+    ml: 'Đồng bộ cảm biến giống căn nhãn với đặc trưng: lệch 35 ms gây sai 2,7 px, một dạng label noise có hệ thống.',
     goc_nhin: [
       { ten: 'Ego & xe bóng ma (35 ms)', cam: [9.0, -10.0, 6.5], nhin: [1.5, 0.0, 1.2] },
       { ten: 'Toàn cảnh đến điểm ví dụ', cam: [16.0, -11.0, 8.0], nhin: [16.0, 1.5, 1.2] }
@@ -453,13 +453,13 @@ export const SLIDES_HINH_HOC = [
     vat_chinh: 'ego',
     muc: 'Toán từng bước · Hình học chiếu',
     tieu_de: 'Chiếu lỗ kim và sự mơ hồ độ sâu',
-    y: 'Mô hình pinhole chiếu điểm 3D thành pixel (u,v). Phép chiếu ngược từ một pixel đơn lẻ chỉ xác định được một tia trong không gian: vô số điểm dọc tia đều cho cùng một pixel.',
+    y: 'Pinhole chiếu điểm 3D thành pixel (u,v). Chiều ngược lại, một pixel chỉ cho một tia: mọi điểm trên tia đều rơi vào cùng pixel đó.',
     cong_thuc: [
       String.raw`u = f_x \frac{X}{Z} + c_x, \quad v = f_y \frac{Y}{Z} + c_y \quad (Z > 0)`,
       String.raw`P_C(Z) = Z \, K^{-1} \begin{bmatrix} u \\ v \\ 1 \end{bmatrix}`
     ],
-    so: ['fx', 'cxcy', 'anh_kt', 'fov', 'uv', 'px_do', 'buoc_doc_px', 'vong_trong_khung'],
-    ml: 'Bài toán ngược ill-posed: ảnh 2D đơn lẻ không đủ thông tin khôi phục độ sâu Z. Cần đám mây điểm LiDAR cung cấp độ sâu vật lý trực tiếp thay vì phụ thuộc mô hình học prior độ sâu.',
+    so: ['fx', 'cxcy', 'fov', 'uv', 'vong_trong_khung'],
+    ml: 'Bài toán ngược ill-posed: một ảnh không đủ để khôi phục độ sâu Z, nên dùng LiDAR đo độ sâu trực tiếp.',
     goc_nhin: [
       { ten: 'Toàn cảnh camera, mặt ảnh & điểm', cam: [-5.0, -12.0, 6.0], nhin: [9.0, 1.0, 1.5] },
       { ten: 'Nhìn từ phía sau camera', cam: [0.0, -3.5, 2.5], nhin: [7.7, 0.0, 1.5] }
@@ -580,12 +580,12 @@ export const SLIDES_HINH_HOC = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Lọc không gian',
     tieu_de: 'Frustum: lọc điểm trong khung 2D',
-    y: 'Từ khung 2D [578,9; 446,9; 741,4; 568,5] px trên ảnh camera trước, dựng hình chóp frustum 3D. Trong 74 điểm LiDAR lọt vào frustum, chỉ có 41 điểm (55 %) thuộc xe, còn lại là mặt đất và cảnh nền.',
+    y: 'Khung 2D trên camera trước được kéo thành hình chóp frustum 3D. Trong 74 điểm LiDAR lọt vào, chỉ 41 điểm (55 %) thuộc xe; còn lại là mặt đất và nền.',
     cong_thuc: [
       String.raw`F = \left\{ P : Z > 0, \; u_{\min} \le u(P) \le u_{\max}, \; v_{\min} \le v(P) \le v_{\max} \right\}`
     ],
     so: ['khung2d', 'frustum_diem', 'frustum_xe', 'frustum_sau'],
-    ml: 'Proposal như detector hai tầng: khung 2D đóng vai trò sinh vùng ứng viên 3D; precision của vùng đề xuất đạt 41/74 = 55 %, đòi hỏi các bước lọc outlier tiếp theo.',
+    ml: 'Khung 2D là proposal như ở detector hai tầng; precision vùng đề xuất chỉ 41/74 = 55 %, nên phải lọc tiếp.',
     goc_nhin: [
       { ten: 'Toàn cảnh Frustum từ CAM_FRONT', cam: [16.0, -14.0, 7.0], nhin: [22.5, 2.8, 1.1] },
       { ten: 'Cận cảnh xe ví dụ & Frustum', cam: [24.0, -8.0, 5.0], nhin: [24.5, 3.1, 1.1] }

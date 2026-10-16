@@ -232,7 +232,7 @@ export const slideThatV1 = {
         nhom: 'khong_ra_hop',
         ten: 'Không ra hộp',
         so: nhomV1.khong_ra_hop,
-        ly_do: `Không tạo hộp khi điểm thưa hoặc ngoài góc nhìn: ${nhomV1.khong_ra_hop} vật gồm ${moTaLyDo(lyDoV1)} (backend/service.py).`
+        ly_do: `Không tạo hộp khi điểm thưa hoặc ngoài góc nhìn: ${nhomV1.khong_ra_hop} vật gồm ${moTaLyDo(lyDoV1)}.`
       },
       {
         nhom: 'lech_tam',
@@ -295,7 +295,7 @@ export const slideThatV1 = {
           </div>
           <div class="the_trang" style="padding:2px 6px; margin-bottom:2px; border-left:4px solid #ef4444; font-size:18px; line-height:1.15;">
             <div style="font-weight:700; color:#ef4444;">Nguyên nhân cốt lõi:</div>
-            <div style="margin-top:1px;">${nhomV1.khong_ra_hop} vật không ra hộp: ${moTaLyDo(lyDoV1)} (backend/service.py).</div>
+            <div style="margin-top:1px;">${nhomV1.khong_ra_hop} vật không ra hộp: ${moTaLyDo(lyDoV1)}.</div>
           </div>
           ${taoKhungMoPhongVsThat(1)}
         `;
@@ -446,7 +446,7 @@ export function slideVongThat(k) {
     muc: `Các vòng cải tiến · V${k} · Dữ liệu thật`,
     tieu_de: `V${k} trên dữ liệu thật: lỗi của V${kPrev} và cách sửa`,
     y: '',
-    ml: `Theo dõi tiến trình sửa lỗi thực tế từ V${kPrev} sang V${k} trên 289 vật thật: đối chiếu biểu đồ nhóm lỗi, dải thành phần và ca kiểm chứng.`,
+    ml: `Lỗi của V${kPrev} trên 289 vật thật: V${k} sửa được gì, còn sót gì.`,
     goc_nhin: [
       { ten: 'Góc nhìn 3D vật', cam: [34.0, -8.0, 6.0], nhin: [24.4, 3.1, 1.1] },
       { ten: 'Nhìn từ trên cao', cam: [24.4, 3.1, 20.0], nhin: [24.4, 3.1, 0.0] }

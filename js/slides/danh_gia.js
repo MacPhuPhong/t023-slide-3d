@@ -13,13 +13,13 @@ export const SLIDES_DANH_GIA = [
     vat_chinh: 'vd',
     muc: 'Đánh giá · Độ nhạy metric',
     tieu_de: 'IoU 3D, e₁₈₀ và tỉ lệ lật: IoU mù với lỗi hướng',
-    y: 'IoU 3D đo thể tích giao nhau giữa hai hộp nhưng không phạt lỗi ngược đầu 180°, đòi hỏi đo kèm e₁₈₀ và tỉ lệ lật.',
+    y: 'IoU 3D đo thể tích giao giữa hai hộp, nhưng hộp lật 180° vẫn có IoU = 1 và e₁₈₀ = 0°. Phải báo kèm tỉ lệ lật (e₃₆₀ > 90°).',
     cong_thuc: [
       String.raw`\operatorname{IoU}_{\text{3D}}(B, B^*) = \frac{V(B \cap B^*)}{V(B) + V(B^*) - V(B \cap B^*)}, \quad V(B \cap B^*) = A_{\text{BEV}} \cdot \Delta z`,
       String.raw`e_{180} = \min\big(|\Delta\theta|,\ \pi - |\Delta\theta|\big) \in [0, \tfrac{\pi}{2}], \quad \text{flip} \iff e_{180} \le \tau_{\text{yaw}} \text{ và } |\Delta\theta| > 90^\circ`
     ],
     so: ['iou_doc', 'iou_xoay10', 'iou_lat'],
-    ml: 'Metric chọn sai che lỗi: IoU = 1 khi lật → phải báo kèm e₁₈₀ và tỉ lệ lật, như báo precision kèm recall.',
+    ml: 'Metric chọn sai sẽ che lỗi: hộp lật vẫn đạt IoU = 1, nên báo kèm tỉ lệ lật, như báo precision kèm recall.',
     goc_nhin: [
       { ten: 'Từ trên nhìn đa giác giao BEV', cam: [24.3, 3.1, 15.0], nhin: [24.3, 3.1, 0.97] },
       { ten: 'Toàn cảnh 3D hai hộp', cam: [33.0, -7.0, 6.0], nhin: [24.3, 3.1, 0.97] }
@@ -238,7 +238,7 @@ export const SLIDES_DANH_GIA = [
                 </table>
               </div>
               <div style="margin-top:4px; font-size:18px; color:#475569; line-height:1.2;">
-                Lật 180° = loại 4 hướng (e₁₈₀ ≤ 30°, e₃₆₀ > 90°); ngược chiều = e₃₆₀ > 90° (BAO_CAO §9.9.3)
+                Lật 180° = loại 4 hướng (e₁₈₀ ≤ 30°, e₃₆₀ > 90°); ngược chiều = e₃₆₀ > 90°
               </div>
               <div style="margin-top:4px; padding:3px 6px; background:#eff6ff; border-radius:4px; border:1px solid #dbeafe; font-size:18px;">
                 <b>Cờ 3 mức V6:</b> <span style="color:#15803d; font-weight:700;">Xanh ${VONG_THAT.co_3_muc.xanh.n} (${so(VONG_THAT.co_3_muc.xanh.dung_pct, 1)} % đúng)</span> · <span style="color:#b45309; font-weight:700;">Vàng ${VONG_THAT.co_3_muc.vang.n} (${so(VONG_THAT.co_3_muc.vang.dung_pct, 1)} % đúng)</span> · <span style="color:#b91c1c; font-weight:700;">Đỏ ${VONG_THAT.co_3_muc.do.n} (cần rà soát)</span>
@@ -247,7 +247,7 @@ export const SLIDES_DANH_GIA = [
 
             <details class="the_trang" style="padding:6px 10px;">
               <summary style="font-weight:700; cursor:pointer;" class="chu-the">
-                7 kiểu sai lệch hình học minh hoạ [G] (TB §3.11) ▾
+                7 kiểu sai lệch hình học minh hoạ [G] ▾
               </summary>
               <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-top:4px; margin-bottom:4px;">
                 ${buttonsHtml}
@@ -285,14 +285,14 @@ export const SLIDES_DANH_GIA = [
     id: 'thoi-gian',
     vat_chinh: 'none',
     muc: 'Đánh giá · Năng suất & Thời gian máy',
-    tieu_de: 'Thời gian máy V1–V6 và thiết kế đo năng suất 5 người [G]',
-    y: `Thời gian người gán: chỉ số thiết kế chờ đo [G] trên 5 người (giữ mốc LATTE 9,51 → 1,53 s làm trích dẫn so sánh). Đo thời gian máy thật V1–V6 trên 289 vật 5 bộ (CPU AMD Ryzen 7 5700U, 1 luồng): V1–V3 ≈ ${Math.round(VONG_THAT.may['1'].tv)} ms/vật, V4 ${Math.round(VONG_THAT.may['4'].tv)} ms, V5–V6 ≈ ${Math.round(VONG_THAT.may['5'].tv)}–${Math.round(VONG_THAT.may['6'].tv)} ms/vật (khung hình trọn gói ${so(VONG_THAT.may['5'].s_frame, 2)}–${so(VONG_THAT.may['6'].s_frame, 2)} s tính cả lưới mặt đất).`,
+    tieu_de: 'Thời gian máy V1–V6 và thiết kế đo năng suất người',
+    y: 'Thời gian máy đo thật trên 289 vật (CPU Ryzen 7 5700U, 1 luồng). Thời gian người gán mới là thiết kế đo trên 5 người, chưa đo [G].',
     cong_thuc: [
       String.raw`r_i = \frac{t_{\text{tool}, i}}{t_{\text{tay}, i}}, \quad \ell_i = \ln r_i, \quad \bar{r} = \exp(\bar{\ell}), \quad \bar{\ell} \pm t_{0{,}975; 4} \frac{s_\ell}{\sqrt{5}}`,
       String.raw`t_{0{,}975; 4} = 2{,}776 \implies \text{Khoảng tin cậy 95 \% ví dụ [G]: } [0{,}556; 0{,}789]`
     ],
-    so: ['t_crit', 'vd_r_ci', 'latte_giay'],
-    ml: 'Thiết kế thí nghiệm: so sánh cặp, thang log, phân phối t 4 bậc tự do, đổi thứ tự (counterbalancing) để khử hiệu ứng học.',
+    so: ['vd_r_ci', 'latte_giay'],
+    ml: 'Thí nghiệm cặp có/không công cụ, thang log, phân phối t 4 bậc tự do, đổi thứ tự (counterbalancing) để khử hiệu ứng học.',
     goc_nhin: [
       { ten: 'Hàng 5 người gán trực diện', cam: [14.0, -14.0, 4.0], nhin: [14.0, -4.0, 1.2] },
       { ten: 'Góc nghiêng phối cảnh', cam: [6.0, -13.0, 4.5], nhin: [14.0, -4.0, 1.2] }
@@ -427,11 +427,8 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
 
               <div class="the_trang chu-the" style="padding:4px 8px;">
                 <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-weight:700; color:var(--mau-chu); font-size:18px;">Chỉ số thiết kế nhóm Năng suất (5 người gán [G], chưa đo):</span>
+                  <span style="font-weight:700; color:var(--mau-chu); font-size:18px;">Năng suất người (5 người, chưa đo [G]):</span>
                   <span style="background:#eff6ff; color:var(--mau-xanh); padding:2px 6px; border-radius:10px; font-weight:600; font-size:18px;">Mục tiêu: Giảm ≥ 30 %</span>
-                </div>
-                <div style="margin-top:3px; color:var(--mau-chu-phu); background:#f8fafc; padding:3px 6px; border-radius:6px; border:1px solid #e2e8f0; line-height:1.25; font-size:18px;">
-                  <b>Nguyên tắc đo [G]:</b> Thang log chuẩn hoá tỉ số tốc độ r̄, khử hiệu ứng học (ABBA). Phân phối t (4 df) đảm bảo tin cậy 95 %.
                 </div>
                 <details style="margin-top:3px;">
                   <summary style="cursor:pointer; font-weight:700; color:var(--mau-xanh); padding:2px 0; font-size:18px;">
@@ -472,14 +469,14 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
     id: 'qa-qc',
     vat_chinh: 'vd',
     muc: 'Đánh giá · Chỉ số QA/QC',
-    tieu_de: 'Bảng chỉ số QA/QC toàn diện và tập đánh giá',
-    y: 'Xe ví dụ được đưa qua bộ lọc tập đánh giá; 289 vật (5 bộ) và 108 vật (tập phụ) dùng để phát triển và kiểm định chéo. Tập chấm cuối (held-out test scene-0103, scene-0916) chưa chạy, chỉ chạy một lần sau khi nhóm chốt mô hình. Theo dõi 28 chỉ số QA/QC trên 4 nhóm: Độ chính xác, Năng suất, QC hệ thống và Thang cải tiến V1→V6 (kế hoạch 05/10 ghi V0–V5 là dự kiến, thực tế chạy là V1–V6 theo báo cáo CHOT §2). Các chỉ số chưa đo được gắn nhãn "Chờ đo" với mục tiêu rõ ràng.',
+    tieu_de: 'Chỉ số QA/QC và tập đánh giá',
+    y: 'Phát triển trên 289 vật (5 bộ), kiểm chéo trên 108 vật (tập phụ). Tập chấm cuối (scene-0103, scene-0916) chỉ chạy một lần sau khi chốt mô hình. 28 chỉ số chia 4 nhóm; chỉ số chưa đo ghi "Chờ đo".',
     cong_thuc: [
       String.raw`d \le 50\text{ m}, \; N \ge 5, \; \text{thấy} \ge 40\% \implies 289\text{ (5 bộ)} / 108\text{ (phụ)}`,
       String.raw`\operatorname{IoU}_{\text{3D}} \ge 0{,}5, \; \text{tỉ lệ lật } \le 15\%; \quad \bar{r} \le 0{,}70 \text{ (giảm } \ge 30\% \text{ [G])}`
     ],
-    so: ['tap_dg', 'tests'],
-    ml: 'Chia tập theo scene: 5 bộ (289 vật), tập phụ (108 vật). Tập chấm cuối chưa chạy, chỉ chạy một lần sau khi nhóm chốt chọn V5 hay V6.',
+    so: ['tap_dg'],
+    ml: 'Chia tập theo scene để không rò rỉ dữ liệu; tập chấm cuối giữ kín tới khi nhóm chốt V5 hay V6.',
     goc_nhin: [
       { ten: 'Cận cảnh xe ví dụ & Bộ lọc đánh giá', cam: [32.0, -6.0, 5.0], nhin: [24.4, 3.1, 1.1] },
       { ten: 'Toàn cảnh từ trên cao', cam: [24.4, 3.1, 16.0], nhin: [24.4, 3.1, 1.0] }

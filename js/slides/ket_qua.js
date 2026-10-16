@@ -740,7 +740,7 @@ export const slideKetQuaPhanBo = {
   muc: 'Kết quả đánh giá · Phân bố',
   tieu_de: 'Phân bố IoU 3D trên 289 vật: tỉ lệ đạt và so sánh phân nhóm',
   y: '',
-  ml: 'Đọc tại ngưỡng đạt từng lớp: phần trăm vật đạt của từng vòng cải tiến trên 289 vật nuScenes thật.',
+  ml: 'Tỉ lệ vật đạt của từng vòng trên 289 vật thật, đọc tại ngưỡng đạt của từng lớp.',
   goc_nhin: [
     { ten: 'Từ trên nhìn xuống (bao các hộp GT)', cam: [8.5, 0, 52], nhin: [8.5, 0, 0] },
     { ten: 'Nghiêng góc nhìn toàn cảnh', cam: [-28, -22, 30], nhin: [12, 0, 0] }

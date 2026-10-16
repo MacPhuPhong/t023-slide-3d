@@ -39,7 +39,7 @@ export const SLIDES_HOP_HUONG = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Fit hướng L-shape',
     tieu_de: 'Tìm hướng: quét θ, ba tiêu chí Zhang và hàm f của FGR',
-    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">Quét góc θ ∈ [0°, 90°) bước 0,5° tìm hướng khớp cụm L-shape. FGR tối ưu hàm f(θ) góc phần tư thay vì variance của Zhang.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 diện tích nhỏ nhất; V4 closeness; V5 năng lượng</div>',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Quét góc θ ∈ [0°, 90°) bước 0,5° tìm hướng khớp cụm L-shape. FGR tối ưu hàm f(θ) góc phần tư thay vì variance của Zhang.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 diện tích nhỏ nhất; V4 closeness; V5 năng lượng</div>',
     cong_thuc: [
       String.raw`f(\theta) = \frac{|Q_0|}{|Q|}, \quad \gamma_{\text{var}} = -\sigma^2(e_1) - \sigma^2(e_2)`
     ],
@@ -176,7 +176,7 @@ export const SLIDES_HOP_HUONG = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Bù che frustum',
     tieu_de: 'Bù phần bị che bằng giao cạnh với tia biên frustum',
-    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý (lõi minh hoạ theo FGR, không phải pipeline nhóm)</div><div style="font-size:18px; line-height:1.25;">LiDAR chỉ thấy 2 mặt L-shape. Kéo dài 2 cạnh hộp tới khi giao 2 tia biên frustum 2D để khôi phục đủ kích thước xe.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 không bù; V2 kích thước mẫu; V5 năng lượng + E_2d</div>',
+    y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">LiDAR chỉ thấy 2 mặt L-shape. Kéo dài 2 cạnh hộp tới khi giao 2 tia biên frustum 2D để khôi phục đủ kích thước xe.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 không bù; V2 kích thước mẫu; V5 năng lượng + E_2d</div>',
     cong_thuc: [
       String.raw`V + t e = P_0 + s u \implies t = \frac{(V - P_0) \times u}{u \times e}`,
       String.raw`\operatorname{IoU}_{\text{3D}}: \; 0{,}242 \longrightarrow 0{,}724 \quad (\Delta\text{IoU} = +0{,}482)`
@@ -300,12 +300,12 @@ export const SLIDES_HOP_HUONG = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Xác định đầu và đuôi',
     tieu_de: 'Đầu/đuôi xe bằng vận tốc; xe đứng yên cần người lật',
-    y: `<div style="font-size:18px; line-height:1.25;">L-shape đối xứng 180° nên không phân biệt được đầu hay đuôi xe. Ước vận tốc dọc trục từ 9 sweep LiDAR quá khứ (0,45 s) giúp phá vỡ đối xứng khi xe di chuyển. Người đi bộ và xe hai bánh thử thêm trục +90°. Trên 5 bộ (V6, 289 vật): chọn đầu xe nâng đúng hướng từ ${v6TruocDung} % lên ${v6SauDung} %, tỉ lệ lật ở xe chạy giảm từ ${v6ChayTruocLat} % xuống ${v6ChaySauLat} %. Còn ${v6BamC} hộp cần bấm phím C để lật (${v6DungBamC} xe đứng yên + ${v6ChayBamC} xe chạy).</div><div style="font-size:18px; color:var(--mau-chu-phu); margin-top:2px;">Cờ 3 mức V6: Xanh ${v6CoXanhN} (${v6CoXanhPct} % đúng) · Vàng ${v6CoVangN} (${v6CoVangPct} % đúng) · Đỏ ${v6CoDoN} (cần rà soát). <i>(${vtDungTiLeStr} % xe đứng yên là số liệu khảo sát ban đầu)</i></div>`,
+    y: `<div style="font-size:18px; line-height:1.25;">L-shape đối xứng 180° nên không biết đâu là đầu xe. Vận tốc ước từ 9 sweep quá khứ (0,45 s) phá đối xứng khi xe chạy. V6 trên 289 vật: đúng hướng ${v6TruocDung} % → ${v6SauDung} %; còn ${v6BamC} hộp (${v6DungBamC} đứng yên + ${v6ChayBamC} đang chạy) cần người bấm C.</div><div style="font-size:18px; color:var(--mau-chu-phu); margin-top:2px;">Cờ 3 mức: xanh ${v6CoXanhN} (${v6CoXanhPct} % đúng) · vàng ${v6CoVangN} (${v6CoVangPct} % đúng) · đỏ ${v6CoDoN} (cần rà soát).</div>`,
     cong_thuc: [
       String.raw`C(v) = \sum_{k=1}^{9} \sum_{s \in S_k} \min\big(d(s + v\,k\,\Delta t\,u,\ \text{cụm}),\ \tau\big)^2 + 10^{-4}|v|,\quad v \in [-15, 15]\ \text{m/s (bước 0,25)},\ \Delta t = 0{,}05\ \text{s},\ \tau = 0{,}3\ \text{m}`,
       String.raw`v^* = \arg\min C(v);\quad |v^*| \ge 0{,}5 \land C(v^*) \le C(0) \Rightarrow \text{đầu theo chiều } v^* \text{ (} v^* < 0 \text{: xoay } 180^\circ\text{)};\ \text{không thì cờ, người bấm C}`
     ],
-    so: ['v6_huong_truoc', 'v6_huong_sau', 'v6_lat_chay_truoc', 'v6_lat_chay_sau', 'v6_bam_c', 'v6_co_xanh', 'v6_co_vang', 'v6_co_do', 'vt_dung_ti_le'],
+    so: ['v6_huong_truoc', 'v6_huong_sau', 'v6_lat_chay_truoc', 'v6_lat_chay_sau'],
     ml: 'Đặc trưng thời gian phá đối xứng 180°; phần còn lại cần human-in-the-loop (cờ + phím lật).',
     goc_nhin: [
       { ten: 'Toàn cảnh xe và vector vận tốc', cam: [32.0, -6.0, 6.5], nhin: [24.3, 3.1, 1.2] },
@@ -449,8 +449,7 @@ export const SLIDES_HOP_HUONG = [
                 <span>↺</span> Lật 180° hướng xe (hoặc bấm phím C)
               </button>
               <div class="chu-nho" style="margin-top:10px; color:var(--mau-chu-phu); line-height:1.5; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
-                <b>Thực tế V6 (nam_bo):</b> Đúng hướng ${v6TruocDung} % → ${v6SauDung} %; Lật xe chạy ${v6ChayTruocLat} % → ${v6ChaySauLat} %; ${v6BamC} hộp bấm C (${v6DungBamC} đứng + ${v6ChayBamC} chạy).<br>
-                <b>Cờ 3 mức:</b> Xanh ${v6CoXanhN} (${v6CoXanhPct} %) · Vàng ${v6CoVangN} (${v6CoVangPct} %) · Đỏ ${v6CoDoN}. Lật 180° vẫn cho IoU = 1,000 và e₁₈₀ = 0°; chỉ sai số mod 360° (e₃₆₀ > 90°) bắt được lật.
+                <b>Lưu ý:</b> hộp lật 180° vẫn có IoU = 1,000 và e₁₈₀ = 0°; chỉ e₃₆₀ > 90° mới bắt được lật.
               </div>
             </div>
           `;
