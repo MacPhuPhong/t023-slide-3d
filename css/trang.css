@@ -936,10 +936,10 @@ html, body {
   line-height: 1.4;
 }
 .kq_bang_cuon {
-  max-height: 330px;
+  height: 256px; /* 32px header + 7 hàng * 32px = 256px (T105b) */
   overflow-y: auto;
   border: 1px solid var(--mau-vien);
-  border-radius: 8px;
+  border-radius: 8px 8px 0 0;
   background: #fff;
 }
 .kq_bang {
@@ -951,14 +951,18 @@ html, body {
 .kq_bang th {
   position: sticky;
   top: 0;
+  height: 32px;
+  box-sizing: border-box;
   background: #f8fafc;
   color: var(--mau-chu);
   font-weight: 700;
-  padding: 6px 4px;
+  padding: 5px 4px;
   border-bottom: 2px solid #e2e8f0;
   z-index: 2;
 }
 .kq_dong {
+  height: 32px;
+  box-sizing: border-box;
   cursor: pointer;
   transition: background 0.15s;
 }
@@ -969,7 +973,9 @@ html, body {
   background: #e0f2fe;
 }
 .kq_dong td {
-  padding: 5px 4px;
+  height: 32px;
+  box-sizing: border-box;
+  padding: 4px 4px;
   border-bottom: 1px solid #f1f5f9;
 }
 .kq_o_iou {
@@ -1246,12 +1252,21 @@ body[data-slide="con-sai"] #slide_tieu_de {
   font-size: 40px;
   margin-bottom: 2px;
 }
+body[data-slide^="that-v"] #cot_trai {
+  max-height: 960px;
+  gap: 2px;
+}
 body[data-slide^="that-v"] #slide_tieu_de {
-  font-size: 40px;
-  margin-bottom: 2px;
+  font-size: 34px !important;
+  margin-bottom: 1px !important;
+  line-height: 1.15 !important;
+}
+body[data-slide^="that-v"] #slide_y {
+  margin-bottom: 1px !important;
+  line-height: 1.2 !important;
 }
 body[data-slide^="that-v"] .kq_vat_khung_2d {
-  max-height: 200px;
+  max-height: 160px;
 }
 body[data-slide="con-sai"] .kq_vat_khung_2d {
   max-height: 190px;
@@ -1318,8 +1333,13 @@ body[data-slide="dau-duoi"] #slide_cong_thuc {
   padding: 4px 10px;
   gap: 2px;
 }
-body[data-slide="dau-duoi"] .the_cong_thuc .katex {
+body[data-slide="dau-duoi"] .the_cong_thuc .katex,
+body[data-slide="cham-diem"] .the_cong_thuc .katex {
   font-size: 18px !important;
+}
+body[data-slide="luong-chinh"] #cot_trai {
+  max-height: 940px;
+  gap: 3px;
 }
 body[data-slide="dau-duoi"] .katex-display {
   margin: 1px 0;
@@ -1373,23 +1393,25 @@ body[data-slide="cham-diem"] .the_trang {
 
 body[data-slide="sau-vong-tong"] #cot_trai {
   width: 920px;
-  max-height: 885px;
+  max-height: 960px;
   gap: 1px;
 }
 body[data-slide="sau-vong-tong"] #slide_tieu_de {
-  font-size: 34px !important;
+  font-size: 32px !important;
   margin-bottom: 1px !important;
   line-height: 1.15 !important;
 }
 body[data-slide="sau-vong-tong"] #slide_y {
   margin-bottom: 1px !important;
-  line-height: 1.25 !important;
+  line-height: 1.2 !important;
 }
 body[data-slide="sau-vong-tong"] .o_ml {
-  margin-top: 1px !important;
-  padding: 2px 6px !important;
+  display: none !important;
 }
 body[data-slide="sau-vong-tong"] .the_trang {
-  padding: 2px 6px;
+  padding: 1px 4px;
   margin-bottom: 1px;
+}
+body[data-slide="sau-vong-tong"] #slide_goc_nhin {
+  margin-top: 1px !important;
 }

@@ -237,7 +237,7 @@ function dungLuongChinh(ctx, lop, buocBanDau) {
         rect.clear();
         rect.add(H.doan(hinhChuNhat(t).canh, 0xe5484d, { tren: true }));
         const el = document.getElementById('cv_do_thi_v1');
-        if (el) el.innerHTML = svgDoThi({ caoPx: 120, theta: V1.theta_do, giaTri: V1.A, mau: '#e5484d', thetaChon: V1.theta_A_min_do, thetaGt: V1.gt_yaw_do % 90, nhan: 'A nhỏ nhất', conTro: t });
+        if (el) el.innerHTML = svgDoThi({ caoPx: 90, theta: V1.theta_do, giaTri: V1.A, mau: '#e5484d', thetaChon: V1.theta_A_min_do, thetaGt: V1.gt_yaw_do % 90, nhan: 'A nhỏ nhất', conTro: t });
         veLai(ctx);
       };
       if (TINH) {

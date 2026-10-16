@@ -2,6 +2,17 @@ import * as THREE from '../vendor/three/three.module.js';
 import { SO, so } from '../data/so_lieu.js';
 import { CHI_SO } from '../data/chi_so.js';
 
+if (typeof window !== 'undefined') {
+  window.addEventListener('error', e => {
+    const msg = e.error ? (e.error.stack || e.error.message) : (e.message || String(e));
+    (window.__loiSlide ||= []).push(`Error: ${msg}`);
+  });
+  window.addEventListener('unhandledrejection', e => {
+    const msg = e.reason ? (e.reason.stack || e.reason.message || String(e.reason)) : String(e);
+    (window.__loiSlide ||= []).push(`UnhandledRejection: ${msg}`);
+  });
+}
+
 export function nhomMenu(muc) {
   if (!muc || typeof muc !== 'string') return null;
   const phan = muc.split(' · ')[0].trim();
@@ -131,9 +142,11 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
     }
   };
 
-  function chuyenSlide(index, viewIndex = 0) {
+  async function chuyenSlide(index, viewIndex = 0) {
     if (index < 0 || index >= slides.length) return;
     if (index === chiSoHienTai && viewIndex === 0) return;
+
+    window.__loiSlide = [];
 
     // Thoát slide cũ
     if (chiSoHienTai >= 0 && chiSoHienTai < slides.length) {
@@ -341,6 +354,27 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
 
     // Chế độ chụp ảnh: render và lưu
     if (chup && !window.__dangQuaAll) {
+      const coBamThu = new URLSearchParams(window.location.search).has('bam_thu');
+      if (coBamThu) {
+        // Tạo ảnh giữ kết nối wait với server để Firefox không chụp ảnh sớm
+        const imgWait = document.createElement('img');
+        imgWait.src = '/__wait';
+        imgWait.style.display = 'none';
+        document.body.appendChild(imgWait);
+
+        // Bấm thử lần lượt mọi nút trong slide (T105a)
+        const selNut = '[data-muc],[data-buoc],[data-tab],[data-ca],[data-bo],[data-nguon],[data-sweep],[data-che-do],[data-v],.nut_goc_nhin';
+        const dsNut = Array.from(document.querySelectorAll(selNut)).slice(0, 40);
+        for (const nut of dsNut) {
+          try {
+            nut.click();
+          } catch (err) {
+            (window.__loiSlide ||= []).push(`ClickError: ${err.message || String(err)}`);
+          }
+          await new Promise(res => setTimeout(res, 150));
+        }
+      }
+
       canh.veMotLan();
       canh.chepSangAnh();
 
@@ -599,39 +633,83 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         }
       }
 
-      // Đo day_cot (T68): toạ độ đáy (bottom) của phần tử cuối cột trái ở không gian 1920x1080
+      // Đo day_cot (T68, T104): toạ độ đáy (bottom) của phần tử cuối cột trái và mọi phần tử con của panel ở 1920x1080
       let dayCot = 0;
+      let maxElInfo = '';
       const sanKhau = document.getElementById('san_khau');
-      if (cotTrai && sanKhau) {
+      if (sanKhau) {
         const skRect = sanKhau.getBoundingClientRect();
         const scale = skRect.width > 0 ? (skRect.width / 1920) : 1;
-        const cacCon = Array.from(cotTrai.querySelectorAll('*')).filter(el => {
-          const cs = window.getComputedStyle(el);
-          return cs.display !== 'none' && cs.visibility !== 'hidden' && el.offsetHeight > 0;
-        });
-        if (cacCon.length > 0) {
-          let maxBottom = 0;
-          for (const c of cacCon) {
+        let maxBottom = 0;
+
+        // 1. Kiểm tra các phần tử con trong cotTrai
+        if (cotTrai) {
+          const cacConCot = Array.from(cotTrai.querySelectorAll('*')).filter(el => {
+            const cs = window.getComputedStyle(el);
+            return cs.display !== 'none' && cs.visibility !== 'hidden' && el.offsetHeight > 0;
+          });
+          for (const c of cacConCot) {
             const r = c.getBoundingClientRect();
-            const b = (r.bottom - skRect.top) / scale;
-            if (b > maxBottom) maxBottom = b;
+            let b = (r.bottom - skRect.top) / scale;
+            const khungCuon = c.closest('[data-cuon="co-y"]');
+            if (khungCuon && khungCuon !== c) {
+              const rK = khungCuon.getBoundingClientRect();
+              b = Math.min(b, (rK.bottom - skRect.top) / scale);
+            }
+            if (b > maxBottom) {
+              maxBottom = b;
+              maxElInfo = `${c.tagName}.${c.className}#${c.id}[${(c.innerText || c.textContent || '').trim().slice(0, 30)}]`;
+            }
           }
-          dayCot = maxBottom;
-        } else {
-          const r = cotTrai.getBoundingClientRect();
-          dayCot = (r.bottom - skRect.top) / scale;
         }
+
+        // 2. Kiểm tra các panel và mọi phần tử con của panel (T104)
+        const cacPanel = Array.from(document.querySelectorAll('[data-cua-slide], .kq_panel, .cv_hop_dieu_khien, .cv_dieu_khien, [id$="_panel"]'));
+        for (const p of cacPanel) {
+          const cacConPanel = [p, ...p.querySelectorAll('*')].filter(el => {
+            const cs = window.getComputedStyle(el);
+            return cs.display !== 'none' && cs.visibility !== 'hidden' && el.offsetHeight > 0;
+          });
+          for (const c of cacConPanel) {
+            const r = c.getBoundingClientRect();
+            let b = (r.bottom - skRect.top) / scale;
+            const khungCuon = c.closest('[data-cuon="co-y"]');
+            if (khungCuon && khungCuon !== c) {
+              const rK = khungCuon.getBoundingClientRect();
+              b = Math.min(b, (rK.bottom - skRect.top) / scale);
+            }
+            if (b > maxBottom) {
+              maxBottom = b;
+              maxElInfo = `${c.tagName}.${c.className}#${c.id}[${(c.innerText || c.textContent || '').trim().slice(0, 30)}]`;
+            }
+          }
+        }
+
+        dayCot = maxBottom;
       }
 
       let cuonAn = 0;
-      if (cotTrai) {
-        Array.from(cotTrai.querySelectorAll('*')).forEach(el => {
-          const cs = window.getComputedStyle(el);
-          if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2) {
-            cuonAn++;
+      const cacVungKiemCuon = cotTrai ? [cotTrai, ...document.querySelectorAll('[data-cua-slide], .kq_panel, .cv_hop_dieu_khien, .cv_dieu_khien, [id$="_panel"]')] : [];
+      const tapKiemCuon = new Set();
+      cacVungKiemCuon.forEach(goc => {
+        if (!goc) return;
+        [goc, ...goc.querySelectorAll('*')].forEach(el => tapKiemCuon.add(el));
+      });
+
+      tapKiemCuon.forEach(el => {
+        const cs = window.getComputedStyle(el);
+        if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2) {
+          // Bỏ qua vùng cuộn có ý data-cuon="co-y" chỉ khi có dòng gợi ý (T105b)
+          if (el.dataset.cuon === 'co-y') {
+            const container = el.closest('.the_trang') || el.closest('[id$="_panel"]') || el.closest('#s15_card') || el.closest('#s16_card') || el.parentElement?.parentElement || el.parentElement;
+            const textToanBo = (el.textContent || '') + ' ' + (container ? container.textContent || '' : '');
+            if (textToanBo.includes('cuộn để xem')) return;
           }
-        });
-      }
+          cuonAn++;
+          (window.__cuonAnEls ||= []).push(`${el.tagName}.${el.className}#${el.id}(sh=${el.scrollHeight},ch=${el.clientHeight},cuon=${el.dataset.cuon})`);
+        }
+      });
+      const cuonAnInfo = (window.__cuonAnEls || []).join('; ');
       const loiJs = (window.__loiSlide || []).length;
       const racDom = Array.from(document.querySelectorAll('[data-cua-slide]')).filter(el => el.dataset.cuaSlide !== slide.id).length;
 
@@ -642,7 +720,7 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         const sh = cotTrai ? cotTrai.scrollHeight : 0;
         const ch = cotTrai ? cotTrai.clientHeight : 0;
         const tn = tranNgang ? 1 : 0;
-        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&hop_ngoai=${hopNgoai}&day_cot=${dayCot.toFixed(1)}&loi_js=${loiJs}&rac_dom=${racDom}&cuon_an=${cuonAn}&loi_msg=${encodeURIComponent(loiMsgs)}&rac_msg=${encodeURIComponent(racMsgs)}&el=${encodeURIComponent(minElInfo)}`).catch(() => {});
+        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&hop_ngoai=${hopNgoai}&day_cot=${dayCot.toFixed(1)}&loi_js=${loiJs}&rac_dom=${racDom}&cuon_an=${cuonAn}&cuon_info=${encodeURIComponent(cuonAnInfo)}&loi_msg=${encodeURIComponent(loiMsgs)}&rac_msg=${encodeURIComponent(racMsgs)}&el=${encodeURIComponent(minElInfo)}&max_el=${encodeURIComponent(maxElInfo)}`).catch(() => {});
       } catch (e) {}
 
       document.body.dataset.xong = '1';

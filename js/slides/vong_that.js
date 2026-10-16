@@ -126,23 +126,25 @@ function taoKhungMoPhongVsThat(k) {
       <table style="width:100%; border-collapse:collapse; font-size:18px; line-height:1.15; margin-bottom:1px;">
         <thead>
           <tr style="border-bottom:1px solid #cbd5e1; color:#475569; text-align:left;">
-            <th style="padding:0 3px;">Nguồn</th>
-            <th style="padding:0 3px;">${cotIouTieuDe}</th>
-            <th style="padding:0 3px;">Lệch tâm</th>
-            <th style="padding:0 3px;">Sai số hướng</th>
+            <th style="padding:0 3px;">Chỉ số</th>
+            <th style="padding:0 3px;">Xe ví dụ</th>
+            <th style="padding:0 3px;">289 vật (trung vị)</th>
           </tr>
         </thead>
         <tbody>
           <tr style="border-bottom:1px solid #f1f5f9;">
-            <td style="padding:0 3px; font-weight:600; color:#1e293b;">Xe ví dụ</td>
+            <td style="padding:0 3px; font-weight:600; color:#1e293b;">${cotIouTieuDe}</td>
             <td style="padding:0 3px; color:#1e40af;">${iouXeText}</td>
+            <td style="padding:0 3px; color:#0891b2;">${iouThatText}</td>
+          </tr>
+          <tr style="border-bottom:1px solid #f1f5f9;">
+            <td style="padding:0 3px; font-weight:600; color:#1e293b;">Lệch tâm</td>
             <td style="padding:0 3px;">${tamXeText}</td>
-            <td style="padding:0 3px;">${yawXeText}</td>
+            <td style="padding:0 3px;">${tamThatText}</td>
           </tr>
           <tr>
-            <td style="padding:0 3px; font-weight:600; color:#1e293b;">289 vật (trung vị)</td>
-            <td style="padding:0 3px; color:#0891b2;">${iouThatText}</td>
-            <td style="padding:0 3px;">${tamThatText}</td>
+            <td style="padding:0 3px; font-weight:600; color:#1e293b;">Sai số góc</td>
+            <td style="padding:0 3px;">${yawXeText}</td>
             <td style="padding:0 3px;">${yawThatText}</td>
           </tr>
         </tbody>
@@ -381,8 +383,8 @@ export const slideThatV1 = {
       chenPanel('that_v1_panel', `
         ${noiDungHtml}
         ${hienKhung2d && curCa ? `
-          <div class="kq_vat_khung_2d" id="that_v1_khung_2d"></div>
-          <div class="cv_ghi_nho" style="margin-top:2px; font-size:18px;">
+          <div class="kq_vat_khung_2d" id="that_v1_khung_2d" style="height:${buoc === 3 ? '135px' : '175px'}; max-height:${buoc === 3 ? '135px' : '175px'};"></div>
+          <div class="cv_ghi_nho" style="margin-top:1px; font-size:18px;">
             Ca: <b>${curCa.lop}</b> · ${so(curCa.kc, 1)} m · ${curCa.so_diem} điểm · IoU: <b>${curCa.vong['1'].gt.hop ? so(curCa.vong['1'].gt.iou, 2) : '—'}</b>
           </div>
         ` : ''}
@@ -523,13 +525,16 @@ export function slideVongThat(k) {
             const thayDoi = cCur.tt === 'doi' || cCur.tt === 'them';
             const mau = cCur.tt === 'doi' ? '#0284c7' : (cCur.tt === 'them' ? '#10b981' : '#64748b');
             const nhanTt = cCur.tt === 'doi' ? 'ĐỔI' : (cCur.tt === 'them' ? 'THÊM' : 'GIỮ');
+            const tenBuoc = row.buoc.split(' (')[0];
+            const moTaPrev = cPrev.tt === 'giu' ? 'giữ' : cPrev.mo_ta;
+            const moTaCur = cCur.tt === 'giu' ? 'giữ' : cCur.mo_ta;
             return `
               <tr style="border-bottom:1px solid #f1f5f9; ${thayDoi ? 'background:rgba(2,132,199,0.04);' : ''}">
-                <td style="padding:2px 4px; font-weight:700; font-size:18px;">${row.buoc}</td>
-                <td style="padding:2px 4px; font-size:18px; color:#64748b;">${cPrev.mo_ta}</td>
-                <td style="padding:2px 4px; font-size:18px; color:${mau}; font-weight:${thayDoi ? '700' : '400'};">
-                  <span style="display:inline-block; padding:0 4px; border-radius:3px; background:${mau}22; font-size:18px; margin-right:4px;">${nhanTt}</span>
-                  ${cCur.mo_ta}
+                <td style="padding:1px 3px; font-weight:700; font-size:18px; width:95px;">${tenBuoc}</td>
+                <td style="padding:1px 3px; font-size:18px; color:#64748b;">${moTaPrev}</td>
+                <td style="padding:1px 3px; font-size:18px; color:${mau}; font-weight:${thayDoi ? '700' : '400'};">
+                  <span style="display:inline-block; padding:0 3px; border-radius:3px; background:${mau}22; font-size:18px; margin-right:3px;">${nhanTt}</span>
+                  ${moTaCur}
                 </td>
               </tr>
             `;
@@ -697,9 +702,9 @@ export function slideVongThat(k) {
         chenPanel(`that_v${k}_panel`, `
           ${noiDungHtml}
           ${hienKhung2d ? `
-            <div class="kq_vat_khung_2d" id="that_v${k}_khung_2d"></div>
+            <div class="kq_vat_khung_2d" id="that_v${k}_khung_2d" style="height:${buoc === 3 ? '135px' : '175px'}; max-height:${buoc === 3 ? '135px' : '175px'};"></div>
             ${caHien ? `
-              <div class="cv_ghi_nho" style="margin-top:2px; font-size:18px;">
+              <div class="cv_ghi_nho" style="margin-top:1px; font-size:18px;">
                 Vật: <b>${caHien.lop}</b> · ${so(caHien.kc, 1)} m · ${caHien.so_diem} điểm · IoU: <b>${caHien.vong[kStr].gt.hop ? so(caHien.vong[kStr].gt.iou, 2) : '—'}</b>
               </div>
             ` : ''}

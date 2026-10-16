@@ -110,7 +110,11 @@ const paramGn = params.get('gn');
 if (paramGn !== null) {
   const gnNum = parseInt(paramGn);
   if (!isNaN(gnNum) && gnNum >= 0) {
-    startViewIdx = gnNum;
+    if (paramS === 'vong-6' || (SLIDES[startIdx] && SLIDES[startIdx].id === 'vong-6')) {
+      startViewIdx = Math.max(0, gnNum - 1);
+    } else {
+      startViewIdx = gnNum;
+    }
   }
 }
 

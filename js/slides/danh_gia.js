@@ -437,15 +437,21 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
                   <summary style="cursor:pointer; font-weight:700; color:var(--mau-xanh); padding:2px 0; font-size:18px;">
                     Bảng 7 chỉ số năng suất (chi tiết [G]) ▾
                   </summary>
-                  <div style="border:1px solid #e2e8f0; border-radius:4px; margin-top:3px;">
-                    <table style="width:100%; font-size:18px; line-height:1.2; border-collapse:collapse;">
-                      <tr style="color:var(--mau-chu-phu); border-bottom:1px solid #cbd5e1; font-size:18px;">
-                        <th style="text-align:left; padding-bottom:3px;">Chỉ số</th>
-                        <th style="text-align:center; padding-bottom:3px;">Mục tiêu</th>
-                        <th style="text-align:right; padding-bottom:3px;">Hiện trạng</th>
-                      </tr>
-                      ${rowsMuc}
-                    </table>
+                  <div style="position:relative; border:1px solid #e2e8f0; border-radius:4px 4px 0 0; margin-top:3px;">
+                    <div data-cuon="co-y" style="height:110px; overflow-y:auto; scrollbar-width:thin;">
+                      <table style="width:100%; font-size:18px; line-height:1.2; border-collapse:collapse;">
+                        <tr style="color:var(--mau-chu-phu); border-bottom:1px solid #cbd5e1; font-size:18px; height:26px;">
+                          <th style="text-align:left; padding-bottom:3px; height:26px;">Chỉ số</th>
+                          <th style="text-align:center; padding-bottom:3px; height:26px;">Mục tiêu</th>
+                          <th style="text-align:right; padding-bottom:3px; height:26px;">Hiện trạng</th>
+                        </tr>
+                        ${rowsMuc}
+                      </table>
+                    </div>
+                    <div style="position:absolute; bottom:0; left:0; right:0; height:16px; pointer-events:none; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.85));"></div>
+                  </div>
+                  <div style="font-size:18px; color:var(--mau-chu-phu); text-align:center; padding:2px 0; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 4px 4px; font-weight:600; font-style:italic;">
+                    ▼ còn 4 chỉ số — cuộn để xem
                   </div>
                 </details>
               </div>
@@ -556,14 +562,21 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
 
             return `
               <table class="bang_the">
-                <tr class="chu-nho" style="color:var(--mau-chu-phu); border-bottom:1px solid #cbd5e1;">
-                  <th style="text-align:left; padding-bottom:4px;">Chỉ số</th>
-                  <th style="text-align:center; padding-bottom:4px;">Mục tiêu</th>
-                  <th style="text-align:right; padding-bottom:4px;">Hiện trạng</th>
+                <tr class="chu-nho" style="color:var(--mau-chu-phu); border-bottom:1px solid #cbd5e1; height:26px; box-sizing:border-box;">
+                  <th style="text-align:left; padding-bottom:4px; height:26px;">Chỉ số</th>
+                  <th style="text-align:center; padding-bottom:4px; height:26px;">Mục tiêu</th>
+                  <th style="text-align:right; padding-bottom:4px; height:26px;">Hiện trạng</th>
                 </tr>
                 ${rows}
               </table>
             `;
+          }
+
+          function tinhGoiYQc(nhomId) {
+            const nhom = CHI_SO.nhom.find(n => n.id === nhomId);
+            const tongSo = nhom ? nhom.muc.length : 0;
+            const conLai = Math.max(0, tongSo - 2);
+            return `▼ còn ${conLai} chỉ số — cuộn để xem`;
           }
 
           panelEl.innerHTML = `
@@ -578,8 +591,14 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
                 <button class="tab_qc nut_phu" data-nhom="qc" style="border:none; color:var(--mau-chu-phu); font-size:18px; padding:2px 6px;">3. QC hệ thống</button>
                 <button class="tab_qc nut_phu" data-nhom="thang_v" style="border:none; color:var(--mau-chu-phu); font-size:18px; padding:2px 6px;">4. Thang V1→V6</button>
               </div>
-              <div id="box_noi_dung_qc" style="max-height:85px; overflow-y:auto; scrollbar-width:thin;">
-                ${taoHtmlBangNhom('chinh_xac')}
+              <div style="position:relative; border:1px solid #e2e8f0; border-radius:4px 4px 0 0; margin-top:2px;">
+                <div id="box_noi_dung_qc" data-cuon="co-y" style="height:82px; overflow-y:auto; scrollbar-width:thin;">
+                  ${taoHtmlBangNhom('chinh_xac')}
+                </div>
+                <div style="position:absolute; bottom:0; left:0; right:0; height:14px; pointer-events:none; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.85));"></div>
+              </div>
+              <div id="box_qc_goi_y" style="font-size:18px; color:var(--mau-chu-phu); text-align:center; padding:2px 0; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 4px 4px; font-weight:600; font-style:italic;">
+                ${tinhGoiYQc('chinh_xac')}
               </div>
             </div>
           `;
@@ -596,6 +615,8 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
               tab.style.color = '#fff';
               const nhomId = tab.getAttribute('data-nhom');
               boxQc.innerHTML = taoHtmlBangNhom(nhomId);
+              const elGoiY = panelEl.querySelector('#box_qc_goi_y');
+              if (elGoiY) elGoiY.textContent = tinhGoiYQc(nhomId);
             });
           });
         }

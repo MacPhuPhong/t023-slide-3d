@@ -43,7 +43,7 @@ function anTheGioi(ctx, an) {
   if (tg.ego) tg.ego.visible = !an;
 }
 
-function taoLuoiDatMesh(ctx, md, mau, op = 0.25) {
+function taoLuoiDatMesh(ctx, md, mau, op = 0.25, tamVat = null, banKinhToiDa = 4.8) {
   const T = ctx.THREE;
   const { o, x0, y0, z } = md;
   const n = z.length; // 17
@@ -62,8 +62,17 @@ function taoLuoiDatMesh(ctx, md, mau, op = 0.25) {
     }
   }
 
+  const cx = tamVat ? tamVat.cx : 4.62;
+  const cy = tamVat ? tamVat.cy : -8.91;
+  const r2Max = banKinhToiDa * banKinhToiDa;
+
   for (let i = 0; i < n - 1; i++) {
     for (let j = 0; j < m - 1; j++) {
+      const xCell = x0 + (i + 0.5) * o;
+      const yCell = y0 + (j + 0.5) * o;
+      const dist2 = (xCell - cx) * (xCell - cx) + (yCell - cy) * (yCell - cy);
+      if (dist2 > r2Max) continue; // Giới hạn vẽ lưới trong bán kính 6 m quanh người đi bộ (T105c)
+
       const a = i * m + j;
       const b = (i + 1) * m + j;
       const c = (i + 1) * m + (j + 1);
@@ -80,16 +89,19 @@ function taoLuoiDatMesh(ctx, md, mau, op = 0.25) {
   geom.computeVertexNormals();
 
   const grp = new T.Group();
+  grp.renderOrder = 0;
 
   // 1. Mặt phẳng mờ (opacity 0,25)
   const matSurface = new T.MeshBasicMaterial({
     color: mau,
     transparent: true,
-    opacity: 0.25,
+    opacity: op,
     side: T.DoubleSide,
     depthWrite: false
   });
-  grp.add(new T.Mesh(geom, matSurface));
+  const meshSurface = new T.Mesh(geom, matSurface);
+  meshSurface.renderOrder = 0;
+  grp.add(meshSurface);
 
   // 2. Viền đậm
   const matWire = new T.MeshBasicMaterial({
@@ -97,9 +109,12 @@ function taoLuoiDatMesh(ctx, md, mau, op = 0.25) {
     wireframe: true,
     transparent: true,
     opacity: 0.85,
-    depthTest: true
+    side: T.DoubleSide,
+    depthWrite: false
   });
-  grp.add(new T.Mesh(geom, matWire));
+  const meshWire = new T.Mesh(geom, matWire);
+  meshWire.renderOrder = 0;
+  grp.add(meshWire);
 
   return grp;
 }
@@ -115,15 +130,27 @@ export const slideVong6 = {
   y: '',
   ml: 'Lọc bỏ các điểm nhiễu sâu dưới lòng đường để bảo vệ mặt đất: cứu người đi bộ khỏi bị loại nhầm.',
   goc_nhin: [
-    { ten: 'Nghiêng nhìn người đi bộ & 2 lưới', cam: [9.5, -4.5, 2.2], nhin: [4.6, -8.9, 0.2] },
-    { ten: 'Ngang mặt đường', cam: [8.5, -7.0, 0.8], nhin: [4.6, -8.9, 0.0] }
+    { ten: 'Chếch từ trên 35°', cam: [15.0, -1.0, 7.5], nhin: [4.62, -8.91, -0.8] },
+    { ten: 'Ngang mặt đường', cam: [11.0, -5.0, 0.0], nhin: [4.62, -8.91, -0.2] },
+    { ten: 'Từ dưới lên', cam: [10.0, -5.5, -2.0], nhin: [4.62, -8.91, 0.2] }
   ],
+  doiGocNhin(ctx, viewIndex) {
+    if (slideVong6.goc_nhin[viewIndex]) {
+      const v = slideVong6.goc_nhin[viewIndex];
+      ctx.tweenCamera(v.cam, v.nhin, TINH ? 0 : 0.8);
+      veLai(ctx);
+    }
+  },
   vao(ctx) {
     anTheGioi(ctx, true);
+    if (ctx.canh && ctx.canh.scene) {
+      ctx.canh.scene.traverse(o => { if (o.name === 'mat_dat_nen') o.visible = false; });
+    }
     const T = ctx.THREE;
     const lop = ctx.lop();
     const nhom = new T.Group();
     nhom.userData.hop = 'vong_6';
+    nhom.renderOrder = 0;
     lop.add(nhom);
 
     const ca = VONG_THAT.vi_du && VONG_THAT.vi_du['6'] ? VONG_THAT.vi_du['6'].sua : null;
@@ -131,11 +158,11 @@ export const slideVong6 = {
 
     if (ca && md) {
       // 1. Lưới mặt đất V5 "v1" (màu đỏ 0xef4444: mặt phẳng mờ 0.25 + viền đậm)
-      const meshV1 = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v1 }, 0xef4444, 0.25);
+      const meshV1 = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v1 }, 0xef4444, 0.25, ca.gt, 2.4);
       nhom.add(meshV1);
 
       // 2. Lưới mặt đất V6 "v3a" (màu xanh 0x10b981: mặt phẳng mờ 0.25 + viền đậm)
-      const meshV3a = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v3a }, 0x10b981, 0.25);
+      const meshV3a = taoLuoiDatMesh(ctx, { o: md.o, x0: md.x0, y0: md.y0, z: md.z_v3a }, 0x10b981, 0.25, ca.gt, 2.4);
       nhom.add(meshV3a);
 
       // 3. Điểm LiDAR của người đi bộ (chỉ để keyframe, ẩn sweep)
@@ -150,23 +177,30 @@ export const slideVong6 = {
           vatGt: ca.gt,
           banKinh: 3.5
         });
+        diemObj.renderOrder = 2;
         nhom.add(diemObj);
       }
 
       // 4. Ba hộp: GT, V5, V6
       // Hộp GT (xanh lá 0x1f9d55)
-      nhom.add(taoHop(ctx, ca.gt, 'gt', { fill: true, color: 0x1f9d55 }));
+      const hopGt = taoHop(ctx, ca.gt, 'gt', { fill: true, color: 0x1f9d55 });
+      hopGt.renderOrder = 1;
+      nhom.add(hopGt);
 
       // Hộp V5 (nét đứt tím/cam V5)
       const hopV5 = ca.vong && ca.vong['5'] && ca.vong['5'].gt ? ca.vong['5'].gt.hop : null;
       if (hopV5) {
-        nhom.add(taoHop(ctx, hopV5, 'de_xuat', { fill: false, color: MAU_VONG_HEX[5], netDut: true }));
+        const hV5 = taoHop(ctx, hopV5, 'de_xuat', { fill: false, color: MAU_VONG_HEX[5], netDut: true });
+        hV5.renderOrder = 1;
+        nhom.add(hV5);
       }
 
       // Hộp V6 (nét đứt cyan V6)
       const hopV6 = ca.vong && ca.vong['6'] && ca.vong['6'].gt ? ca.vong['6'].gt.hop : null;
       if (hopV6) {
-        nhom.add(taoHop(ctx, hopV6, 'de_xuat', { fill: false, color: MAU_VONG_HEX[6], netDut: true }));
+        const hV6 = taoHop(ctx, hopV6, 'de_xuat', { fill: false, color: MAU_VONG_HEX[6], netDut: true });
+        hV6.renderOrder = 1;
+        nhom.add(hV6);
       }
 
       // Tia LiDAR từ gốc ego tới tâm người đi bộ
@@ -174,12 +208,29 @@ export const slideVong6 = {
       const pGt = ctx.S([ca.gt.cx, ca.gt.cy, ca.gt.cz]);
       const lineGeo = new T.BufferGeometry().setFromPoints([pSensor, pGt]);
       const lineMat = new T.LineBasicMaterial({ color: 0x94a3b8, transparent: true, opacity: 0.5 });
-      nhom.add(new T.LineSegments(lineGeo, lineMat));
+      const lineTia = new T.LineSegments(lineGeo, lineMat);
+      lineTia.renderOrder = 1;
+      nhom.add(lineTia);
 
-      // Camera đặt nhìn ngang hơi chếch từ trên bao quát người đi bộ và 2 lưới đất
-      const tamEgo = [ca.gt.cx, ca.gt.cy, 0.2];
-      const camEgo = [9.5, -4.5, 2.2];
-      ctx.tweenCamera(camEgo, tamEgo, TINH ? 0 : 0.8);
+      // Tính delta z tại ô chứa người đi bộ
+      const idxI = Math.max(0, Math.min(md.z_v1.length - 1, Math.round((ca.gt.cx - md.x0) / md.o)));
+      const idxJ = Math.max(0, Math.min(md.z_v1[0].length - 1, Math.round((ca.gt.cy - md.y0) / md.o)));
+      const zV1Ped = md.z_v1[idxI][idxJ];
+      const zV3aPed = md.z_v3a[idxI][idxJ];
+      const deltaZ = Math.abs(zV3aPed - zV1Ped);
+
+      // Chú thích 3D nổi trên cảnh (T105c)
+      if (typeof ctx.taoNhan === 'function') {
+        ctx.taoNhan(`V5: mặt đất bị kéo sập ${so(deltaZ, 2)} m dưới chân người`, [ca.gt.cx, ca.gt.cy, zV1Ped - 0.2], { uu_tien: 1, kieu: 'gt' });
+        ctx.taoNhan(`V6: mặt đất đúng`, [ca.gt.cx, ca.gt.cy, zV3aPed + 0.3], { uu_tien: 1, kieu: 'cum' });
+      }
+
+      // Đọc góc nhìn từ URL &gn=...
+      const q = thamSo();
+      let gnIdx = (+q.get('gn') || 1) - 1;
+      if (gnIdx < 0 || gnIdx >= slideVong6.goc_nhin.length) gnIdx = 0;
+      const vGoc = slideVong6.goc_nhin[gnIdx];
+      ctx.tweenCamera(vGoc.cam, vGoc.nhin, TINH ? 0 : 0.8);
       veLai(ctx);
     }
 
@@ -245,6 +296,9 @@ export const slideVong6 = {
   },
   ra(ctx) {
     anTheGioi(ctx, false);
+    if (ctx.canh && ctx.canh.scene) {
+      ctx.canh.scene.traverse(o => { if (o.name === 'mat_dat_nen') o.visible = true; });
+    }
     goPhanTu(['vong_6_panel']);
   }
 };

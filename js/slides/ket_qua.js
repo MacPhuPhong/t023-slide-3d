@@ -350,18 +350,24 @@ export const slideKetQuaCanh = {
         <div class="the_trang kq_tom_tat">
           Bộ ${bo} · ${kf.scene} · kf ${kf.kf} — <b>${kf.mo_ta}</b>: đạt <b>${soDat}/${soVat}</b> vật (${pctDat} %) ở V${vong}
         </div>
-        <div class="kq_bang_cuon">
-          <table class="kq_bang">
-            <thead>
-              <tr>
-                <th style="text-align:left;">Lớp · Khoảng cách · Ngưỡng</th>
-                <th>V1</th><th>V2</th><th>V3</th><th>V4</th><th>V5</th><th>V6</th>
-              </tr>
-            </thead>
-            <tbody>
-              ${dongHtml}
-            </tbody>
-          </table>
+        <div style="position:relative; margin-top:2px;">
+          <div class="kq_bang_cuon" data-cuon="co-y">
+            <table class="kq_bang">
+              <thead>
+                <tr>
+                  <th style="text-align:left;">Lớp · Khoảng cách · Ngưỡng</th>
+                  <th>V1</th><th>V2</th><th>V3</th><th>V4</th><th>V5</th><th>V6</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${dongHtml}
+              </tbody>
+            </table>
+          </div>
+          <div style="position:absolute; bottom:0; left:0; right:0; height:18px; pointer-events:none; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.85));"></div>
+        </div>
+        <div style="text-align:center; font-size:18px; color:var(--mau-chu-phu); padding:3px 0; background:#f8fafc; border:1px solid var(--mau-vien); border-top:none; border-radius:0 0 8px 8px; font-weight:600; margin-bottom:4px;">
+          ▼ còn ${Math.max(0, soVat - 7)} vật — cuộn để xem
         </div>
         <div class="chu-nho" style="color:var(--mau-chu-phu); line-height:1.4;">
           Bấm vào dòng để phóng to vật; bấm "Xem 2D + 3D ▶" để xem ảnh camera thật và hộp 3D chi tiết.

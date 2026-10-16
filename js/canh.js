@@ -154,6 +154,7 @@ export function taoCanh(container, { chup = false } = {}) {
   const groundGeo = new THREE.PlaneGeometry(260, 260);
   const groundMat = new THREE.MeshStandardMaterial({ color: 0xe3e5e8, roughness: 1.0 });
   const ground = new THREE.Mesh(groundGeo, groundMat);
+  ground.name = 'mat_dat_nen';
   ground.rotation.x = -Math.PI / 2;
   ground.position.y = -0.01;
   ground.receiveShadow = true;
