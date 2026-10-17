@@ -232,7 +232,14 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
           if (item) {
             const chip = document.createElement('div');
             chip.className = 'chip';
-            chip.title = `Nguồn: ${item.nguon}`;
+            const NGHIA_NHAN = {
+              D: 'Đo trên nuScenes-mini',
+              B: 'Số từ bài báo',
+              N: 'Ngưỡng nhóm đặt',
+              S: 'Nhóm tính từ công thức',
+              G: 'Giả định minh hoạ, chưa đo'
+            };
+            chip.title = NGHIA_NHAN[item.nhan] || `Nguồn: ${item.nguon}`;
             chip.innerHTML = `
               <span class="chip_gia_tri">${item.hien}</span>
               ${item.dv ? `<span class="chip_dv">${item.dv}</span>` : ''}
@@ -373,7 +380,7 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         // Bấm thử lần lượt mọi nút trong slide (T105a)
         let loiBam = 0;
         const loiSlideTruoc = (window.__loiSlide || []).length;
-        const selNut = '[data-muc],[data-buoc],[data-tab],[data-ca],[data-bo],[data-nguon],[data-sweep],[data-che-do],[data-v],.nut_goc_nhin';
+        const selNut = '[data-muc],[data-buoc],[data-tab],[data-ca],[data-bo],[data-nguon],[data-sweep],[data-che-do],[data-v],[data-trang],.nut_goc_nhin';
         const dsNut = Array.from(document.querySelectorAll(selNut)).slice(0, 40);
         for (const nut of dsNut) {
           try {
@@ -728,20 +735,115 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         [goc, ...goc.querySelectorAll('*')].forEach(el => tapKiemCuon.add(el));
       });
 
+      let vungCuon = 0;
+      const vungCuonEls = [];
       tapKiemCuon.forEach(el => {
         const cs = window.getComputedStyle(el);
-        if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2) {
-          // Bỏ qua vùng cuộn có ý data-cuon="co-y" chỉ khi có dòng gợi ý (T105b)
-          if (el.dataset.cuon === 'co-y') {
-            const container = el.closest('.the_trang') || el.closest('[id$="_panel"]') || el.closest('#s15_card') || el.closest('#s16_card') || el.parentElement?.parentElement || el.parentElement;
-            const textToanBo = (el.textContent || '') + ' ' + (container ? container.textContent || '' : '');
-            if (textToanBo.includes('cuộn để xem')) return;
+        if (cs.display !== 'none' && cs.visibility !== 'hidden' && el.offsetHeight > 0) {
+          if ((cs.overflowY === 'auto' || cs.overflowY === 'scroll') && el.scrollHeight > el.clientHeight + 2) {
+            vungCuon++;
+            vungCuonEls.push(`${el.tagName}.${el.className}#${el.id}(sh=${el.scrollHeight},ch=${el.clientHeight})`);
           }
-          cuonAn++;
-          (window.__cuonAnEls ||= []).push(`${el.tagName}.${el.className}#${el.id}(sh=${el.scrollHeight},ch=${el.clientHeight},cuon=${el.dataset.cuon})`);
         }
       });
-      const cuonAnInfo = (window.__cuonAnEls || []).join('; ');
+      const vungCuonInfo = vungCuonEls.join('; ');
+      cuonAn = vungCuon;
+      const cuonAnInfo = vungCuonInfo;
+
+      // Quét tham chiếu nội bộ (T107a)
+      const reRef = /\.(py|json|pkl|csv|md)\b|§|\bCHOT\b|BAO_CAO|CASE_STUDY|\bTB\s|nguồn:|dòng \d+|audi|free3d|nikodimos|rows_V\d|backend\//i;
+      const tapChuoiRef = [];
+      const vungRef = new Set();
+      if (cotTrai) vungRef.add(cotTrai);
+      document.querySelectorAll('[data-cua-slide], [id$="_panel"], .kq_panel').forEach(el => {
+        let inside = false;
+        for (const r of vungRef) {
+          if (r.contains(el)) { inside = true; break; }
+        }
+        if (!inside) {
+          const cs = window.getComputedStyle(el);
+          if (cs.display !== 'none' && cs.visibility !== 'hidden') {
+            vungRef.add(el);
+          }
+        }
+      });
+      const s3ChuGiai = document.getElementById('s3_chu_giai');
+      if (s3ChuGiai) {
+        let inside = false;
+        for (const r of vungRef) {
+          if (r.contains(s3ChuGiai)) { inside = true; break; }
+        }
+        if (!inside && window.getComputedStyle(s3ChuGiai).display !== 'none') {
+          vungRef.add(s3ChuGiai);
+        }
+      }
+      document.querySelectorAll('#lop_nhan .nhan3d, .nhan3d').forEach(el => {
+        let inside = false;
+        for (const r of vungRef) {
+          if (r.contains(el)) { inside = true; break; }
+        }
+        if (!inside && window.getComputedStyle(el).display !== 'none') {
+          vungRef.add(el);
+        }
+      });
+
+      for (const r of vungRef) {
+        tapChuoiRef.push(r.innerText || '');
+      }
+
+      const tapElCoTitle = new Set();
+      for (const r of vungRef) {
+        if (r.getAttribute && r.getAttribute('title')) tapElCoTitle.add(r);
+        r.querySelectorAll('*').forEach(el => {
+          const cs = window.getComputedStyle(el);
+          if (cs.display !== 'none' && cs.visibility !== 'hidden' && el.getAttribute && el.getAttribute('title')) {
+            tapElCoTitle.add(el);
+          }
+        });
+      }
+      document.querySelectorAll('.chip').forEach(c => {
+        if (c.getAttribute && c.getAttribute('title')) tapElCoTitle.add(c);
+      });
+      for (const el of tapElCoTitle) {
+        const t = el.getAttribute('title');
+        if (t) tapChuoiRef.push(t);
+      }
+
+      let refNoiBo = 0;
+      const refInfoList = [];
+      for (const str of tapChuoiRef) {
+        let m;
+        const re = new RegExp(reRef.source, 'gi');
+        while ((m = re.exec(str)) !== null) {
+          refNoiBo++;
+          if (refInfoList.length < 3) {
+            const start = Math.max(0, m.index - 20);
+            const end = Math.min(str.length, m.index + m[0].length + 20);
+            refInfoList.push(str.substring(start, end).replace(/\s+/g, ' '));
+          }
+        }
+      }
+      const refInfo = refInfoList.join(' | ');
+
+      // Kiểm tra gãy trục cho he-truc (T108)
+      let trucGay = 0;
+      let trucTong = 0;
+      if (slide.id === 'he-truc') {
+        const dsTruc = document.querySelectorAll('#s3_chu_giai .truc');
+        trucTong = dsTruc.length;
+        dsTruc.forEach(el => {
+          if (el.getClientRects().length > 1) {
+            trucGay++;
+          }
+        });
+      }
+
+      document.body.dataset.ref_noi_bo = String(refNoiBo);
+      document.body.dataset.vung_cuon = String(vungCuon);
+      if (slide.id === 'he-truc') {
+        document.body.dataset.truc_gay = String(trucGay);
+      }
+
       const loiJs = (window.__loiSlide || []).length;
       const racDom = Array.from(document.querySelectorAll('[data-cua-slide]')).filter(el => el.dataset.cuaSlide !== slide.id).length;
 
@@ -755,7 +857,7 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         const sh = cotTrai ? cotTrai.scrollHeight : 0;
         const ch = cotTrai ? cotTrai.clientHeight : 0;
         const tn = tranNgang ? 1 : 0;
-        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&hop_ngoai=${hopNgoai}&day_cot=${dayCot.toFixed(1)}&loi_js=${loiJs}&loi_bam=${loiBamTong}&rac_dom=${racDom}&cuon_an=${cuonAn}&cuon_info=${encodeURIComponent(cuonAnInfo)}&loi_msg=${encodeURIComponent(loiMsgs)}&rac_msg=${encodeURIComponent(racMsgs)}&el=${encodeURIComponent(minElInfo)}&max_el=${encodeURIComponent(maxElInfo)}`).catch(() => {});
+        fetch(`/__meta?id=${slide.id}&tran=${isTran}&sh=${sh}&ch=${ch}&tn=${tn}&phu=${phu.toFixed(4)}&thay=${thay}&nhan_khac=${tk.khacSlide}&nhan_chong=${tk.chong}&nhan_ngoai=${tk.ngoaiVung}&nhan_hien=${tk.hien}&nhan_tong=${tk.tong}&vat_hien=${vatHien}&diem_hien=${diemHien}&chu_min=${chuMin.toFixed(1)}&hop_khong_vai=${hopKhongVai}&hop_gt_lech_cm=${hopGtLechCm.toFixed(1)}&hop_ngoai=${hopNgoai}&day_cot=${dayCot.toFixed(1)}&loi_js=${loiJs}&loi_bam=${loiBamTong}&rac_dom=${racDom}&cuon_an=${cuonAn}&cuon_info=${encodeURIComponent(cuonAnInfo)}&vung_cuon=${vungCuon}&vung_cuon_info=${encodeURIComponent(vungCuonInfo)}&ref_noi_bo=${refNoiBo}&ref_info=${encodeURIComponent(refInfo)}&truc_gay=${trucGay}&truc_tong=${trucTong}&loi_msg=${encodeURIComponent(loiMsgs)}&rac_msg=${encodeURIComponent(racMsgs)}&el=${encodeURIComponent(minElInfo)}&max_el=${encodeURIComponent(maxElInfo)}`).catch(() => {});
       } catch (e) {}
 
       document.body.dataset.xong = '1';

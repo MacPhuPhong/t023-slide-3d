@@ -2,6 +2,7 @@ import { iou, rectPoly, clipPoly, polyArea } from '../toan_loi.js';
 import { CHI_SO } from '../../data/chi_so.js';
 import { taoHop, hopGT } from '../hop.js';
 import { VONG_THAT } from '../../data/vong_that.js';
+import { htmlPhanTrang, catTrang, trangTuUrl } from '../phan_trang.js';
 
 const so = (v, n = 1) => (v !== undefined && v !== null ? v.toFixed(n).replace('.', ',') : '—');
 
@@ -195,8 +196,7 @@ export const SLIDES_DANH_GIA = [
           panelEl.innerHTML = `
             <div class="the_trang chu-the" style="padding:6px 10px; margin-bottom:6px;">
               <div style="font-weight:700; margin-bottom:4px; display:flex; justify-content:space-between; align-items:center;">
-                <span style="font-size:18px;">Bảng thật V1–V6: 4 loại hướng & sai số góc (5 bộ, GT):</span>
-                <span style="font-size:18px; color:var(--mau-chu-phu);">cac_vong.json</span>
+                <span style="font-size:18px;">Bảng thật V1–V6: 4 loại hướng & sai số góc (5 bộ, GT)</span>
               </div>
               <div style="border:1px solid #e2e8f0; border-radius:4px;">
                 <table style="width:100%; font-size:18px; line-height:1.2; border-collapse:collapse;">
@@ -285,16 +285,15 @@ export const SLIDES_DANH_GIA = [
     id: 'thoi-gian',
     vat_chinh: 'none',
     muc: 'Đánh giá · Năng suất & Thời gian máy',
-    tieu_de: 'Thời gian máy V1–V6 và thiết kế đo năng suất người',
-    y: 'Thời gian máy đo thật trên 289 vật (CPU Ryzen 7 5700U, 1 luồng). Thời gian người gán mới là thiết kế đo trên 5 người, chưa đo [G].',
+    tieu_de: 'Thời gian máy V1–V6 và cách đo năng suất người',
+    y: 'Máy: đo thật trên 289 vật, 1 luồng CPU. Người: thiết kế đo trên 5 người, chưa đo [G]; mục tiêu giảm ≥ 30 % thời gian gán.',
     cong_thuc: [
-      String.raw`r_i = \frac{t_{\text{tool}, i}}{t_{\text{tay}, i}}, \quad \ell_i = \ln r_i, \quad \bar{r} = \exp(\bar{\ell}), \quad \bar{\ell} \pm t_{0{,}975; 4} \frac{s_\ell}{\sqrt{5}}`,
-      String.raw`t_{0{,}975; 4} = 2{,}776 \implies \text{Khoảng tin cậy 95 \% ví dụ [G]: } [0{,}556; 0{,}789]`
+      String.raw`r_i = \frac{t_{\text{tool}, i}}{t_{\text{tay}, i}}, \quad \ell_i = \ln r_i, \quad \bar{r} = \exp(\bar{\ell}), \quad \bar{\ell} \pm t_{0{,}975; 4} \frac{s_\ell}{\sqrt{5}}`
     ],
-    so: ['vd_r_ci', 'latte_giay'],
+    so: ['latte_giay'],
     ml: 'Thí nghiệm cặp có/không công cụ, thang log, phân phối t 4 bậc tự do, đổi thứ tự (counterbalancing) để khử hiệu ứng học.',
     goc_nhin: [
-      { ten: 'Hàng 5 người gán trực diện', cam: [14.0, -14.0, 4.0], nhin: [14.0, -4.0, 1.2] },
+      { ten: 'Hàng 5 người gán trực diện', cam: [15.6, -17.0, 4.5], nhin: [15.6, -4.0, 1.0] },
       { ten: 'Góc nghiêng phối cảnh', cam: [6.0, -13.0, 4.5], nhin: [14.0, -4.0, 1.2] }
     ],
     vao(ctx) {
@@ -302,24 +301,24 @@ export const SLIDES_DANH_GIA = [
       const nangSuat = CHI_SO.nhom.find(n => n.id === 'nang_suat');
       const chiSoR = nangSuat ? nangSuat.muc.find(m => m.id === 'ti_so_r') : null;
 
-      // Dựng 5 người mô hình xếp hàng ở khoảng đất trống thoáng đãng (nửa phải sân khấu)
-      const cX = 14.3;
+      // Dựng 5 người mô hình xếp hàng ở khoảng đất trống thoáng đãng (nửa phải sân khấu, mép trái >= 960 px)
+      const cX = 16.6;
       const cY = -4.0;
 
-function taoNguoiDonGian(THREE, cao = 1.74) {
-  const g = new THREE.Group();
-  const mat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5 });
-  const hThan = cao * 0.7;
-  const rThan = 0.22;
-  const than = new THREE.Mesh(new THREE.CylinderGeometry(rThan, rThan, hThan, 16), mat);
-  than.position.y = hThan / 2;
-  g.add(than);
-  const rDau = 0.16;
-  const dau = new THREE.Mesh(new THREE.SphereGeometry(rDau, 16, 16), mat);
-  dau.position.y = hThan + rDau;
-  g.add(dau);
-  return g;
-}
+      function taoNguoiDonGian(THREE, cao = 1.74) {
+        const g = new THREE.Group();
+        const mat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5 });
+        const hThan = cao * 0.7;
+        const rThan = 0.22;
+        const than = new THREE.Mesh(new THREE.CylinderGeometry(rThan, rThan, hThan, 16), mat);
+        than.position.y = hThan / 2;
+        g.add(than);
+        const rDau = 0.16;
+        const dau = new THREE.Mesh(new THREE.SphereGeometry(rDau, 16, 16), mat);
+        dau.position.y = hThan + rDau;
+        g.add(dau);
+        return g;
+      }
 
       const khoangCach = 1.15;
       for (let i = 0; i < 5; i++) {
@@ -335,7 +334,6 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
         // Khung cột trên đầu mỗi người
         const coSo = chiSoR && chiSoR.gia_tri !== null;
         if (coSo) {
-          // Dựng cột đặc có chiều cao tỉ lệ với r_i
           const caoCot = 1.2 * chiSoR.gia_tri;
           const cotGeo = new ctx.THREE.CylinderGeometry(0.18, 0.18, caoCot, 16);
           const cotMat = new ctx.THREE.MeshStandardMaterial({ color: 0x1f9d55, roughness: 0.3 });
@@ -343,7 +341,6 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
           cotMesh.position.copy(ctx.S([pX, pY, 1.8 + caoCot / 2]));
           lop.add(cotMesh);
         } else {
-          // Dựng khung nét đứt "Chờ đo [G]"
           const khungGeo = new ctx.THREE.BoxGeometry(0.5, 0.8, 0.5);
           const edges = new ctx.THREE.EdgesGeometry(khungGeo);
           const lineMat = new ctx.THREE.LineDashedMaterial({
@@ -356,17 +353,18 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
           wire.computeLineDistances();
           wire.position.copy(ctx.S([pX, pY, 2.3]));
           lop.add(wire);
-
-          const nhanNguoi = ctx.taoNhan(
-            `Người ${i + 1}<br><span style="color:#6e56cf; font-weight:700;">Chờ đo [G]</span>`,
-            [pX, pY, 2.8],
-            { uu_tien: 1, kieu: 'thuong' }
-          );
-          lop.add(nhanNguoi);
         }
       }
 
-      // Thêm bảng tổng hợp năng suất và thời gian máy bên cột trái
+      // Một nhãn duy nhất cho cả hàng 5 người (T111)
+      const nhanNguoiChung = ctx.taoNhan(
+        '5 người gán · chờ đo [G]',
+        [cX, cY, 2.8],
+        { uu_tien: 1, kieu: 'minh_hoa' }
+      );
+      lop.add(nhanNguoiChung);
+
+      // Thêm bảng thời gian máy bên cột trái (T111)
       const elY = document.getElementById('slide_y');
       if (elY) {
         let cardEl = document.getElementById('s15_card');
@@ -376,81 +374,34 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
           cardEl.className = 'fade-in';
           cardEl.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
 
-          const rowsMuc = (nangSuat ? nangSuat.muc : []).map(m => {
-            const hienGiaTri = m.gia_tri !== null
-              ? `<b style="color:var(--cum-xanh);">${m.gia_tri} ${m.don_vi}</b>`
-              : `<span class="chip-cho-do chu-nho">Chờ đo [G] (${m.du_kien})</span>`;
-            return `
-              <tr style="border-bottom:1px solid #edf0f5; height:28px;">
-                <td style="color:var(--mau-chu); font-weight:600;">${m.ten}</td>
-                <td class="chu-nho" style="text-align:center; color:var(--mau-chu-phu);">${m.muc_tieu || '—'}</td>
-                <td style="text-align:right;">${hienGiaTri}</td>
-              </tr>
-            `;
-          }).join('');
-
           cardEl.innerHTML = `
-            <div style="display:flex; flex-direction:column; gap:4px;">
-              <div class="the_trang chu-the" style="padding:4px 8px;">
-                <div style="font-weight:700; margin-bottom:3px; display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-size:18px;">Thời gian máy thật V1–V6 (5 bộ, 289 vật, AMD 5700U):</span>
-                  <span style="font-size:18px; color:var(--mau-chu-phu);">may_v1_v6.json</span>
-                </div>
-                <div style="border:1px solid #e2e8f0; border-radius:4px;">
-                  <table style="width:100%; font-size:18px; line-height:1.2; border-collapse:collapse;">
-                    <thead>
-                      <tr style="border-bottom:1px solid #cbd5e1; color:var(--mau-chu-phu); font-size:18px;">
-                        <th style="text-align:left;">Vòng</th>
-                        <th style="text-align:center;">Fit ms/vật (tv)</th>
-                        <th style="text-align:center;">Fit ms/vật (tb)</th>
-                        <th style="text-align:right;">Trọn gói s/frame</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${[1, 2, 3, 4, 5, 6].map(k => {
-                        const m = VONG_THAT.may[String(k)];
-                        const isV6 = k === 6;
-                        const ghiChu = k === 5 ? ' <span style="font-size:18px; color:#64748b;">(lưới 4,7 ms)</span>' : (k === 6 ? ' <span style="font-size:18px; color:#64748b;">(lưới 216 ms)</span>' : '');
-                        return `
-                          <tr style="border-bottom:1px solid #f1f5f9; ${isV6 ? 'background:#f0fdfa; font-weight:700;' : ''}">
-                            <td><b>V${k}</b></td>
-                            <td style="text-align:center; ${isV6 ? 'color:#0f766e;' : ''}">${so(m.tv, 1)} ms</td>
-                            <td style="text-align:center;">${so(m.tb, 1)} ms</td>
-                            <td style="text-align:right; ${isV6 ? 'color:#0f766e;' : ''}">${so(m.s_frame, 2)} s${ghiChu}</td>
-                          </tr>
-                        `;
-                      }).join('')}
-                    </tbody>
-                  </table>
-                </div>
+            <div class="the_trang chu-the" style="padding:4px 8px;">
+              <div style="font-weight:700; margin-bottom:3px; font-size:18px;">
+                Thời gian máy (5 bộ, 289 vật, Ryzen 7 5700U)
               </div>
-
-              <div class="the_trang chu-the" style="padding:4px 8px;">
-                <div style="display:flex; justify-content:space-between; align-items:center;">
-                  <span style="font-weight:700; color:var(--mau-chu); font-size:18px;">Năng suất người (5 người, chưa đo [G]):</span>
-                  <span style="background:#eff6ff; color:var(--mau-xanh); padding:2px 6px; border-radius:10px; font-weight:600; font-size:18px;">Mục tiêu: Giảm ≥ 30 %</span>
-                </div>
-                <details style="margin-top:3px;">
-                  <summary style="cursor:pointer; font-weight:700; color:var(--mau-xanh); padding:2px 0; font-size:18px;">
-                    Bảng 7 chỉ số năng suất (chi tiết [G]) ▾
-                  </summary>
-                  <div style="position:relative; border:1px solid #e2e8f0; border-radius:4px 4px 0 0; margin-top:3px;">
-                    <div data-cuon="co-y" style="height:110px; overflow-y:auto; scrollbar-width:thin;">
-                      <table style="width:100%; font-size:18px; line-height:1.2; border-collapse:collapse;">
-                        <tr style="color:var(--mau-chu-phu); border-bottom:1px solid #cbd5e1; font-size:18px; height:26px;">
-                          <th style="text-align:left; padding-bottom:3px; height:26px;">Chỉ số</th>
-                          <th style="text-align:center; padding-bottom:3px; height:26px;">Mục tiêu</th>
-                          <th style="text-align:right; padding-bottom:3px; height:26px;">Hiện trạng</th>
+              <div style="border:1px solid #e2e8f0; border-radius:4px;">
+                <table style="width:100%; font-size:18px; line-height:1.2; border-collapse:collapse;">
+                  <thead>
+                    <tr style="border-bottom:1px solid #cbd5e1; color:var(--mau-chu-phu); font-size:18px;">
+                      <th style="text-align:left; padding:2px 4px;">Vòng</th>
+                      <th style="text-align:center; padding:2px 4px;">ms/vật (trung vị)</th>
+                      <th style="text-align:right; padding:2px 4px;">s/khung hình (cả lưới đất)</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${[1, 2, 3, 4, 5, 6].map(k => {
+                      const m = VONG_THAT.may[String(k)];
+                      const isV6 = k === 6;
+                      return `
+                        <tr style="border-bottom:1px solid #f1f5f9; ${isV6 ? 'background:#f0fdfa; font-weight:700;' : ''}">
+                          <td style="padding:2px 4px;"><b>V${k}</b></td>
+                          <td style="text-align:center; padding:2px 4px; ${isV6 ? 'color:#0f766e;' : ''}">${so(m.tv, 1)} ms</td>
+                          <td style="text-align:right; padding:2px 4px; ${isV6 ? 'color:#0f766e;' : ''}">${so(m.s_frame, 2)} s</td>
                         </tr>
-                        ${rowsMuc}
-                      </table>
-                    </div>
-                    <div style="position:absolute; bottom:0; left:0; right:0; height:16px; pointer-events:none; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.85));"></div>
-                  </div>
-                  <div style="font-size:18px; color:var(--mau-chu-phu); text-align:center; padding:2px 0; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 4px 4px; font-weight:600; font-style:italic;">
-                    ▼ còn 4 chỉ số — cuộn để xem
-                  </div>
-                </details>
+                      `;
+                    }).join('')}
+                  </tbody>
+                </table>
               </div>
             </div>
           `;
@@ -470,7 +421,7 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
     vat_chinh: 'vd',
     muc: 'Đánh giá · Chỉ số QA/QC',
     tieu_de: 'Chỉ số QA/QC và tập đánh giá',
-    y: 'Phát triển trên 289 vật (5 bộ), kiểm chéo trên 108 vật (tập phụ). Tập chấm cuối (scene-0103, scene-0916) chỉ chạy một lần sau khi chốt mô hình. 28 chỉ số chia 4 nhóm; chỉ số chưa đo ghi "Chờ đo".',
+    y: `Phát triển trên 289 vật (5 bộ), kiểm chéo trên 108 vật (tập phụ). Tập chấm cuối (scene-0103, scene-0916) chỉ chạy một lần sau khi chốt mô hình. ${CHI_SO.nhom.reduce((s, n) => s + n.muc.length, 0)} chỉ số chia 4 nhóm; chỉ số chưa đo ghi "Chờ đo".`,
     cong_thuc: [
       String.raw`d \le 50\text{ m}, \; N \ge 5, \; \text{thấy} \ge 40\% \implies 289\text{ (5 bộ)} / 108\text{ (phụ)}`,
       String.raw`\operatorname{IoU}_{\text{3D}} \ge 0{,}5, \; \text{tỉ lệ lật } \le 15\%; \quad \bar{r} \le 0{,}70 \text{ (giảm } \ge 30\% \text{ [G])}`
@@ -531,55 +482,62 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
           panelEl.id = 's16_panel';
           panelEl.className = 'fade-in';
 
-          function taoHtmlBangNhom(nhomId) {
+          const tongChiSo = CHI_SO.nhom.reduce((s, n) => s + n.muc.length, 0);
+          let hienTaiNhom = 'chinh_xac';
+          let trangQc = trangTuUrl();
+
+          function taoHtmlBangNhom(nhomId, trangHienTai = 1) {
             const nhom = CHI_SO.nhom.find(n => n.id === nhomId);
             if (!nhom) return '';
 
-            const rows = nhom.muc.map(m => {
+            const moiTrang = 6;
+            const tongTrang = Math.ceil(nhom.muc.length / moiTrang);
+            const dsMuc = catTrang(nhom.muc, trangHienTai, moiTrang);
+
+            const rows = dsMuc.map(m => {
               let valHtml = '';
               if (m.gia_tri === null) {
-                valHtml = `<span class="chu-nho" style="border:1px dashed #6e56cf; color:#6e56cf; padding:2px 6px; border-radius:4px; font-weight:600;">Chờ đo (${m.du_kien})</span>`;
+                valHtml = `<span class="chu-nho" style="border:1px dashed #6e56cf; color:#6e56cf; padding:2px 6px; border-radius:4px; font-weight:600; font-size:18px;">Chờ đo</span>`;
               } else {
                 let mau = 'var(--cum-xanh)';
                 if (m.so_sanh === '>=' && m.muc_tieu) {
                   const numTieu = parseFloat(m.muc_tieu.replace(/[^\d.]/g, ''));
                   if (typeof m.gia_tri === 'number' && m.gia_tri < numTieu) mau = '#c98200';
                 }
-                valHtml = `<b class="chu-the" style="color:${mau};">${m.gia_tri} ${m.don_vi}</b>`;
+                const valStr = typeof m.gia_tri === 'number' ? so(m.gia_tri, 1) : m.gia_tri;
+                valHtml = `<b class="chu-the" style="color:${mau}; font-size:18px;">${valStr}${m.don_vi ? ' ' + m.don_vi : ''}</b>`;
               }
 
               return `
                 <tr style="border-bottom:1px solid #f1f5f9; height:28px;">
-                  <td style="color:var(--mau-chu); font-weight:600; padding:2px 0;">${m.ten}</td>
-                  <td class="chu-nho" style="text-align:center; color:var(--mau-chu-phu);">${m.muc_tieu || '—'}</td>
+                  <td style="color:var(--mau-chu); font-weight:600; padding:2px 0; font-size:18px;">${m.ten}</td>
+                  <td class="chu-nho" style="text-align:center; color:var(--mau-chu-phu); font-size:18px;">${m.muc_tieu || '—'}</td>
                   <td style="text-align:right;">${valHtml}</td>
                 </tr>
               `;
             }).join('');
 
             return `
-              <table class="bang_the">
-                <tr class="chu-nho" style="color:var(--mau-chu-phu); border-bottom:1px solid #cbd5e1; height:26px; box-sizing:border-box;">
-                  <th style="text-align:left; padding-bottom:4px; height:26px;">Chỉ số</th>
-                  <th style="text-align:center; padding-bottom:4px; height:26px;">Mục tiêu</th>
-                  <th style="text-align:right; padding-bottom:4px; height:26px;">Hiện trạng</th>
-                </tr>
-                ${rows}
+              <table class="bang_the" style="width:100%; border-collapse:collapse;">
+                <thead>
+                  <tr class="chu-nho" style="color:var(--mau-chu-phu); border-bottom:1px solid #cbd5e1; height:26px; box-sizing:border-box;">
+                    <th style="text-align:left; padding-bottom:4px; height:26px; font-size:18px;">Chỉ số</th>
+                    <th style="text-align:center; padding-bottom:4px; height:26px; font-size:18px;">Mục tiêu</th>
+                    <th style="text-align:right; padding-bottom:4px; height:26px; font-size:18px;">Hiện trạng</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${rows}
+                </tbody>
               </table>
+              ${htmlPhanTrang('qc', trangHienTai, tongTrang)}
             `;
-          }
-
-          function tinhGoiYQc(nhomId) {
-            const nhom = CHI_SO.nhom.find(n => n.id === nhomId);
-            const tongSo = nhom ? nhom.muc.length : 0;
-            const conLai = Math.max(0, tongSo - 2);
-            return `▼ còn ${conLai} chỉ số — cuộn để xem`;
           }
 
           panelEl.innerHTML = `
             <div class="the_trang_lon chu-the" style="padding:4px 8px;">
               <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:4px;">
-                <span style="font-weight:700; font-size:18px;">28 chỉ số QA/QC (Cập nhật: ${CHI_SO.cap_nhat}):</span>
+                <span style="font-weight:700; font-size:18px;">${tongChiSo} chỉ số QA/QC (Cập nhật: ${CHI_SO.cap_nhat}):</span>
                 <span style="color:#15803d; font-weight:700; font-size:18px;">289 vật (5 bộ) / 108 vật (phụ)</span>
               </div>
               <div style="display:flex; gap:4px; margin-bottom:4px; border-bottom:1px solid #edf0f5; padding-bottom:4px;">
@@ -588,20 +546,38 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
                 <button class="tab_qc nut_phu" data-nhom="qc" style="border:none; color:var(--mau-chu-phu); font-size:18px; padding:2px 6px;">3. QC hệ thống</button>
                 <button class="tab_qc nut_phu" data-nhom="thang_v" style="border:none; color:var(--mau-chu-phu); font-size:18px; padding:2px 6px;">4. Thang V1→V6</button>
               </div>
-              <div style="position:relative; border:1px solid #e2e8f0; border-radius:4px 4px 0 0; margin-top:2px;">
-                <div id="box_noi_dung_qc" data-cuon="co-y" style="height:82px; overflow-y:auto; scrollbar-width:thin;">
-                  ${taoHtmlBangNhom('chinh_xac')}
+              <div style="border:1px solid #e2e8f0; border-radius:4px; padding:2px 4px; margin-top:2px;">
+                <div id="box_noi_dung_qc">
+                  ${taoHtmlBangNhom(hienTaiNhom, trangQc)}
                 </div>
-                <div style="position:absolute; bottom:0; left:0; right:0; height:14px; pointer-events:none; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.85));"></div>
-              </div>
-              <div id="box_qc_goi_y" style="font-size:18px; color:var(--mau-chu-phu); text-align:center; padding:2px 0; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 4px 4px; font-weight:600; font-style:italic;">
-                ${tinhGoiYQc('chinh_xac')}
               </div>
             </div>
           `;
           elY.parentNode.insertBefore(panelEl, elY.nextSibling);
 
           const boxQc = panelEl.querySelector('#box_noi_dung_qc');
+
+          function ganSuKienPhanTrang() {
+            boxQc.querySelectorAll('.thanh_phan_trang button[data-trang]').forEach(btn => {
+              btn.addEventListener('click', () => {
+                const t = parseInt(btn.dataset.trang, 10);
+                const nhom = CHI_SO.nhom.find(n => n.id === hienTaiNhom);
+                const tongTrang = nhom ? Math.ceil(nhom.muc.length / 6) : 1;
+                if (!isNaN(t) && t >= 1 && t <= tongTrang) {
+                  trangQc = t;
+                  if (typeof window !== 'undefined') {
+                    const u = new URL(window.location);
+                    u.searchParams.set('trang', t);
+                    window.history.replaceState(null, '', u);
+                  }
+                  boxQc.innerHTML = taoHtmlBangNhom(hienTaiNhom, trangQc);
+                  ganSuKienPhanTrang();
+                }
+              });
+            });
+          }
+          ganSuKienPhanTrang();
+
           panelEl.querySelectorAll('.tab_qc').forEach(tab => {
             tab.addEventListener('click', () => {
               panelEl.querySelectorAll('.tab_qc').forEach(t => {
@@ -610,10 +586,15 @@ function taoNguoiDonGian(THREE, cao = 1.74) {
               });
               tab.style.background = 'var(--mau-xanh)';
               tab.style.color = '#fff';
-              const nhomId = tab.getAttribute('data-nhom');
-              boxQc.innerHTML = taoHtmlBangNhom(nhomId);
-              const elGoiY = panelEl.querySelector('#box_qc_goi_y');
-              if (elGoiY) elGoiY.textContent = tinhGoiYQc(nhomId);
+              hienTaiNhom = tab.getAttribute('data-nhom');
+              trangQc = 1;
+              if (typeof window !== 'undefined') {
+                const u = new URL(window.location);
+                u.searchParams.delete('trang');
+                window.history.replaceState(null, '', u);
+              }
+              boxQc.innerHTML = taoHtmlBangNhom(hienTaiNhom, trangQc);
+              ganSuKienPhanTrang();
             });
           });
         }

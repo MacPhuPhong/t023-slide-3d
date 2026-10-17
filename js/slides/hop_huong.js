@@ -28,9 +28,7 @@ const v6DungBamC = v6BamC - v6ChayBamC;
 const v6CoXanhN = VONG_THAT.co_3_muc.xanh.n;
 const v6CoXanhPct = Number(VONG_THAT.co_3_muc.xanh.dung_pct).toFixed(0);
 const v6CoVangN = VONG_THAT.co_3_muc.vang.n;
-const v6CoVangPct = Number(VONG_THAT.co_3_muc.vang.dung_pct).toFixed(1).replace('.', ',');
 const v6CoDoN = VONG_THAT.co_3_muc.do.n;
-const vtDungTiLeStr = SO && SO.vt_dung_ti_le ? SO.vt_dung_ti_le.hien : '72,5';
 
 export const SLIDES_HOP_HUONG = [
   // --- S11: Fit hướng L-shape ---
@@ -300,13 +298,13 @@ export const SLIDES_HOP_HUONG = [
     vat_chinh: 'vd',
     muc: 'Toán từng bước · Xác định đầu và đuôi',
     tieu_de: 'Đầu/đuôi xe bằng vận tốc; xe đứng yên cần người lật',
-    y: `<div style="font-size:18px; line-height:1.25;">L-shape đối xứng 180° nên không biết đâu là đầu xe. Vận tốc ước từ 9 sweep quá khứ (0,45 s) phá đối xứng khi xe chạy. V6 trên 289 vật: đúng hướng ${v6TruocDung} % → ${v6SauDung} %; còn ${v6BamC} hộp (${v6DungBamC} đứng yên + ${v6ChayBamC} đang chạy) cần người bấm C.</div><div style="font-size:18px; color:var(--mau-chu-phu); margin-top:2px;">Cờ 3 mức: xanh ${v6CoXanhN} (${v6CoXanhPct} % đúng) · vàng ${v6CoVangN} (${v6CoVangPct} % đúng) · đỏ ${v6CoDoN} (cần rà soát).</div>`,
+    y: '<div style="font-size:18px; line-height:1.25;">Hộp chữ L đối xứng 180° nên không biết đâu là đầu xe. Xe đang chạy: vận tốc ước từ 9 sweep quá khứ chỉ ra đầu xe. Xe đứng yên: không có vận tốc, hộp được gắn cờ để người bấm C lật.</div>',
     cong_thuc: [
       String.raw`C(v) = \sum_{k=1}^{9} \sum_{s \in S_k} \min\big(d(s + v\,k\,\Delta t\,u,\ \text{cụm}),\ \tau\big)^2 + 10^{-4}|v|,\quad v \in [-15, 15]\ \text{m/s (bước 0,25)},\ \Delta t = 0{,}05\ \text{s},\ \tau = 0{,}3\ \text{m}`,
       String.raw`v^* = \arg\min C(v);\quad |v^*| \ge 0{,}5 \land C(v^*) \le C(0) \Rightarrow \text{đầu theo chiều } v^* \text{ (} v^* < 0 \text{: xoay } 180^\circ\text{)};\ \text{không thì cờ, người bấm C}`
     ],
-    so: ['v6_huong_truoc', 'v6_huong_sau', 'v6_lat_chay_truoc', 'v6_lat_chay_sau'],
-    ml: 'Đặc trưng thời gian phá đối xứng 180°; phần còn lại cần human-in-the-loop (cờ + phím lật).',
+    so: ['v6_huong_sau', 'v6_lat_chay_sau', 'v6_bam_c'],
+    ml: 'Vận tốc là đặc trưng thời gian phá đối xứng 180°; ca thiếu tín hiệu để người quyết (human-in-the-loop).',
     goc_nhin: [
       { ten: 'Toàn cảnh xe và vector vận tốc', cam: [32.0, -6.0, 6.5], nhin: [24.3, 3.1, 1.2] },
       { ten: 'Từ trên cao kiểm tra hướng', cam: [24.3, 3.1, 14.0], nhin: [24.3, 3.1, 1.0] }
@@ -404,8 +402,8 @@ export const SLIDES_HOP_HUONG = [
         const badgeLat = document.getElementById('s13_badge');
         if (lblTrangThai) {
           lblTrangThai.innerHTML = daLat
-            ? '<b style="color:#e5484d;">Đã lật 180° (Ngược đầu xe)</b>'
-            : '<b style="color:var(--cum-xanh);">Hướng ban đầu (Khớp vận tốc)</b>';
+            ? '<b style="color:#e5484d;">Đã lật 180°</b>'
+            : '<b style="color:var(--cum-xanh);">Hướng ban đầu</b>';
         }
         if (badgeLat) {
           badgeLat.textContent = daLat
@@ -441,14 +439,13 @@ export const SLIDES_HOP_HUONG = [
           panelEl.className = 'fade-in';
           panelEl.innerHTML = `
             <div class="the_trang_lon chu-the" style="margin-bottom:10px;">
-              <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px;">
-                <span>Trạng thái đầu xe: <span id="s13_trang_thai"><b style="color:var(--cum-xanh);">Hướng ban đầu (Khớp vận tốc)</b></span></span>
-                <span id="s13_badge" class="badge-nguon badge-G chu-nho">Hộp minh hoạ · hướng ban đầu</span>
+              <div style="display:flex; justify-content:space-between; align-items:center;">
+                <span>Trạng thái: <span id="s13_trang_thai"><b style="color:var(--cum-xanh);">Hướng ban đầu</b></span></span>
+                <button id="btn_lat_180" class="cv_nut" style="padding:4px 12px; font-size:18px;">
+                  ↺ Lật 180° (phím C)
+                </button>
               </div>
-              <button id="btn_lat_180" class="nut_chinh_rong" style="padding:9px 16px;">
-                <span>↺</span> Lật 180° hướng xe (hoặc bấm phím C)
-              </button>
-              <div class="chu-nho" style="margin-top:10px; color:var(--mau-chu-phu); line-height:1.5; background:#f8fafc; padding:8px 10px; border-radius:8px; border:1px solid #e2e8f0;">
+              <div class="chu-nho" style="margin-top:6px; color:var(--mau-chu-phu); line-height:1.2; background:#f8fafc; padding:4px 8px; border-radius:6px; border:1px solid #e2e8f0; font-size:18px;">
                 <b>Lưu ý:</b> hộp lật 180° vẫn có IoU = 1,000 và e₁₈₀ = 0°; chỉ e₃₆₀ > 90° mới bắt được lật.
               </div>
             </div>

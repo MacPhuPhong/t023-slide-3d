@@ -203,7 +203,7 @@ export const slideThatV1 = {
   muc: 'Các vòng cải tiến · V1 · Dữ liệu thật',
   tieu_de: 'V1 trên dữ liệu thật: phân bố lỗi và 4 ca điển hình',
   y: '',
-  ml: `Phân loại 6 nhóm lỗi của pipeline gốc trên 289 vật nuScenes: ${VONG_THAT.vong['1'].nhom.nam_bo.gt.khong_ra_hop} vật không ra hộp (${moTaLyDo(VONG_THAT.vong['1'].ly_do.nam_bo.gt)}).`,
+  ml: `6 nhóm lỗi pipeline gốc trên 289 vật nuScenes: ${VONG_THAT.vong['1'].nhom.nam_bo.gt.khong_ra_hop} vật không ra hộp.`,
   goc_nhin: [
     { ten: 'Góc nhìn 3D vật', cam: [34.0, -8.0, 6.0], nhin: [24.4, 3.1, 1.1] },
     { ten: 'Nhìn từ trên cao', cam: [24.4, 3.1, 20.0], nhin: [24.4, 3.1, 0.0] }
@@ -544,7 +544,8 @@ export function slideVongThat(k) {
           let biLoaiHtml = '';
           if (biLoaiK.length > 0) {
             const cacDong = biLoaiK.map(b => {
-              const sauNayStr = b.sau_nay ? ` → ${b.sau_nay}` : '';
+              const sauNayGoc = (b.sau_nay || '').replace(/\s*\((?:§|BAO_CAO|CHOT)[^)]*\)/g, '');
+              const sauNayStr = sauNayGoc ? ` → ${sauNayGoc}` : '';
               return `<div style="margin-top:1px; font-size:18px;">
                 <span style="display:inline-block; padding:0 4px; border-radius:3px; background:#e2e8f0; color:#475569; font-weight:700; font-size:18px; margin-right:4px;">BỎ</span>
                 <b>${b.ma}</b> · ${b.ten}: ${b.so_do}. <i>Vì sao bỏ:</i> ${b.ly_do}.${sauNayStr}

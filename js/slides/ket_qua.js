@@ -6,6 +6,7 @@ import { MAU_VONG, svgTiLeDat, svgCotNhom } from '../bieu_do.js';
 import { taoHop, anChuGiaiHop } from '../hop.js';
 import { taoDiemLidar } from '../diem_lidar.js';
 import { taoXemCa } from '../xem_ca.js';
+import { htmlPhanTrang, catTrang, trangTuUrl } from '../phan_trang.js';
 
 const so = (v, n = 1) => Number(v).toFixed(n).replace('.', ',');
 const thamSo = () => new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
@@ -295,6 +296,11 @@ export const slideKetQuaCanh = {
       if (dkEl) {
         dkEl.querySelectorAll('[data-bo]').forEach(btn => btn.addEventListener('click', () => {
           bo = +btn.dataset.bo;
+          if (CO_WINDOW) {
+            const u = new URL(window.location);
+            u.searchParams.delete('trang');
+            window.history.replaceState(null, '', u);
+          }
           capNhatCanh();
           capNhatGiaoDien();
         }));
@@ -323,8 +329,22 @@ export const slideKetQuaCanh = {
         }));
       }
 
-      // 2. Cột trái
-      const dongHtml = kf.vat.map((v, idx) => {
+      // 2. Cột trái: phân trang 7 vật
+      const p = thamSo();
+      const moiTrang = 7;
+      const tongTrang = Math.ceil(kf.vat.length / moiTrang);
+      let trang;
+      if (p.has('trang')) {
+        trang = trangTuUrl();
+      } else {
+        trang = Math.floor(vatChonIdx / moiTrang) + 1;
+      }
+      if (trang < 1) trang = 1;
+      if (trang > tongTrang) trang = tongTrang;
+
+      const vatTrang = catTrang(kf.vat.map((v, i) => ({ v, idx: i })), trang, moiTrang);
+
+      const dongHtml = vatTrang.map(({ v, idx }) => {
         const oVong = [1, 2, 3, 4, 5, 6].map(k => {
           const res = v.vong && v.vong[String(k)] ? v.vong[String(k)][nguon] : null;
           const chonK = k === vong ? ' kq_o_chon_vong' : '';
@@ -350,8 +370,8 @@ export const slideKetQuaCanh = {
         <div class="the_trang kq_tom_tat">
           Bộ ${bo} · ${kf.scene} · kf ${kf.kf} — <b>${kf.mo_ta}</b>: đạt <b>${soDat}/${soVat}</b> vật (${pctDat} %) ở V${vong}
         </div>
-        <div style="position:relative; margin-top:2px;">
-          <div class="kq_bang_cuon" data-cuon="co-y">
+        <div style="margin-top:2px;">
+          <div class="kq_bang_cuon" style="border-radius:8px; height:auto; overflow:visible;">
             <table class="kq_bang">
               <thead>
                 <tr>
@@ -364,12 +384,9 @@ export const slideKetQuaCanh = {
               </tbody>
             </table>
           </div>
-          <div style="position:absolute; bottom:0; left:0; right:0; height:18px; pointer-events:none; background:linear-gradient(to bottom, rgba(255,255,255,0), rgba(255,255,255,0.85));"></div>
         </div>
-        <div style="text-align:center; font-size:18px; color:var(--mau-chu-phu); padding:3px 0; background:#f8fafc; border:1px solid var(--mau-vien); border-top:none; border-radius:0 0 8px 8px; font-weight:600; margin-bottom:4px;">
-          ▼ còn ${Math.max(0, soVat - 7)} vật — cuộn để xem
-        </div>
-        <div class="chu-nho" style="color:var(--mau-chu-phu); line-height:1.4;">
+        ${htmlPhanTrang('ket_qua_canh', trang, tongTrang)}
+        <div class="chu-nho" style="color:var(--mau-chu-phu); line-height:1.4; margin-top:4px;">
           Bấm vào dòng để phóng to vật; bấm "Xem 2D + 3D ▶" để xem ảnh camera thật và hộp 3D chi tiết.
         </div>
       `);
@@ -382,6 +399,20 @@ export const slideKetQuaCanh = {
           const idx = +tr.dataset.idx;
           chonVat(idx);
         }));
+
+        pnlEl.querySelectorAll('.thanh_phan_trang button[data-trang]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const t = parseInt(btn.dataset.trang, 10);
+            if (!isNaN(t) && t >= 1 && t <= tongTrang) {
+              if (CO_WINDOW) {
+                const u = new URL(window.location);
+                u.searchParams.set('trang', t);
+                window.history.replaceState(null, '', u);
+              }
+              capNhatGiaoDien();
+            }
+          });
+        });
 
         pnlEl.querySelectorAll('[data-link-vat]').forEach(a => a.addEventListener('click', (e) => {
           e.preventDefault();

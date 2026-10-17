@@ -691,7 +691,7 @@ html, body {
   position: absolute;
   bottom: 96px; /* trên thanh dưới, không đè chỉ số "n / 19" */
   right: 36px;
-  width: 440px;
+  width: 500px;
   background: rgba(255, 255, 255, 0.94);
   backdrop-filter: blur(8px);
   border: 1px solid var(--mau-vien);
@@ -735,6 +735,14 @@ html, body {
   padding: 5px 6px;
   color: var(--mau-chu);
   border-bottom: 1px solid rgba(20, 23, 28, 0.05);
+}
+
+#s3_chu_giai td:first-child {
+  white-space: nowrap;
+}
+
+#s3_chu_giai .truc {
+  white-space: nowrap;
 }
 
 #s3_chu_giai tr.active {
@@ -936,10 +944,8 @@ html, body {
   line-height: 1.4;
 }
 .kq_bang_cuon {
-  height: 256px; /* 32px header + 7 hàng * 32px = 256px (T105b) */
-  overflow-y: auto;
   border: 1px solid var(--mau-vien);
-  border-radius: 8px 8px 0 0;
+  border-radius: 8px;
   background: #fff;
 }
 .kq_bang {

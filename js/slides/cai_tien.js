@@ -4,6 +4,9 @@
 import { VONG_THAT, THANH_PHAN } from '../../data/vong_that.js';
 import { CAC_VONG } from '../../data/cac_vong.js';
 import { taoHop, hopGT, hienChuGiaiHop, anChuGiaiHop } from '../hop.js';
+import { htmlPhanTrang, catTrang, trangTuUrl } from '../phan_trang.js';
+
+const locRef = str => (str || '').replace(/\s*\((?:§|BAO_CAO|CHOT)[^)]*\)/g, '');
 
 const so = (v, n = 1) => Number(v).toFixed(n).replace('.', ',');
 const pct = v => `${so(v, 1)} %`;
@@ -119,6 +122,7 @@ export const SLIDES_CAI_TIEN = [
 
       const q = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
       let tab = q.get('tab') || 'bieu_do';
+      let trang = trangTuUrl();
 
       function capNhat() {
         // Phân loại 4 tab (T104b)
@@ -130,7 +134,7 @@ export const SLIDES_CAI_TIEN = [
         function rutGonMoTa(moTa, tt) {
           if (tt === 'giu') return 'giữ';
           if (!moTa) return '';
-          let s = moTa;
+          let s = locRef(moTa);
           s = s.replace('Lưới mặt đất 1 m cho cả scan, giữ điểm cao hơn đất 0,25 m', 'Lưới 1 m, giữ điểm > đất 0,25 m');
           s = s.replace('Lưới mặt đất v3a (lọc điểm thấp bằng cửa sổ 9×9)', 'Lưới v3a (lọc cửa sổ 9×9)');
           s = s.replace('bán kính max(0,5; 0,012 × độ sâu), z nén 0,5', 'max(0,5; 0,012·d), nén z 0,5');
@@ -155,7 +159,7 @@ export const SLIDES_CAI_TIEN = [
             else if (c.tt === 'them') { bg = '#dcfce7'; mauChu = '#15803d'; }
             const chuHienThi = rutGonMoTa(c.mo_ta, c.tt);
             return `
-              <td style="padding:1px 2px; font-size:18px; background:${bg}; color:${mauChu}; border:1px solid #e2e8f0; line-height:1.1; word-break:break-word;" title="${c.mo_ta}">
+              <td style="padding:1px 2px; font-size:18px; background:${bg}; color:${mauChu}; border:1px solid #e2e8f0; line-height:1.1; word-break:break-word;" title="${locRef(c.mo_ta)}">
                 ${chuHienThi}
               </td>
             `;
@@ -179,8 +183,11 @@ export const SLIDES_CAI_TIEN = [
         const dsNhomKey = ['dat', 'khong_ra_hop', 'sai_cum', 'sai_truc', 'lech_tam', 'khac'];
         const mucNhomStr = dsNhomKey.map(k => `${tenNhom[k] || k}: <b>${nhomV1[k]} → ${nhomV6[k]}</b>`).join(' · ');
 
-        // 3. Bảng so_v5_v6 đủ 16 dòng từ dữ liệu
-        const hangSoV5V6 = (VONG_THAT.so_v5_v6 || []).map(row => `
+        // 3. Bảng so_v5_v6 đủ 16 dòng từ dữ liệu, phân trang 8 dòng
+        const dsSoV5V6 = VONG_THAT.so_v5_v6 || [];
+        const tongTrangSo = Math.ceil(dsSoV5V6.length / 8);
+        const dsSoHienTai = catTrang(dsSoV5V6, trang, 8);
+        const hangSoV5V6 = dsSoHienTai.map(row => `
           <tr style="border-bottom:1px solid #f1f5f9; height:26px; box-sizing:border-box;">
             <td style="padding:1px 3px; font-size:18px; font-weight:600; color:#1e293b; height:26px; box-sizing:border-box;">${row.tieu_chi}</td>
             <td style="padding:1px 3px; font-size:18px; color:#334155; height:26px; box-sizing:border-box;">${row.v5}</td>
@@ -197,7 +204,7 @@ export const SLIDES_CAI_TIEN = [
             <td style="padding:2px 4px; border:1px solid #e2e8f0; line-height:1.2;">${b.ten}</td>
             <td style="padding:2px 4px; color:#b91c1c; border:1px solid #e2e8f0; line-height:1.2; width:200px;">${b.so_do}</td>
             <td style="padding:2px 4px; border:1px solid #e2e8f0; line-height:1.2; width:180px;">${b.ly_do}</td>
-            <td style="padding:2px 4px; color:#0369a1; border:1px solid #e2e8f0; line-height:1.2; width:160px;">${b.sau_nay || '—'}</td>
+            <td style="padding:2px 4px; color:#0369a1; border:1px solid #e2e8f0; line-height:1.2; width:160px;">${locRef(b.sau_nay || '—')}</td>
           </tr>
         `).join('');
 
@@ -284,26 +291,23 @@ export const SLIDES_CAI_TIEN = [
                 <span style="font-weight:700; font-size:18px; color:#1e293b;">Đối chiếu V5 ↔ V6</span>
                 <span style="font-size:18px; color:#b45309; font-weight:700;">⚠ Nhóm chưa chọn bản cho công cụ; Frustum Studio đang chạy V1</span>
               </div>
-              <div style="position:relative; margin-bottom:2px;">
-                <div data-cuon="co-y" style="height:234px; overflow-y:auto; border:1px solid #e2e8f0; border-radius:4px 4px 0 0;">
-                  <table style="width:100%; border-collapse:collapse; font-size:18px; line-height:1.15;">
-                    <thead>
-                      <tr style="border-bottom:1.5px solid #cbd5e1; background:#f8fafc; color:#64748b; text-align:left; height:26px; box-sizing:border-box;">
-                        <th style="padding:1px 3px; height:26px; box-sizing:border-box;">Tiêu chí</th>
-                        <th style="padding:1px 3px; height:26px; box-sizing:border-box;">V5</th>
-                        <th style="padding:1px 3px; height:26px; box-sizing:border-box;">V6</th>
-                        <th style="padding:1px 3px; height:26px; box-sizing:border-box;">Chênh lệch</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      ${hangSoV5V6}
-                    </tbody>
-                  </table>
-                </div>
-                <div style="position:absolute; bottom:0; left:0; right:0; height:16px; pointer-events:none; background:linear-gradient(to bottom, rgba(250,250,250,0), rgba(250,250,250,0.85));"></div>
+              <div style="margin-bottom:2px;">
+                <table style="width:100%; border-collapse:collapse; font-size:18px; line-height:1.15; border:1px solid #e2e8f0;">
+                  <thead>
+                    <tr style="border-bottom:1.5px solid #cbd5e1; background:#f8fafc; color:#64748b; text-align:left; height:26px; box-sizing:border-box;">
+                      <th style="padding:1px 3px; height:26px; box-sizing:border-box;">Tiêu chí</th>
+                      <th style="padding:1px 3px; height:26px; box-sizing:border-box;">V5</th>
+                      <th style="padding:1px 3px; height:26px; box-sizing:border-box;">V6</th>
+                      <th style="padding:1px 3px; height:26px; box-sizing:border-box;">Chênh lệch</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    ${hangSoV5V6}
+                  </tbody>
+                </table>
               </div>
-              <div style="font-size:18px; color:#64748b; font-style:italic; margin-bottom:2px; text-align:center; background:#f8fafc; border:1px solid #e2e8f0; border-top:none; border-radius:0 0 4px 4px; padding:2px 0;">▼ còn 6 tiêu chí — cuộn để xem</div>
-              <div class="cv_ghi_nho" style="font-size:18px; line-height:1.15; background:#fffbeb; border:1px solid #fef3c7; color:#92400e; padding:2px 5px;">
+              ${htmlPhanTrang('so_v5_v6', trang, tongTrangSo)}
+              <div class="cv_ghi_nho" style="font-size:18px; line-height:1.15; background:#fffbeb; border:1px solid #fef3c7; color:#92400e; padding:2px 5px; margin-top:2px;">
                 <div style="font-weight:700;">Câu hỏi để nhóm chốt:</div>
                 <div>1. Dữ liệu đích có nhiều người đi bộ, vỉa hè đô thị (V6 mạnh), hay nhiều xe ở xa trên đường lớn (V5 mạnh)?</div>
                 <div>2. Nhóm chấp nhận rủi ro nào hơn: mặt đất sập do nhiễu (V5), hay mặt đất bị nâng ở dốc/gờ (V6)?</div>
@@ -321,13 +325,30 @@ export const SLIDES_CAI_TIEN = [
 
         panelEl.querySelectorAll('[data-tab]').forEach(btn => btn.addEventListener('click', () => {
           tab = btn.dataset.tab;
+          trang = 1;
           if (typeof window !== 'undefined') {
             const u = new URL(window.location);
             u.searchParams.set('tab', tab);
+            u.searchParams.delete('trang');
             window.history.replaceState(null, '', u);
           }
           capNhat();
         }));
+
+        panelEl.querySelectorAll('.thanh_phan_trang button[data-trang]').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const t = parseInt(btn.dataset.trang, 10);
+            if (!isNaN(t) && t >= 1 && t <= tongTrangSo) {
+              trang = t;
+              if (typeof window !== 'undefined') {
+                const u = new URL(window.location);
+                u.searchParams.set('trang', trang);
+                window.history.replaceState(null, '', u);
+              }
+              capNhat();
+            }
+          });
+        });
       }
 
       capNhat();

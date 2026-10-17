@@ -159,24 +159,24 @@ export const SLIDES_HINH_HOC = [
         heEgo.userData.setDoMo(1.0, true);
         heLidar.userData.setDoMo(1.0, true);
         heCam.userData.setDoMo(1.0, true);
-        if (elDangXem) elDangXem.textContent = 'Đang xem: Cả ba hệ quy chiếu (x_E, x_L, x_C)';
+        if (elDangXem) elDangXem.innerHTML = 'Đang xem: cả ba hệ (x<sub>E</sub>, x<sub>L</sub>, x<sub>C</sub>)';
       } else if (viewIdx === 1) {
         heEgo.userData.setDoMo(1.0, true);
         heLidar.userData.setDoMo(0.2, false);
         heCam.userData.setDoMo(0.2, false);
-        if (elDangXem) elDangXem.textContent = 'Đang xem: Hệ xe Ego — nhãn x_E, y_E, z_E';
+        if (elDangXem) elDangXem.innerHTML = 'Đang xem: Hệ xe Ego — nhãn x<sub>E</sub>, y<sub>E</sub>, z<sub>E</sub>';
         if (hangEgo) hangEgo.classList.add('active');
       } else if (viewIdx === 2) {
         heEgo.userData.setDoMo(0.2, false);
         heLidar.userData.setDoMo(1.0, true);
         heCam.userData.setDoMo(0.2, false);
-        if (elDangXem) elDangXem.textContent = 'Đang xem: Hệ LiDAR — nhãn x_L, y_L, z_L';
+        if (elDangXem) elDangXem.innerHTML = 'Đang xem: Hệ LiDAR — nhãn x<sub>L</sub>, y<sub>L</sub>, z<sub>L</sub>';
         if (hangLidar) hangLidar.classList.add('active');
       } else if (viewIdx === 3) {
         heEgo.userData.setDoMo(0.2, false);
         heLidar.userData.setDoMo(0.2, false);
         heCam.userData.setDoMo(1.0, true);
-        if (elDangXem) elDangXem.textContent = 'Đang xem: Camera trước (CAM_FRONT) — nhãn x_C, y_C, z_C';
+        if (elDangXem) elDangXem.innerHTML = 'Đang xem: Camera trước (CAM_FRONT) — nhãn x<sub>C</sub>, y<sub>C</sub>, z<sub>C</sub>';
         if (hangCam) hangCam.classList.add('active');
       }
     },
@@ -267,7 +267,7 @@ export const SLIDES_HINH_HOC = [
           cg.id = 's3_chu_giai';
           cg.innerHTML = `
             <div class="s3_tieu_de">Chú giải ba hệ toạ độ (chuẩn nuScenes)</div>
-            <div id="s3_dang_xem" class="s3_dang_xem">Đang xem: Cả ba hệ quy chiếu (x_E, x_L, x_C)</div>
+            <div id="s3_dang_xem" class="s3_dang_xem">Đang xem: cả ba hệ (x<sub>E</sub>, x<sub>L</sub>, x<sub>C</sub>)</div>
             <table>
               <thead>
                 <tr>
@@ -279,17 +279,17 @@ export const SLIDES_HINH_HOC = [
               <tbody>
                 <tr id="hang_ego">
                   <td><span style="color:#c98200; font-weight:700;">●</span> Hệ xe (E)</td>
-                  <td>x<sub>E</sub> trước · y<sub>E</sub> trái · z<sub>E</sub> lên</td>
+                  <td><div class="truc">x<sub>E</sub> trước</div><div class="truc">y<sub>E</sub> trái</div><div class="truc">z<sub>E</sub> lên</div></td>
                   <td>Giữa trục sau, mặt đường [0, 0, 0]</td>
                 </tr>
                 <tr id="hang_lidar">
                   <td><span style="color:#1f5fc4; font-weight:700;">●</span> Hệ LiDAR (L)</td>
-                  <td>x<sub>L</sub> phải · y<sub>L</sub> trước · z<sub>L</sub> lên</td>
+                  <td><div class="truc">x<sub>L</sub> phải</div><div class="truc">y<sub>L</sub> trước</div><div class="truc">z<sub>L</sub> lên</div></td>
                   <td>Tâm LiDAR nóc xe, cao 1,84 m</td>
                 </tr>
                 <tr id="hang_cam">
                   <td><span style="color:#7c3aed; font-weight:700;">●</span> Camera trước (C)</td>
-                  <td>x<sub>C</sub> phải · y<sub>C</sub> xuống · z<sub>C</sub> quang</td>
+                  <td><div class="truc">x<sub>C</sub> phải</div><div class="truc">y<sub>C</sub> xuống</div><div class="truc">z<sub>C</sub> trục quang</div></td>
                   <td>Tâm quang học CAM_FRONT</td>
                 </tr>
               </tbody>
