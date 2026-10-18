@@ -1,6 +1,11 @@
 // Bảng chỉ số đánh giá và QA/QC (theo §5.4 PLAN.md)
 // null = chưa đo; sửa một dòng tại đây sẽ tự động cập nhật trên slide S17/S18.
 import { VONG_THAT } from './vong_that.js';
+import { DO_NGUOI } from './do_nguoi.js';
+
+const PV = DO_NGUOI.phan_vi;
+const CAP = DO_NGUOI.cap;
+const khoang = (a, b) => `[${a.toFixed(3).replace('.', ',')}; ${b.toFixed(3).replace('.', ',')}]`;
 
 export const CHI_SO = {
   cap_nhat: '2026-10-16',
@@ -29,14 +34,14 @@ export const CHI_SO = {
     },
     {
       id: 'nang_suat',
-      ten: 'Năng suất người gán (5 người)',
+      ten: 'Năng suất người gán (16 vật, đo 18/10)',
       muc: [
-        { id: 's_tay_p50', ten: 'Giây/cuboid gán tay (p50)', gia_tri: null, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'chua_do', du_kien: 'sau 16/10', nguon: '' },
-        { id: 's_tay_p95', ten: 'Giây/cuboid gán tay (p95)', gia_tri: null, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'chua_do', du_kien: 'sau 16/10', nguon: '' },
-        { id: 's_tool_p50', ten: 'Giây/cuboid có công cụ (p50)', gia_tri: null, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'chua_do', du_kien: 'sau 16/10', nguon: '' },
-        { id: 's_tool_p95', ten: 'Giây/cuboid có công cụ (p95)', gia_tri: null, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'chua_do', du_kien: 'sau 16/10', nguon: '' },
-        { id: 'ti_so_r', ten: 'Tỉ số trung bình hình học r̄', gia_tri: null, don_vi: '', muc_tieu: '≤ 0,70', so_sanh: '<=', trang_thai: 'chua_do', du_kien: 'sau 16/10', nguon: '' },
-        { id: 'ci_95_r', ten: 'Khoảng tin cậy 95 % của r̄', gia_tri: null, don_vi: '', muc_tieu: '', so_sanh: null, trang_thai: 'chua_do', du_kien: 'sau 16/10', nguon: '' },
+        { id: 's_tay_p50', ten: 'Giây/cuboid gán tay (p50)', gia_tri: PV.tay_p50, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'da_do', du_kien: '', nguon: 'do_nguoi.js' },
+        { id: 's_tay_p95', ten: 'Giây/cuboid gán tay (p95)', gia_tri: PV.tay_p95, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'da_do', du_kien: '', nguon: 'do_nguoi.js' },
+        { id: 's_tool_p50', ten: 'Giây/cuboid có công cụ (p50)', gia_tri: PV.tool_p50, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'da_do', du_kien: '', nguon: 'do_nguoi.js' },
+        { id: 's_tool_p95', ten: 'Giây/cuboid có công cụ (p95)', gia_tri: PV.tool_p95, don_vi: 's', muc_tieu: '', so_sanh: null, trang_thai: 'da_do', du_kien: '', nguon: 'do_nguoi.js' },
+        { id: 'ti_so_r', ten: 'Tỉ số trung bình hình học r̄', gia_tri: CAP.r_bar, so_le: 3, don_vi: '', muc_tieu: '≤ 0,70', so_sanh: '<=', trang_thai: 'da_do', du_kien: '', nguon: 'do_nguoi.js' },
+        { id: 'ci_95_r', ten: 'Khoảng tin cậy 95 % của r̄', gia_tri: khoang(CAP.r_ci[0], CAP.r_ci[1]), don_vi: '', muc_tieu: '', so_sanh: null, trang_thai: 'da_do', du_kien: '', nguon: 'do_nguoi.js' },
         { id: 'ti_le_sua', ten: 'Tỉ lệ hộp người phải sửa', gia_tri: null, don_vi: '%', muc_tieu: '', so_sanh: null, trang_thai: 'chua_do', du_kien: 'sau 16/10', nguon: '' }
       ]
     },

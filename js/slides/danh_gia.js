@@ -3,8 +3,10 @@ import { CHI_SO } from '../../data/chi_so.js';
 import { taoHop, hopGT } from '../hop.js';
 import { VONG_THAT } from '../../data/vong_that.js';
 import { htmlPhanTrang, catTrang, trangTuUrl } from '../phan_trang.js';
+import { DO_NGUOI as DN } from '../../data/do_nguoi.js';
 
 const so = (v, n = 1) => (v !== undefined && v !== null ? v.toFixed(n).replace('.', ',') : '—');
+const kt = (v, n) => v.toFixed(n).replace('.', '{,}'); // số trong KaTeX
 
 
 export const SLIDES_DANH_GIA = [
@@ -280,91 +282,53 @@ export const SLIDES_DANH_GIA = [
     }
   },
 
-  // --- S15: Đo thời gian gán với 5 người ---
+  // --- S15: Thời gian người (gán tay vs có công cụ, đo 18/10) và thời gian máy ---
   {
     id: 'thoi-gian',
     vat_chinh: 'none',
-    muc: 'Đánh giá · Năng suất & Thời gian máy',
-    tieu_de: 'Thời gian máy V1–V6 và cách đo năng suất người',
-    y: 'Máy: đo thật trên 289 vật, 1 luồng CPU. Người: thiết kế đo trên 5 người, chưa đo [G]; mục tiêu giảm ≥ 30 % thời gian gán.',
+    muc: 'Đánh giá · Thời gian người & máy',
+    tieu_de: `Thời gian người: có công cụ nhanh hơn gán tay ${so(DN.cap.giam_pct, 1)} %`,
+    y: `Đo 16 vật (${DN.theo_lop.Car.n} xe con, ${DN.theo_lop.Truck.n} xe tải), mỗi vật làm cả hai cách: có công cụ ${so(DN.tong.tool.tb_s, 1)} s/vật so với ${so(DN.tong.tay.tb_s, 1)} s gán tay; IoU 3D ${so(DN.tong.tay.iou_tb, 1)} → ${so(DN.tong.tool.iou_tb, 1)} %. Chưa đạt mục tiêu giảm ≥ 30 %.`,
     cong_thuc: [
-      String.raw`r_i = \frac{t_{\text{tool}, i}}{t_{\text{tay}, i}}, \quad \ell_i = \ln r_i, \quad \bar{r} = \exp(\bar{\ell}), \quad \bar{\ell} \pm t_{0{,}975; 4} \frac{s_\ell}{\sqrt{5}}`
+      String.raw`\bar{r} = \exp\Big(\tfrac{1}{n}\sum_i \ln \frac{t_{\text{công cụ},i}}{t_{\text{tay},i}}\Big) = ` + kt(DN.cap.r_bar, 3),
+      String.raw`\text{KTC 95\,\%}: \exp\Big(\bar{\ell} \pm t_{0{,}975;\,` + DN.cap.df + String.raw`}\tfrac{s_\ell}{\sqrt{` + DN.tong.n + String.raw`}}\Big) = [` +
+        kt(DN.cap.r_ci[0], 3) + String.raw`;\ ` + kt(DN.cap.r_ci[1], 3) + ']'
     ],
     so: ['latte_giay'],
-    ml: 'Thí nghiệm cặp có/không công cụ, thang log, phân phối t 4 bậc tự do, đổi thứ tự (counterbalancing) để khử hiệu ứng học.',
+    ml: `Thiết kế cặp: cùng ${DN.tong.n} vật đo cả hai cách, so từng vật bằng tỉ số thời gian trên thang log, t ${DN.cap.df} bậc tự do.`,
     goc_nhin: [
-      { ten: 'Hàng 5 người gán trực diện', cam: [15.6, -17.0, 4.5], nhin: [15.6, -4.0, 1.0] },
-      { ten: 'Góc nghiêng phối cảnh', cam: [6.0, -13.0, 4.5], nhin: [14.0, -4.0, 1.2] }
+      { ten: 'Biểu đồ 16 vật trực diện', cam: [13.6, -26.0, 5.0], nhin: [13.6, -4.0, 1.2] },
+      { ten: 'Góc nghiêng phối cảnh', cam: [4.0, -20.0, 7.0], nhin: [15.2, -4.0, 1.0] }
     ],
     vao(ctx) {
       const lop = ctx.lop();
-      const nangSuat = CHI_SO.nhom.find(n => n.id === 'nang_suat');
-      const chiSoR = nangSuat ? nangSuat.muc.find(m => m.id === 'ti_so_r') : null;
+      const T = ctx.THREE;
 
-      // Dựng 5 người mô hình xếp hàng ở khoảng đất trống thoáng đãng (nửa phải sân khấu, mép trái >= 960 px)
-      const cX = 16.6;
+      // Biểu đồ cột 3D: mỗi vật hai cột (xanh = gán tay, đỏ = có công cụ), cao = giây × 0,1 m
+      const cX = 15.2;
       const cY = -4.0;
+      const buoc = 0.6;
+      const tiLe = 0.1;
+      const matTay = new T.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.45 });
+      const matTool = new T.MeshStandardMaterial({ color: 0xef4444, roughness: 0.45 });
+      const n = DN.dong.length;
+      DN.dong.forEach((d, i) => {
+        const x = cX + (i - (n - 1) / 2) * buoc;
+        [[d.tay_s, matTay, -0.12], [d.tool_s, matTool, 0.12]].forEach(([giay, mat, lech]) => {
+          const cao = giay * tiLe;
+          const cot = new T.Mesh(new T.BoxGeometry(0.2, cao, 0.2), mat);
+          cot.position.copy(ctx.S([x + lech, cY, cao / 2]));
+          lop.add(cot);
+        });
+      });
 
-      function taoNguoiDonGian(THREE, cao = 1.74) {
-        const g = new THREE.Group();
-        const mat = new THREE.MeshStandardMaterial({ color: 0x475569, roughness: 0.5 });
-        const hThan = cao * 0.7;
-        const rThan = 0.22;
-        const than = new THREE.Mesh(new THREE.CylinderGeometry(rThan, rThan, hThan, 16), mat);
-        than.position.y = hThan / 2;
-        g.add(than);
-        const rDau = 0.16;
-        const dau = new THREE.Mesh(new THREE.SphereGeometry(rDau, 16, 16), mat);
-        dau.position.y = hThan + rDau;
-        g.add(dau);
-        return g;
-      }
-
-      const khoangCach = 1.15;
-      for (let i = 0; i < 5; i++) {
-        const offset = (i - 2) * khoangCach;
-        const pX = cX + offset;
-        const pY = cY;
-
-        const ngMesh = taoNguoiDonGian(ctx.THREE, 1.74);
-        ngMesh.position.copy(ctx.S([pX, pY, 0]));
-        ngMesh.rotation.y = 0;
-        lop.add(ngMesh);
-
-        // Khung cột trên đầu mỗi người
-        const coSo = chiSoR && chiSoR.gia_tri !== null;
-        if (coSo) {
-          const caoCot = 1.2 * chiSoR.gia_tri;
-          const cotGeo = new ctx.THREE.CylinderGeometry(0.18, 0.18, caoCot, 16);
-          const cotMat = new ctx.THREE.MeshStandardMaterial({ color: 0x1f9d55, roughness: 0.3 });
-          const cotMesh = new ctx.THREE.Mesh(cotGeo, cotMat);
-          cotMesh.position.copy(ctx.S([pX, pY, 1.8 + caoCot / 2]));
-          lop.add(cotMesh);
-        } else {
-          const khungGeo = new ctx.THREE.BoxGeometry(0.5, 0.8, 0.5);
-          const edges = new ctx.THREE.EdgesGeometry(khungGeo);
-          const lineMat = new ctx.THREE.LineDashedMaterial({
-            color: 0x6e56cf,
-            dashSize: 0.08,
-            gapSize: 0.04,
-            linewidth: 2
-          });
-          const wire = new ctx.THREE.LineSegments(edges, lineMat);
-          wire.computeLineDistances();
-          wire.position.copy(ctx.S([pX, pY, 2.3]));
-          lop.add(wire);
-        }
-      }
-
-      // Một nhãn duy nhất cho cả hàng 5 người (T111)
-      const nhanNguoiChung = ctx.taoNhan(
-        '5 người gán · chờ đo [G]',
-        [cX, cY, 2.8],
-        { uu_tien: 1, kieu: 'minh_hoa' }
+      const nhan = ctx.taoNhan(
+        `Giây mỗi vật · <span style="color:#3b82f6;">gán tay</span> / <span style="color:#ef4444;">có công cụ</span>`,
+        [cX, cY, 3.4],
+        { uu_tien: 1, kieu: 'thuong' }
       );
-      lop.add(nhanNguoiChung);
+      lop.add(nhan);
 
-      // Thêm bảng thời gian máy bên cột trái (T111)
       const elY = document.getElementById('slide_y');
       if (elY) {
         let cardEl = document.getElementById('s15_card');
@@ -374,35 +338,50 @@ export const SLIDES_DANH_GIA = [
           cardEl.className = 'fade-in';
           cardEl.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
 
+          const tay = DN.tong.tay, tool = DN.tong.tool, cap = DN.cap;
+          const dau = v => (v > 0 ? '+' : '') + so(v, 2);
+          const o = 'padding:2px 4px; text-align:right;';
           cardEl.innerHTML = `
+            <div class="the_trang chu-the" style="padding:4px 8px; margin-bottom:4px;">
+              <div style="font-weight:700; margin-bottom:3px; font-size:18px;">Thời gian người (${DN.tong.n} vật, đo ${DN.ngay_do.split('-').reverse().slice(0, 2).join('/')})</div>
+              <table style="width:100%; font-size:18px; line-height:1.25; border-collapse:collapse;">
+                <tr style="border-bottom:1px solid #cbd5e1; color:var(--mau-chu-phu);">
+                  <th style="text-align:left; padding:2px 4px;"></th>
+                  <th style="${o}">s/vật trung bình</th><th style="${o}">Tổng (s)</th><th style="${o}">IoU 3D trung bình</th>
+                </tr>
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                  <td style="padding:2px 4px; color:#3b82f6; font-weight:700;">Gán tay</td>
+                  <td style="${o}">${so(tay.tb_s, 2)}</td><td style="${o}">${tay.tong_s}</td><td style="${o}">${so(tay.iou_tb, 2)} %</td>
+                </tr>
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                  <td style="padding:2px 4px; color:#ef4444; font-weight:700;">Có công cụ</td>
+                  <td style="${o}">${so(tool.tb_s, 2)}</td><td style="${o}">${tool.tong_s}</td><td style="${o}">${so(tool.iou_tb, 2)} %</td>
+                </tr>
+                <tr style="background:#f0fdfa; font-weight:700; color:#0f766e;">
+                  <td style="padding:2px 4px;">Chênh</td>
+                  <td style="${o}">${dau(cap.chenh_s_tb)}</td><td style="${o}">${(tool.tong_s - tay.tong_s).toFixed(0).replace('-', '−')}</td><td style="${o}">${dau(cap.chenh_iou_tb)} điểm</td>
+                </tr>
+              </table>
+              <div style="font-size:18px; color:var(--mau-chu-phu); margin-top:3px; line-height:1.25;">
+                Nhanh hơn ở ${cap.nhanh_hon}/${DN.tong.n} vật · IoU cao hơn ở ${cap.iou_cao_hon}/${DN.tong.n} vật · xe tải giảm ${so(DN.theo_lop.Truck.tay.tb_s - DN.theo_lop.Truck.tool.tb_s, 1)} s, xe con ${so(DN.theo_lop.Car.tay.tb_s - DN.theo_lop.Car.tool.tb_s, 1)} s
+              </div>
+            </div>
             <div class="the_trang chu-the" style="padding:4px 8px;">
-              <div style="font-weight:700; margin-bottom:3px; font-size:18px;">
-                Thời gian máy (5 bộ, 289 vật, Ryzen 7 5700U)
-              </div>
-              <div style="border:1px solid #e2e8f0; border-radius:4px;">
-                <table style="width:100%; font-size:18px; line-height:1.2; border-collapse:collapse;">
-                  <thead>
-                    <tr style="border-bottom:1px solid #cbd5e1; color:var(--mau-chu-phu); font-size:18px;">
-                      <th style="text-align:left; padding:2px 4px;">Vòng</th>
-                      <th style="text-align:center; padding:2px 4px;">ms/vật (trung vị)</th>
-                      <th style="text-align:right; padding:2px 4px;">s/khung hình (cả lưới đất)</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    ${[1, 2, 3, 4, 5, 6].map(k => {
-                      const m = VONG_THAT.may[String(k)];
-                      const isV6 = k === 6;
-                      return `
-                        <tr style="border-bottom:1px solid #f1f5f9; ${isV6 ? 'background:#f0fdfa; font-weight:700;' : ''}">
-                          <td style="padding:2px 4px;"><b>V${k}</b></td>
-                          <td style="text-align:center; padding:2px 4px; ${isV6 ? 'color:#0f766e;' : ''}">${so(m.tv, 1)} ms</td>
-                          <td style="text-align:right; padding:2px 4px; ${isV6 ? 'color:#0f766e;' : ''}">${so(m.s_frame, 2)} s</td>
-                        </tr>
-                      `;
-                    }).join('')}
-                  </tbody>
-                </table>
-              </div>
+              <div style="font-weight:700; margin-bottom:3px; font-size:18px;">Thời gian máy (289 vật, 1 luồng CPU Ryzen 7 5700U)</div>
+              <table style="width:100%; font-size:18px; line-height:1.25; border-collapse:collapse;">
+                <tr style="border-bottom:1px solid #cbd5e1; color:var(--mau-chu-phu);">
+                  <th style="text-align:left; padding:2px 4px;"></th>
+                  ${[1, 2, 3, 4, 5, 6].map(k => `<th style="${o}">V${k}</th>`).join('')}
+                </tr>
+                <tr style="border-bottom:1px solid #f1f5f9;">
+                  <td style="padding:2px 4px;">ms/vật</td>
+                  ${[1, 2, 3, 4, 5, 6].map(k => `<td style="${o}">${so(VONG_THAT.may[String(k)].tv, 0)}</td>`).join('')}
+                </tr>
+                <tr>
+                  <td style="padding:2px 4px;">s/khung</td>
+                  ${[1, 2, 3, 4, 5, 6].map(k => `<td style="${o}">${so(VONG_THAT.may[String(k)].s_frame, 2)}</td>`).join('')}
+                </tr>
+              </table>
             </div>
           `;
           elY.parentNode.insertBefore(cardEl, elY.nextSibling);
@@ -500,11 +479,12 @@ export const SLIDES_DANH_GIA = [
                 valHtml = `<span class="chu-nho" style="border:1px dashed #6e56cf; color:#6e56cf; padding:2px 6px; border-radius:4px; font-weight:600; font-size:18px;">Chờ đo</span>`;
               } else {
                 let mau = 'var(--cum-xanh)';
-                if (m.so_sanh === '>=' && m.muc_tieu) {
-                  const numTieu = parseFloat(m.muc_tieu.replace(/[^\d.]/g, ''));
-                  if (typeof m.gia_tri === 'number' && m.gia_tri < numTieu) mau = '#c98200';
+                if ((m.so_sanh === '>=' || m.so_sanh === '<=') && m.muc_tieu && typeof m.gia_tri === 'number') {
+                  const numTieu = parseFloat(m.muc_tieu.replace(',', '.').replace(/[^\d.]/g, ''));
+                  const datMucTieu = m.so_sanh === '>=' ? m.gia_tri >= numTieu : m.gia_tri <= numTieu;
+                  if (!datMucTieu) mau = '#c98200';
                 }
-                const valStr = typeof m.gia_tri === 'number' ? so(m.gia_tri, 1) : m.gia_tri;
+                const valStr = typeof m.gia_tri === 'number' ? so(m.gia_tri, m.so_le ?? 1) : m.gia_tri;
                 valHtml = `<b class="chu-the" style="color:${mau}; font-size:18px;">${valStr}${m.don_vi ? ' ' + m.don_vi : ''}</b>`;
               }
 

@@ -292,7 +292,7 @@ export const SLIDES_BAI_TOAN = [
           <div style="font-size:18px; color:#334155;">• <b>Công cụ đang chạy V1:</b> Frustum Studio chạy thuật toán V1 gốc.</div>
           <div style="font-size:18px; color:#334155;">• <b>V5/V6 chưa chọn:</b> nhóm quyết định; web trình bày cả hai.</div>
           <div style="font-size:18px; color:#334155;">• <b>Tập chấm cuối chưa chạy:</b> 2 scene giữ kín, chạy một lần sau khi chốt.</div>
-          <div style="font-size:18px; color:#334155;">• <b>Giây/cuboid chưa đo:</b> sẽ đo gán tay so với sửa hộp gợi ý.</div>
+          <div style="font-size:18px; color:#334155;">• <b>Giây/cuboid:</b> mới đo thử 16 vật, gán tay so với có công cụ (slide 34).</div>
         </div>
       `;
 
