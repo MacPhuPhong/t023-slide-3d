@@ -2,7 +2,7 @@
 
 Bộ slide 3D (Three.js, chạy hoàn toàn trên trình duyệt) của nhóm T023, Build phase VinUni, đề N1-01B.
 
-Xem trực tiếp: https://macphuphong.github.io/t023-slide-3d/
+Xem trực tiếp: https://t023-vinuni.github.io/
 
 - Dữ liệu: nuScenes v1.0-mini (Motional), CC BY-NC-SA 4.0.
 - Thư viện: Three.js r169 (MIT), KaTeX 0.16 (MIT), phông Be Vietnam Pro (OFL).
