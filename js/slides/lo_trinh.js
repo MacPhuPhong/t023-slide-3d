@@ -9,7 +9,7 @@ export const SLIDES_LO_TRINH = [
   {
     id: 'hien-trang',
     vat_chinh: 'none',
-    muc: 'Lộ trình · Hiện trạng & Rủi ro',
+    muc: 'Định hướng · Hiện trạng & rủi ro',
     tieu_de: 'Hiện trạng 15/10/2026 và việc còn lại',
     y: 'Đã dừng phát triển thuật toán ở V6. Chọn V5 hay V6 là quyết định của nhóm; web trình bày cả hai.',
     so: ['tests', 'dat_v1_v5_v6'],
@@ -84,7 +84,7 @@ export const SLIDES_LO_TRINH = [
   {
     id: 'ket',
     vat_chinh: 'vd',
-    muc: 'Lộ trình · Kết thúc',
+    muc: 'Định hướng · Kết thúc',
     tieu_de: 'Cảm ơn mọi người đã lắng nghe',
     y: 'Nhóm T023 cảm ơn mentor Đỗ Danh Phương đã hướng dẫn nhóm trong Build phase.',
     goc_nhin: [

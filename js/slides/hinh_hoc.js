@@ -128,7 +128,7 @@ export const SLIDES_HINH_HOC = [
   {
     id: 'he-truc',
     vat_chinh: 'ego',
-    muc: 'Toán từng bước · Hiệu chuẩn không gian',
+    muc: 'Giải pháp · Toán: Hiệu chuẩn không gian',
     tieu_de: 'Ba hệ toạ độ và phép biến đổi xoay',
     y: 'Dữ liệu nằm ở 3 hệ toạ độ: xe (ego, gốc giữa trục sau), LiDAR và 6 camera. Bỏ qua góc chúc 1,39° của LiDAR sẽ lệch độ cao 0,56 m ở cự ly 23 m.',
     cong_thuc: [
@@ -344,8 +344,9 @@ export const SLIDES_HINH_HOC = [
   // --- S4: Chuỗi biến đổi đa cảm biến có bù thời gian ---
   {
     id: 'chuoi-bien-doi',
+    phu_luc: true,
     vat_chinh: 'ego',
-    muc: 'Toán từng bước · Đồng bộ đa cảm biến',
+    muc: 'Giải pháp · Toán: Đồng bộ đa cảm biến',
     tieu_de: 'Chuỗi biến đổi toạ độ và bù thời gian',
     y: 'Camera và LiDAR chụp lệch nhau trung vị −35,5 ms, đủ để xe đi 0,238 m. Không bù thời gian, phép chiếu lệch 2,7 px, vượt ngưỡng 2 px.',
     cong_thuc: [
@@ -450,8 +451,9 @@ export const SLIDES_HINH_HOC = [
   // --- S5: Mô hình lỗ kim và sự mơ hồ độ sâu ---
   {
     id: 'pinhole',
+    phu_luc: true,
     vat_chinh: 'ego',
-    muc: 'Toán từng bước · Hình học chiếu',
+    muc: 'Giải pháp · Toán: Hình học chiếu',
     tieu_de: 'Chiếu lỗ kim và sự mơ hồ độ sâu',
     y: 'Pinhole chiếu điểm 3D thành pixel (u,v). Chiều ngược lại, một pixel chỉ cho một tia: mọi điểm trên tia đều rơi vào cùng pixel đó.',
     cong_thuc: [
@@ -578,7 +580,7 @@ export const SLIDES_HINH_HOC = [
   {
     id: 'frustum',
     vat_chinh: 'vd',
-    muc: 'Toán từng bước · Lọc không gian',
+    muc: 'Giải pháp · Toán: Lọc không gian',
     tieu_de: 'Frustum: lọc điểm trong khung 2D',
     y: 'Khung 2D trên camera trước được kéo thành hình chóp frustum 3D. Trong 74 điểm LiDAR lọt vào, chỉ 41 điểm (55 %) thuộc xe; còn lại là mặt đất và nền.',
     cong_thuc: [

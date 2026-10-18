@@ -34,8 +34,9 @@ export const SLIDES_HOP_HUONG = [
   // --- S11: Fit hướng L-shape ---
   {
     id: 'l-shape',
+    phu_luc: true,
     vat_chinh: 'vd',
-    muc: 'Toán từng bước · Fit hướng L-shape',
+    muc: 'Giải pháp · Toán: Fit hướng L-shape',
     tieu_de: 'Tìm hướng: quét θ, ba tiêu chí Zhang và hàm f của FGR',
     y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Quét góc θ ∈ [0°, 90°) bước 0,5° tìm hướng khớp cụm L-shape. FGR tối ưu hàm f(θ) góc phần tư thay vì variance của Zhang.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 diện tích nhỏ nhất; V4 closeness; V5 năng lượng</div>',
     cong_thuc: [
@@ -171,8 +172,9 @@ export const SLIDES_HOP_HUONG = [
   // --- S12: Bù che bằng tia biên frustum ---
   {
     id: 'bu-che',
+    phu_luc: true,
     vat_chinh: 'vd',
-    muc: 'Toán từng bước · Bù che frustum',
+    muc: 'Giải pháp · Toán: Bù che frustum',
     tieu_de: 'Bù phần bị che bằng giao cạnh với tia biên frustum',
     y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">LiDAR chỉ thấy 2 mặt L-shape. Kéo dài 2 cạnh hộp tới khi giao 2 tia biên frustum 2D để khôi phục đủ kích thước xe.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 không bù; V2 kích thước mẫu; V5 năng lượng + E_2d</div>',
     cong_thuc: [
@@ -296,7 +298,7 @@ export const SLIDES_HOP_HUONG = [
   {
     id: 'dau-duoi',
     vat_chinh: 'vd',
-    muc: 'Toán từng bước · Xác định đầu và đuôi',
+    muc: 'Giải pháp · Toán: Xác định đầu và đuôi',
     tieu_de: 'Đầu/đuôi xe bằng vận tốc; xe đứng yên cần người lật',
     y: '<div style="font-size:18px; line-height:1.25;">Hộp chữ L đối xứng 180° nên không biết đâu là đầu xe. Xe đang chạy: vận tốc ước từ 9 sweep quá khứ chỉ ra đầu xe. Xe đứng yên: không có vận tốc, hộp được gắn cờ để người bấm C lật.</div>',
     cong_thuc: [

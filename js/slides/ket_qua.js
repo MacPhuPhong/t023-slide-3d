@@ -200,7 +200,7 @@ const t6Tong = KET_QUA.tong && KET_QUA.tong.gt ? KET_QUA.tong.gt['6'] : 82.7;
 export const slideKetQuaCanh = {
   id: 'ket-qua-canh',
   vat_chinh: 'none',
-  muc: 'Kết quả đánh giá · Toàn cảnh',
+  muc: 'Tính khả thi · Kết quả: Toàn cảnh',
   tieu_de: `Cả keyframe: V1 ${so(t1Tong, 1)} % → V5 ${so(t5Tong, 1)} % · V6 ${so(t6Tong, 1)} % (khung GT, 289 vật)`,
   y: '',
   ml: 'Chấm trên mọi vật của keyframe, không chọn ca đẹp: mỗi vật một IoU 3D, đạt khi ≥ 0,5 (xe) hoặc ≥ 0,3 (người, 2 bánh).',
@@ -483,7 +483,7 @@ export const slideKetQuaCanh = {
 export const slideKetQuaVat = {
   id: 'ket-qua-vat',
   vat_chinh: 'none',
-  muc: 'Kết quả đánh giá · Từng vật thật',
+  muc: 'Tính khả thi · Kết quả: Từng vật thật',
   tieu_de: 'Ca nuScenes thật: ảnh camera 2D và cảnh 3D',
   y: '',
   ml: 'Xem từng vật trên ảnh camera thật và đám điểm LiDAR: bật/tắt V1–V6 độc lập để so với GT.',
@@ -767,8 +767,9 @@ export const slideKetQuaVat = {
 // =====================================================================
 export const slideKetQuaPhanBo = {
   id: 'ket-qua-phan-bo',
+  phu_luc: true,
   vat_chinh: 'none',
-  muc: 'Kết quả đánh giá · Phân bố',
+  muc: 'Tính khả thi · Kết quả: Phân bố',
   tieu_de: 'Phân bố IoU 3D trên 289 vật: tỉ lệ đạt và so sánh phân nhóm',
   y: '',
   ml: 'Tỉ lệ vật đạt của từng vòng trên 289 vật thật, đọc tại ngưỡng đạt của từng lớp.',

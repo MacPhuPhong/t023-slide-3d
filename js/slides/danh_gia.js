@@ -4,6 +4,8 @@ import { taoHop, hopGT } from '../hop.js';
 import { VONG_THAT } from '../../data/vong_that.js';
 import { htmlPhanTrang, catTrang, trangTuUrl } from '../phan_trang.js';
 import { DO_NGUOI as DN } from '../../data/do_nguoi.js';
+import { SO } from '../../data/so_lieu.js';
+const H70 = DN.moi_hop_dat['70'];
 
 const so = (v, n = 1) => (v !== undefined && v !== null ? v.toFixed(n).replace('.', ',') : '—');
 const kt = (v, n) => v.toFixed(n).replace('.', '{,}'); // số trong KaTeX
@@ -13,8 +15,9 @@ export const SLIDES_DANH_GIA = [
   // --- S14: Chấm điểm và độ nhạy metric ---
   {
     id: 'cham-diem',
+    phu_luc: true,
     vat_chinh: 'vd',
-    muc: 'Đánh giá · Độ nhạy metric',
+    muc: 'Tính khả thi · Độ nhạy metric',
     tieu_de: 'IoU 3D, e₁₈₀ và tỉ lệ lật: IoU mù với lỗi hướng',
     y: 'IoU 3D đo thể tích giao giữa hai hộp, nhưng hộp lật 180° vẫn có IoU = 1 và e₁₈₀ = 0°. Phải báo kèm tỉ lệ lật (e₃₆₀ > 90°).',
     cong_thuc: [
@@ -283,51 +286,53 @@ export const SLIDES_DANH_GIA = [
   },
 
   // --- S15: Thời gian người (gán tay vs có công cụ, đo 18/10) và thời gian máy ---
+  // Chỉ số chính: thời gian để có một hộp đạt IoU ≥ 0,7 = tổng giây / số hộp đạt (cùng cách "ms/hộp đạt" của máy, BAO_CAO §10.5)
   {
     id: 'thoi-gian',
     vat_chinh: 'none',
-    muc: 'Đánh giá · Thời gian người & máy',
-    tieu_de: `Thời gian người: có công cụ nhanh hơn gán tay ${so(DN.cap.giam_pct, 1)} %`,
-    y: `Đo 16 vật (${DN.theo_lop.Car.n} xe con, ${DN.theo_lop.Truck.n} xe tải), mỗi vật làm cả hai cách: có công cụ ${so(DN.tong.tool.tb_s, 1)} s/vật so với ${so(DN.tong.tay.tb_s, 1)} s gán tay; IoU 3D ${so(DN.tong.tay.iou_tb, 1)} → ${so(DN.tong.tool.iou_tb, 1)} %. Chưa đạt mục tiêu giảm ≥ 30 %.`,
+    muc: 'Tính khả thi · Thời gian người & máy',
+    tieu_de: `Có công cụ: mỗi hộp đạt chất lượng nhanh hơn ${so(H70.giam_pct, 1)} %`,
+    y: `Cùng ${DN.tong.n} vật làm cả hai cách. Tính thời gian để có một hộp IoU 3D ≥ 0,7 (ngưỡng KITTI cho ô tô): gán tay ${so(H70.s_tay, 1)} s, có công cụ ${so(H70.s_tool, 1)} s.`,
     cong_thuc: [
-      String.raw`\bar{r} = \exp\Big(\tfrac{1}{n}\sum_i \ln \frac{t_{\text{công cụ},i}}{t_{\text{tay},i}}\Big) = ` + kt(DN.cap.r_bar, 3),
-      String.raw`\text{KTC 95\,\%}: \exp\Big(\bar{\ell} \pm t_{0{,}975;\,` + DN.cap.df + String.raw`}\tfrac{s_\ell}{\sqrt{` + DN.tong.n + String.raw`}}\Big) = [` +
-        kt(DN.cap.r_ci[0], 3) + String.raw`;\ ` + kt(DN.cap.r_ci[1], 3) + ']'
+      String.raw`\text{giây / hộp đạt} = \frac{\sum_i t_i}{\#\{i:\ \mathrm{IoU}_i \ge 0{,}7\}}:\quad \frac{` + DN.tong.tay.tong_s + '}{' + H70.n_tay + '} = ' + kt(H70.s_tay, 1) +
+        String.raw`\ \text{s} \;\longrightarrow\; \frac{` + DN.tong.tool.tong_s + '}{' + H70.n_tool + '} = ' + kt(H70.s_tool, 1) + String.raw`\ \text{s}`
     ],
-    so: ['latte_giay'],
-    ml: `Thiết kế cặp: cùng ${DN.tong.n} vật đo cả hai cách, so từng vật bằng tỉ số thời gian trên thang log, t ${DN.cap.df} bậc tự do.`,
+    so: [],
+    ml: 'Đo chi phí trên mỗi hộp đạt chuẩn, không chỉ giây/vật: công cụ vừa nhanh hơn vừa cho nhiều hộp tốt hơn.',
     goc_nhin: [
-      { ten: 'Biểu đồ 16 vật trực diện', cam: [13.6, -26.0, 5.0], nhin: [13.6, -4.0, 1.2] },
-      { ten: 'Góc nghiêng phối cảnh', cam: [4.0, -20.0, 7.0], nhin: [15.2, -4.0, 1.0] }
+      { ten: 'Ba cặp cột trực diện', cam: [15.6, -17.0, 4.2], nhin: [15.6, -4.0, 1.5] },
+      { ten: 'Góc nghiêng phối cảnh', cam: [6.0, -14.0, 5.5], nhin: [16.0, -4.0, 1.4] }
     ],
     vao(ctx) {
       const lop = ctx.lop();
       const T = ctx.THREE;
 
-      // Biểu đồ cột 3D: mỗi vật hai cột (xanh = gán tay, đỏ = có công cụ), cao = giây × 0,1 m
-      const cX = 15.2;
+      // Ba cặp cột từ mặt đất (trục bắt đầu ở 0): xanh = gán tay, đỏ = có công cụ; cao = giây × 0,1 m
+      const cX = 16.6;
       const cY = -4.0;
-      const buoc = 0.6;
       const tiLe = 0.1;
+      const xeTai = DN.theo_lop.Truck;
+      const cap = [
+        { ten: 'Mọi vật (s/vật)', tay: DN.tong.tay.tb_s, tool: DN.tong.tool.tb_s, giam: DN.cap.giam_tong_pct },
+        { ten: 'Xe tải (s/vật)', tay: xeTai.tay.tb_s, tool: xeTai.tool.tb_s, giam: DN.theo_lop_giam_pct.Truck },
+        { ten: 'Mỗi hộp IoU ≥ 0,7 (s)', tay: H70.s_tay, tool: H70.s_tool, giam: H70.giam_pct }
+      ];
       const matTay = new T.MeshStandardMaterial({ color: 0x3b82f6, roughness: 0.45 });
       const matTool = new T.MeshStandardMaterial({ color: 0xef4444, roughness: 0.45 });
-      const n = DN.dong.length;
-      DN.dong.forEach((d, i) => {
-        const x = cX + (i - (n - 1) / 2) * buoc;
-        [[d.tay_s, matTay, -0.12], [d.tool_s, matTool, 0.12]].forEach(([giay, mat, lech]) => {
+      cap.forEach((c, i) => {
+        const x = cX + (i - 1) * 2.2;
+        [[c.tay, matTay, -0.35], [c.tool, matTool, 0.35]].forEach(([giay, mat, lech]) => {
           const cao = giay * tiLe;
-          const cot = new T.Mesh(new T.BoxGeometry(0.2, cao, 0.2), mat);
+          const cot = new T.Mesh(new T.BoxGeometry(0.6, cao, 0.6), mat);
           cot.position.copy(ctx.S([x + lech, cY, cao / 2]));
           lop.add(cot);
         });
+        lop.add(ctx.taoNhan(
+          `${c.ten}<br><span style="color:#3b82f6;">${so(c.tay, 1)}</span> → <span style="color:#ef4444;">${so(c.tool, 1)}</span> · <b>−${so(c.giam, 1)} %</b>`,
+          [x, cY, c.tay * tiLe + 0.6],
+          { uu_tien: 1, kieu: 'thuong' }
+        ));
       });
-
-      const nhan = ctx.taoNhan(
-        `Giây mỗi vật · <span style="color:#3b82f6;">gán tay</span> / <span style="color:#ef4444;">có công cụ</span>`,
-        [cX, cY, 3.4],
-        { uu_tien: 1, kieu: 'thuong' }
-      );
-      lop.add(nhan);
 
       const elY = document.getElementById('slide_y');
       if (elY) {
@@ -338,50 +343,47 @@ export const SLIDES_DANH_GIA = [
           cardEl.className = 'fade-in';
           cardEl.dataset.cuaSlide = document.body.dataset.slideHienTai || '';
 
-          const tay = DN.tong.tay, tool = DN.tong.tool, cap = DN.cap;
-          const dau = v => (v > 0 ? '+' : '') + so(v, 2);
+          const H50 = DN.moi_hop_dat['50'];
+          const soCuboid = parseFloat(String(SO.mini_cuboid.hien).replace(/\s/g, ''));
+          const gioTietKiem = soCuboid * Math.abs(DN.cap.chenh_s_tb) / 3600;
           const o = 'padding:2px 4px; text-align:right;';
+          const the = (lon, chu, phu) => `
+            <div style="flex:1; background:#f0fdfa; border:1px solid #99f6e4; border-radius:8px; padding:6px 8px; text-align:center;">
+              <div style="font-size:34px; font-weight:800; color:#0f766e; line-height:1.1;">${lon}</div>
+              <div style="font-size:18px; font-weight:700; color:var(--mau-chu);">${chu}</div>
+              <div style="font-size:18px; color:var(--mau-chu-phu);">${phu}</div>
+            </div>`;
           cardEl.innerHTML = `
-            <div class="the_trang chu-the" style="padding:4px 8px; margin-bottom:4px;">
-              <div style="font-weight:700; margin-bottom:3px; font-size:18px;">Thời gian người (${DN.tong.n} vật, đo ${DN.ngay_do.split('-').reverse().slice(0, 2).join('/')})</div>
+            <div style="display:flex; gap:6px; margin-bottom:4px;">
+              ${the(`−${so(H70.giam_pct, 1)} %`, 'giây / hộp IoU ≥ 0,7', `${so(H70.s_tay, 1)} → ${so(H70.s_tool, 1)} s`)}
+              ${the(`−${so(DN.theo_lop_giam_pct.Truck, 1)} %`, 'giây / xe tải', `${so(xeTai.tay.tb_s, 1)} → ${so(xeTai.tool.tb_s, 1)} s`)}
+              ${the(`${H70.n_tay} → ${H70.n_tool}`, `hộp IoU ≥ 0,7 / ${DN.tong.n}`, `IoU trung bình +${so(DN.cap.chenh_iou_tb, 1)} điểm`)}
+            </div>
+            <div class="the_trang chu-the" style="padding:4px 8px;">
               <table style="width:100%; font-size:18px; line-height:1.25; border-collapse:collapse;">
                 <tr style="border-bottom:1px solid #cbd5e1; color:var(--mau-chu-phu);">
-                  <th style="text-align:left; padding:2px 4px;"></th>
-                  <th style="${o}">s/vật trung bình</th><th style="${o}">Tổng (s)</th><th style="${o}">IoU 3D trung bình</th>
+                  <th style="text-align:left; padding:2px 4px;">Cách tính (${DN.tong.n} vật)</th>
+                  <th style="${o}">Gán tay</th><th style="${o}">Có công cụ</th><th style="${o}">Giảm</th>
                 </tr>
                 <tr style="border-bottom:1px solid #f1f5f9;">
-                  <td style="padding:2px 4px; color:#3b82f6; font-weight:700;">Gán tay</td>
-                  <td style="${o}">${so(tay.tb_s, 2)}</td><td style="${o}">${tay.tong_s}</td><td style="${o}">${so(tay.iou_tb, 2)} %</td>
+                  <td style="padding:2px 4px;">Giây / vật</td>
+                  <td style="${o}">${so(DN.tong.tay.tb_s, 1)}</td><td style="${o}">${so(DN.tong.tool.tb_s, 1)}</td><td style="${o}">${so(DN.cap.giam_tong_pct, 1)} %</td>
                 </tr>
                 <tr style="border-bottom:1px solid #f1f5f9;">
-                  <td style="padding:2px 4px; color:#ef4444; font-weight:700;">Có công cụ</td>
-                  <td style="${o}">${so(tool.tb_s, 2)}</td><td style="${o}">${tool.tong_s}</td><td style="${o}">${so(tool.iou_tb, 2)} %</td>
+                  <td style="padding:2px 4px;">Giây / hộp IoU ≥ 0,5</td>
+                  <td style="${o}">${so(H50.s_tay, 1)}</td><td style="${o}">${so(H50.s_tool, 1)}</td><td style="${o}">${so(H50.giam_pct, 1)} %</td>
                 </tr>
                 <tr style="background:#f0fdfa; font-weight:700; color:#0f766e;">
-                  <td style="padding:2px 4px;">Chênh</td>
-                  <td style="${o}">${dau(cap.chenh_s_tb)}</td><td style="${o}">${(tool.tong_s - tay.tong_s).toFixed(0).replace('-', '−')}</td><td style="${o}">${dau(cap.chenh_iou_tb)} điểm</td>
+                  <td style="padding:2px 4px;">Giây / hộp IoU ≥ 0,7</td>
+                  <td style="${o}">${so(H70.s_tay, 1)}</td><td style="${o}">${so(H70.s_tool, 1)}</td><td style="${o}">${so(H70.giam_pct, 1)} %</td>
                 </tr>
               </table>
               <div style="font-size:18px; color:var(--mau-chu-phu); margin-top:3px; line-height:1.25;">
-                Nhanh hơn ở ${cap.nhanh_hon}/${DN.tong.n} vật · IoU cao hơn ở ${cap.iou_cao_hon}/${DN.tong.n} vật · xe tải giảm ${so(DN.theo_lop.Truck.tay.tb_s - DN.theo_lop.Truck.tool.tb_s, 1)} s, xe con ${so(DN.theo_lop.Car.tay.tb_s - DN.theo_lop.Car.tool.tb_s, 1)} s
+                Ước tính: gán ${SO.mini_cuboid.hien} cuboid nuScenes-mini tiết kiệm ≈ ${so(gioTietKiem, 1)} giờ (nếu giữ mức ${so(Math.abs(DN.cap.chenh_s_tb), 2)} s/vật).
               </div>
-            </div>
-            <div class="the_trang chu-the" style="padding:4px 8px;">
-              <div style="font-weight:700; margin-bottom:3px; font-size:18px;">Thời gian máy (289 vật, 1 luồng CPU Ryzen 7 5700U)</div>
-              <table style="width:100%; font-size:18px; line-height:1.25; border-collapse:collapse;">
-                <tr style="border-bottom:1px solid #cbd5e1; color:var(--mau-chu-phu);">
-                  <th style="text-align:left; padding:2px 4px;"></th>
-                  ${[1, 2, 3, 4, 5, 6].map(k => `<th style="${o}">V${k}</th>`).join('')}
-                </tr>
-                <tr style="border-bottom:1px solid #f1f5f9;">
-                  <td style="padding:2px 4px;">ms/vật</td>
-                  ${[1, 2, 3, 4, 5, 6].map(k => `<td style="${o}">${so(VONG_THAT.may[String(k)].tv, 0)}</td>`).join('')}
-                </tr>
-                <tr>
-                  <td style="padding:2px 4px;">s/khung</td>
-                  ${[1, 2, 3, 4, 5, 6].map(k => `<td style="${o}">${so(VONG_THAT.may[String(k)].s_frame, 2)}</td>`).join('')}
-                </tr>
-              </table>
+              <div style="font-size:18px; color:var(--mau-chu-phu); margin-top:2px; line-height:1.25;">
+                Máy dựng hộp 3D từ khung 2D: ${[1, 2, 3, 4, 5, 6].map(k => `V${k} ${so(VONG_THAT.may[String(k)].tv, 0)}`).join(' · ')} ms/vật (289 vật).
+              </div>
             </div>
           `;
           elY.parentNode.insertBefore(cardEl, elY.nextSibling);
@@ -397,8 +399,9 @@ export const SLIDES_DANH_GIA = [
   // --- S16: Bảng QA/QC toàn diện và tập đánh giá ---
   {
     id: 'qa-qc',
+    phu_luc: true,
     vat_chinh: 'vd',
-    muc: 'Đánh giá · Chỉ số QA/QC',
+    muc: 'Tính khả thi · Chỉ số QA/QC',
     tieu_de: 'Chỉ số QA/QC và tập đánh giá',
     y: `Phát triển trên 289 vật (5 bộ), kiểm chéo trên 108 vật (tập phụ). Tập chấm cuối (scene-0103, scene-0916) chỉ chạy một lần sau khi chốt mô hình. ${CHI_SO.nhom.reduce((s, n) => s + n.muc.length, 0)} chỉ số chia 4 nhóm; chỉ số chưa đo ghi "Chờ đo".`,
     cong_thuc: [

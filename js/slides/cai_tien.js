@@ -88,7 +88,7 @@ export const SLIDES_CAI_TIEN = [
   {
     id: 'sau-vong-tong',
     vat_chinh: 'vd',
-    muc: 'Các vòng cải tiến · Tổng kết',
+    muc: 'Giải pháp · Tổng kết 6 vòng',
     tieu_de: `Tổng kết 6 vòng: đạt ${so(d1NbGt, 1)} % → ${so(d6NbGt, 1)} %`,
     y: `Dừng ở V6: kể cả khi chọn cụm hoàn hảo, V6 cũng chỉ đạt ${so(oracleVal, 1)} %. Muốn tăng nữa cần thêm thông tin (nhiều khung hình, khung 2D tốt hơn).`,
     so: [],

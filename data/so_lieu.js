@@ -94,7 +94,8 @@ export const SO = {
   tests: { hien: 'unittest 213 · pytest 86 · Node 318/321', dv: '(15/10)', nhan: 'D', nguon: 'CHOT §1' },
   src_mo_phong: { hien: '0,940 và 0,774', dv: 'IoU 3D trên 2 xe mô phỏng', nhan: 'G', nguon: 'TB §5' },
   nb_ab: { hien: '0,09 → 0,68', dv: 'IoU 3D 1 xe thật, notebook trước/sau sửa B (chưa kết luận)', nhan: 'D', nguon: 'WORKLOG.md mục 2026-10-08 Notebook' },
-  dat_v1_v5_v6: { hien: '10,0 → 80,3 / 82,7', dv: '% đạt V1 → V5 / V6 (5 bộ, khung GT)', nhan: 'D', nguon: 'CHOT §3' }
+  dat_v1_v5_v6: { hien: '10,0 → 80,3 / 82,7', dv: '% đạt V1 → V5 / V6 (5 bộ, khung GT)', nhan: 'D', nguon: 'CHOT §3' },
+  yolo_bo_sot: { hien: '38–46', dv: '% vật YOLO bỏ sót', nhan: 'D', nguon: 'BAO_CAO §11 mục 5' }
 };
 
 export const so = k => {

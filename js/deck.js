@@ -17,16 +17,50 @@ export function nhomMenu(muc) {
   if (!muc || typeof muc !== 'string') return null;
   const phan = muc.split(' · ')[0].trim();
   if (phan === 'Bài toán') return 'bai_toan';
-  if (phan === 'Toán từng bước') return 'toan';
-  if (phan === 'Các vòng cải tiến' || phan === 'Kết quả đánh giá' || phan === 'Đánh giá') return 'danh_gia';
-  if (phan === 'Lộ trình') return 'lo_trinh';
+  if (phan === 'Giải pháp') return 'giai_phap';
+  if (phan === 'Tính khả thi') return 'kha_thi';
+  if (phan === 'Định hướng') return 'dinh_huong';
   return null;
+}
+
+export function slideKeTiep(slides, i, huong, xemPhuLuc = false) {
+  if (!Array.isArray(slides) || slides.length === 0) return i;
+  if (huong !== 1 && huong !== -1) return i;
+
+  let next = i + huong;
+  while (next >= 0 && next < slides.length) {
+    if (xemPhuLuc || !slides[next].phu_luc) {
+      return next;
+    }
+    next += huong;
+  }
+  return i;
 }
 
 export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = false }) {
   let chiSoHienTai = -1;
   let danhSachLop = [];
   let dongHo = new THREE.Clock();
+
+  const urlParams = new URLSearchParams(typeof window !== 'undefined' ? window.location.search : '');
+  let xemPhuLuc = urlParams.get('phu_luc') === '1';
+
+  let toastTimer = null;
+  function hienToast(msg, dur = 1500) {
+    let el = document.getElementById('deck_toast');
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'deck_toast';
+      el.style.cssText = 'position:fixed; top:24px; left:50%; transform:translateX(-50%); background:rgba(20,23,28,0.88); color:#ffffff; padding:8px 18px; border-radius:12px; font-size:18px; font-weight:600; z-index:99999; pointer-events:none; box-shadow:0 6px 16px rgba(0,0,0,0.25); transition:opacity 0.2s ease;';
+      document.body.appendChild(el);
+    }
+    el.textContent = msg;
+    el.style.opacity = '1';
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      el.style.opacity = '0';
+    }, dur);
+  }
 
   // Khởi tạo các phần tử DOM
   const elMuc = document.getElementById('slide_muc');
@@ -45,8 +79,12 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
     elTienTrinh.innerHTML = '';
     slides.forEach((s, idx) => {
       const cham = document.createElement('div');
-      cham.className = 'cham_tien_trinh';
-      cham.title = `${idx + 1}. ${s.tieu_de}`;
+      cham.className = 'cham_tien_trinh' + (s.phu_luc ? ' phu_luc' : '');
+      if (s.phu_luc) {
+        cham.style.opacity = '0.35';
+        cham.style.transform = 'scale(0.75)';
+      }
+      cham.title = `${idx + 1}. ${s.tieu_de}${s.phu_luc ? ' (Phụ lục)' : ''}`;
       cham.addEventListener('click', () => chuyenSlide(idx));
       elTienTrinh.appendChild(cham);
     });
@@ -55,15 +93,15 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
   // Khởi tạo các liên kết nhóm ở thanh trên
   const navLinks = {
     bai_toan: document.getElementById('nav_bai_toan'),
-    toan: document.getElementById('nav_toan'),
-    danh_gia: document.getElementById('nav_danh_gia'),
-    lo_trinh: document.getElementById('nav_lo_trinh')
+    giai_phap: document.getElementById('nav_giai_phap'),
+    kha_thi: document.getElementById('nav_kha_thi'),
+    dinh_huong: document.getElementById('nav_dinh_huong')
   };
 
   if (navLinks.bai_toan) navLinks.bai_toan.addEventListener('click', () => chuyenSlideTheoId('mo-dau'));
-  if (navLinks.toan) navLinks.toan.addEventListener('click', () => chuyenSlideTheoId('he-truc'));
-  if (navLinks.danh_gia) navLinks.danh_gia.addEventListener('click', () => chuyenSlideTheoId('luong-chinh'));
-  if (navLinks.lo_trinh) navLinks.lo_trinh.addEventListener('click', () => chuyenSlideTheoId('hien-trang'));
+  if (navLinks.giai_phap) navLinks.giai_phap.addEventListener('click', () => chuyenSlideTheoId('he-truc'));
+  if (navLinks.kha_thi) navLinks.kha_thi.addEventListener('click', () => chuyenSlideTheoId('ket-qua-canh'));
+  if (navLinks.dinh_huong) navLinks.dinh_huong.addEventListener('click', () => chuyenSlideTheoId('dinh-huong'));
 
   const btnN101B = document.getElementById('btn_n101b');
   if (btnN101B) btnN101B.addEventListener('click', () => chuyenSlideTheoId('de-bai'));
@@ -77,13 +115,27 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
     if (elTienTrinh) {
       const chams = elTienTrinh.querySelectorAll('.cham_tien_trinh');
       chams.forEach((c, i) => {
-        if (i === idx) c.classList.add('active');
-        else c.classList.remove('active');
+        if (i === idx) {
+          c.classList.add('active');
+          c.style.opacity = '1';
+          c.style.transform = slides[i].phu_luc ? 'scale(0.9)' : 'scale(1)';
+        } else {
+          c.classList.remove('active');
+          c.style.opacity = slides[i].phu_luc ? '0.35' : '';
+          c.style.transform = slides[i].phu_luc ? 'scale(0.75)' : '';
+        }
       });
     }
 
     if (elChiSo) {
-      elChiSo.textContent = `${idx + 1} / ${slides.length}`;
+      const slide = slides[idx];
+      if (slide && slide.phu_luc) {
+        elChiSo.textContent = 'Phụ lục';
+      } else {
+        const tongSlideChinh = slides.filter(s => !s.phu_luc).length;
+        const k = slides.slice(0, idx + 1).filter(s => !s.phu_luc).length;
+        elChiSo.textContent = `${k} / ${tongSlideChinh}`;
+      }
     }
   }
 
@@ -189,7 +241,13 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
     }
 
     // Cập nhật DOM
-    if (elMuc) elMuc.textContent = slide.muc || '';
+    if (elMuc) {
+      if (slide.phu_luc) {
+        elMuc.innerHTML = `<span class="nhan_phu_luc" style="background:#e2e8f0; color:#475569; padding:2px 8px; border-radius:6px; font-size:18px; font-weight:600; margin-right:8px; display:inline-block;">Phụ lục</span>${slide.muc || ''}`;
+      } else {
+        elMuc.textContent = slide.muc || '';
+      }
+    }
     if (elTieuDe) {
       elTieuDe.textContent = slide.tieu_de || '';
       if (slide.id === 'mo-dau') {
@@ -875,16 +933,32 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
 
     if (e.key === 'ArrowRight' || e.key === ' ' || e.key === 'PageDown') {
       e.preventDefault();
-      chuyenSlide(Math.min(slides.length - 1, chiSoHienTai + 1));
+      chuyenSlide(slideKeTiep(slides, chiSoHienTai, 1, xemPhuLuc));
     } else if (e.key === 'ArrowLeft' || e.key === 'PageUp') {
       e.preventDefault();
-      chuyenSlide(Math.max(0, chiSoHienTai - 1));
+      chuyenSlide(slideKeTiep(slides, chiSoHienTai, -1, xemPhuLuc));
     } else if (e.key === 'Home') {
       e.preventDefault();
-      chuyenSlide(0);
+      if (xemPhuLuc) {
+        chuyenSlide(0);
+      } else {
+        const firstMain = slides.findIndex(s => !s.phu_luc);
+        chuyenSlide(firstMain >= 0 ? firstMain : 0);
+      }
     } else if (e.key === 'End') {
       e.preventDefault();
-      chuyenSlide(slides.length - 1);
+      if (xemPhuLuc) {
+        chuyenSlide(slides.length - 1);
+      } else {
+        let lastMain = -1;
+        for (let i = slides.length - 1; i >= 0; i--) {
+          if (!slides[i].phu_luc) { lastMain = i; break; }
+        }
+        chuyenSlide(lastMain >= 0 ? lastMain : slides.length - 1);
+      }
+    } else if (e.key === 'p' || e.key === 'P') {
+      xemPhuLuc = !xemPhuLuc;
+      hienToast(xemPhuLuc ? 'Đi qua cả phụ lục' : 'Chỉ slide chính', 1500);
     } else if (e.key >= '1' && e.key <= '9') {
       const vIdx = parseInt(e.key) - 1;
       const slide = slides[chiSoHienTai];
@@ -900,9 +974,9 @@ export function taoBoMaySlide({ canh, theGioi, slides, chup = false, debug = fal
         canh.tweenCamera(v.cam, v.nhin, 1.2);
       }
     } else if (e.key === 'j' || e.key === 'J') {
-      chuyenSlide(Math.min(slides.length - 1, chiSoHienTai + 1));
+      chuyenSlide(slideKeTiep(slides, chiSoHienTai, 1, xemPhuLuc));
     } else if (e.key === 'k' || e.key === 'K') {
-      chuyenSlide(Math.max(0, chiSoHienTai - 1));
+      chuyenSlide(slideKeTiep(slides, chiSoHienTai, -1, xemPhuLuc));
     } else if (e.key === 'f' || e.key === 'F') {
       if (!document.fullscreenElement) {
         document.documentElement.requestFullscreen().catch(() => {});

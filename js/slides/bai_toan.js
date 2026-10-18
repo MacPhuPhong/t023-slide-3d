@@ -38,7 +38,7 @@ export const SLIDES_BAI_TOAN = [
       // Tô màu điểm theo độ cao
       ctx.theGioi.toMau('do_cao');
 
-      // Thêm nút "Bắt đầu" và dòng phụ đề trong cột trái
+      // Thêm nút "Bắt đầu", 4 nút điều hướng và dòng phụ đề trong cột trái
       const elY = document.getElementById('slide_y');
       if (elY) {
         let extra = document.getElementById('s0_extra');
@@ -47,12 +47,17 @@ export const SLIDES_BAI_TOAN = [
           extra.id = 's0_extra';
           extra.style.marginTop = '20px';
           extra.innerHTML = `
-            <div style="display:flex; align-items:center; gap:20px; margin-bottom:14px;">
+            <div style="display:flex; align-items:center; gap:20px; margin-bottom:12px;">
               <button id="btn_bat_dau" class="nut_vien_thuoc tuong_tac chu-nut" style="padding:12px 28px;">Bắt đầu →</button>
             </div>
+            <div style="display:flex; flex-wrap:wrap; gap:6px; margin-bottom:14px;">
+              <button class="nut_goc_nhin tuong_tac" data-id="mo-dau" style="padding:4px 10px; font-size:18px;">1. Bài toán</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="he-truc" style="padding:4px 10px; font-size:18px;">2. Giải pháp</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="ket-qua-canh" style="padding:4px 10px; font-size:18px;">3. Tính khả thi</button>
+              <button class="nut_goc_nhin tuong_tac" data-id="dinh-huong" style="padding:4px 10px; font-size:18px;">4. Định hướng</button>
+            </div>
             <div class="chu-nho" style="color:var(--mau-chu-phu);">
-              Nhóm T023 · Build phase VinUni · 05/10–23/10/2026<br>
-              <span style="color:var(--mau-chu-phu); display:inline-block; margin-top:4px;">Xe ví dụ: V1 IoU 0,218 → V6 IoU 0,792 (xe này thuộc tập train của V5/V6)</span>
+              Nhóm T023 · Build phase VinUni · 05/10–23/10/2026
             </div>
           `;
           elY.parentNode.insertBefore(extra, elY.nextSibling);
@@ -60,6 +65,15 @@ export const SLIDES_BAI_TOAN = [
           if (btn) btn.addEventListener('click', () => {
             const ev = new KeyboardEvent('keydown', { key: 'ArrowRight' });
             window.dispatchEvent(ev);
+          });
+          extra.querySelectorAll('button[data-id]').forEach(b => {
+            b.addEventListener('click', () => {
+              const targetId = b.dataset.id;
+              if (window.deck && typeof window.deck.chuyenSlideTheoId === 'function') {
+                window.deck.chuyenSlideTheoId(targetId);
+              }
+              window.location.hash = `#s=${targetId}`;
+            });
           });
         }
       }
@@ -231,6 +245,7 @@ export const SLIDES_BAI_TOAN = [
   // --- S3b: Đối chiếu (Task T87) ---
   {
     id: 'doi-chieu',
+    phu_luc: true,
     vat_chinh: 'vd',
     muc: 'Bài toán · Đối chiếu ba luồng',
     tieu_de: 'Đối chiếu: Lõi minh hoạ ↔ V1 Studio ↔ V6',

@@ -125,7 +125,7 @@ const v6Nb = (VONG_THAT.vong && VONG_THAT.vong['6'] && VONG_THAT.vong['6'].dat_p
 export const slideVong6 = {
   id: 'vong-6',
   vat_chinh: 'none',
-  muc: 'Các vòng cải tiến · V6',
+  muc: 'Giải pháp · V6',
   tieu_de: `V6: Lưới mặt đất thống kê bền v3a — đạt ${so(v5Nb, 1)}% → ${so(v6Nb, 1)}%`,
   y: '',
   ml: 'Ước lượng bền với nhiễu: bỏ điểm quá thấp trước khi dựng lưới đất, nên người đi bộ không còn bị loại nhầm.',

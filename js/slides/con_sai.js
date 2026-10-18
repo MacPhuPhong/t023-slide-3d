@@ -80,7 +80,7 @@ const GIAI_THICH_CON_SAI = {
 export const slideConSai = {
   id: 'con-sai',
   vat_chinh: 'none',
-  muc: 'Các vòng cải tiến · Vòng cuối: còn sai gì',
+  muc: 'Giải pháp · Vòng cuối: còn sai gì',
   tieu_de: 'Vòng cuối: đạt gì, còn sai gì',
   y: '',
   ml: 'Phân loại các ca còn sai ở vòng cuối: nguyên nhân vì sao chưa sửa và giới hạn phương pháp.',

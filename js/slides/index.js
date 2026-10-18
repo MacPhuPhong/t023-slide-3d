@@ -9,6 +9,8 @@ import { slideConSai } from './con_sai.js';
 import { SLIDES_CAI_TIEN } from './cai_tien.js';
 import { SLIDES_KET_QUA } from './ket_qua.js';
 import { SLIDES_DANH_GIA } from './danh_gia.js';
+import { slideKhaThi } from './kha_thi.js';
+import { slideDinhHuong } from './dinh_huong.js';
 import { SLIDES_LO_TRINH } from './lo_trinh.js';
 
 export const SLIDES = [
@@ -35,5 +37,7 @@ export const SLIDES = [
 
   ...SLIDES_KET_QUA,
   ...SLIDES_DANH_GIA,
+  slideKhaThi,
+  slideDinhHuong,
   ...SLIDES_LO_TRINH
 ];

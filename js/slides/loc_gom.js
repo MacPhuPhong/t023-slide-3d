@@ -6,9 +6,10 @@ export const SLIDES_LOC_GOM = [
   // --- S7: Mật độ điểm suy giảm theo khoảng cách ---
   {
     id: 'mat-do',
+    phu_luc: true,
     vung_diem: 'toan_bo', // T29: Hiện toàn bộ điểm LiDAR để xem mật độ theo khoảng cách tới 50m
     vat_chinh: 'none',
-    muc: 'Toán từng bước · Phân bố dữ liệu',
+    muc: 'Giải pháp · Toán: Phân bố dữ liệu',
     tieu_de: 'Mật độ điểm suy giảm theo khoảng cách',
     y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Mật độ điểm LiDAR giảm theo tỷ lệ d<sup>−3,06</sup> (xe con) và d<sup>−1,80</sup> (người lớn). Ngưỡng ≥ 5 điểm giới hạn tầm dựng hộp ở 34 m (xe) và 22 m (người).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 ≥ 20 điểm; V2 clip(20(10/d)², 6, 20); V5 ≥ 3</div>',
     cong_thuc: [
@@ -93,8 +94,9 @@ export const SLIDES_LOC_GOM = [
   // --- S8: RANSAC bỏ mặt đất và cái giá của tau ---
   {
     id: 'ransac',
+    phu_luc: true,
     vat_chinh: 'vd',
-    muc: 'Toán từng bước · Ước lượng mặt đất',
+    muc: 'Giải pháp · Toán: Ước lượng mặt đất',
     tieu_de: 'RANSAC loại bỏ mặt đất và ngưỡng khoảng cách τ',
     y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Mặt đất chiếm 38 % điểm trong vùng 25 m. RANSAC lấy mẫu 3 điểm khớp mặt phẳng n·P + d = 0 với ngưỡng τ = 0,15 m; 81 lần lặp đảm bảo xác suất p = 0,99.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1 RANSAC 0,12 m, 96 lần; V5 lưới mặt đất 1 m; V6 lưới v3a</div>',
     cong_thuc: [
@@ -219,8 +221,9 @@ export const SLIDES_LOC_GOM = [
   // --- S9: Gom cụm FGR và ngưỡng phi ---
   {
     id: 'gom-cum-phi',
+    phu_luc: true,
     vat_chinh: 'vd',
-    muc: 'Toán từng bước · Gom cụm không giám sát',
+    muc: 'Giải pháp · Toán: Gom cụm không giám sát',
     tieu_de: 'Gom cụm FGR và ngưỡng khoảng cách φ',
     y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">FGR quét ngưỡng φ ∈ {0,1; …; 0,7} m tìm cụm liên thông lớn nhất thoả luật 80 %. Cự ly > 30,1 m, bước quét dọc vượt 0,7 m làm vỡ cụm.</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> V1–V4 bán kính 0,75 m; V5 max(0,5; 0,012·d)</div>',
     cong_thuc: [
@@ -347,8 +350,9 @@ export const SLIDES_LOC_GOM = [
   // --- S10: Luật 80% lọc cụm và lỗi dính vật thể ---
   {
     id: 'luat-80',
+    phu_luc: true,
     vat_chinh: 'vd',
-    muc: 'Toán từng bước · Lọc cụm',
+    muc: 'Giải pháp · Toán: Lọc cụm',
     tieu_de: 'Luật 80 % lọc cụm và lỗi dính vật thể',
     y: '<div class="nhan-minh-hoa" style="display:inline-block; font-size:18px; font-weight:700; color:#b45309; background:#fef3c7; padding:1px 6px; border-radius:4px; margin-bottom:2px;">Minh hoạ nguyên lý theo FGR, không phải pipeline nhóm</div><div style="font-size:18px; line-height:1.25;">Luật 80 % yêu cầu ≥ 80 % điểm cụm nằm trong frustum 2D. Hai xe nối đuôi nhau trong cùng frustum sẽ gây lỗi dính hai xe (false merge).</div><div style="font-size:18px; color:var(--mau-chu-phu); border-left:2px solid #1f5fc4; padding-left:6px; margin-top:2px;"><b>Pipeline nhóm:</b> không có luật 80 %; V1–V4 chọn gần tâm khung; V5 logistic 13 đặc trưng</div>',
     cong_thuc: [

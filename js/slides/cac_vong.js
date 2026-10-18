@@ -624,7 +624,7 @@ function slideVong(k, tieu_de, ml) {
   return {
     id: `vong-${k}`,
     vat_chinh: 'vd',
-    muc: `Các vòng cải tiến · V${k}`,
+    muc: `Giải pháp · V${k}`,
     tieu_de,
     y: '',
     cong_thuc: [CAU_HINH[k].cong_thuc],
@@ -645,7 +645,7 @@ export const SLIDES_CAC_VONG = [
   {
     id: 'luong-chinh',
     vat_chinh: 'vd',
-    muc: 'Các vòng cải tiến · Luồng chính (V1)',
+    muc: 'Giải pháp · Luồng chính (V1)',
     tieu_de: 'Luồng chính của nhóm: 8 bước từ khung 2D tới hộp 3D',
     y: `Bấm từng bước để xem luồng chính (Frustum Studio) làm gì trên xe ví dụ, và vì sao hộp ra sai.`,
     cong_thuc: [String.raw`\theta^* = \arg\min_{\theta \in [0^\circ, 90^\circ)} A(\theta), \qquad A(\theta) = \prod_{k=1}^{2}\big(q_{99{,}5\%} - q_{0{,}5\%}\big)_k`],

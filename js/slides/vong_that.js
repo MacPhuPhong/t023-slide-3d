@@ -200,7 +200,7 @@ const NGUYEN_NHAN_CACH_SUA = {
 export const slideThatV1 = {
   id: 'that-v1',
   vat_chinh: 'none',
-  muc: 'Các vòng cải tiến · V1 · Dữ liệu thật',
+  muc: 'Giải pháp · V1 · Dữ liệu thật',
   tieu_de: 'V1 trên dữ liệu thật: phân bố lỗi và 4 ca điển hình',
   y: '',
   ml: `6 nhóm lỗi pipeline gốc trên 289 vật nuScenes: ${VONG_THAT.vong['1'].nhom.nam_bo.gt.khong_ra_hop} vật không ra hộp.`,
@@ -442,8 +442,9 @@ export function slideVongThat(k) {
 
   return {
     id: `that-v${k}`,
+    phu_luc: k >= 2,
     vat_chinh: 'none',
-    muc: `Các vòng cải tiến · V${k} · Dữ liệu thật`,
+    muc: `Giải pháp · V${k} · Dữ liệu thật`,
     tieu_de: `V${k} trên dữ liệu thật: lỗi của V${kPrev} và cách sửa`,
     y: '',
     ml: `Lỗi của V${kPrev} trên 289 vật thật: V${k} sửa được gì, còn sót gì.`,
